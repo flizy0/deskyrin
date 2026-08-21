@@ -1,0 +1,35 @@
+{
+  "name": "deskyrin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Auto-updating Solana network and ecosystem report with a static interactive dashboard.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "dev": "vite",
+    "prebuild": "npm run validate",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test",
+    "update": "node src/pipeline/update.js",
+    "update:dry": "node src/pipeline/update.js --dry-run",
+    "validate": "node src/pipeline/validate-output.js",
+    "e2e": "npm run build && playwright test",
+    "verify": "node scripts/verify.js",
+    "ci": "npm test && npm run validate && npm run build && npm run verify"
+  },
+  "dependencies": {
+    "chart.js": "4.5.1",
+    "cheerio": "1.2.0",
+    "fast-xml-parser": "5.11.0",
+    "lossless-json": "4.3.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "vite": "8.2.1"
+  }
+}

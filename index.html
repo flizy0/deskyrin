@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Deskyrin is an auto-updating, keyless Solana network and ecosystem report.">
+    <meta name="color-scheme" content="dark">
+    <title>Deskyrin — Solana Ecosystem Report</title>
+    <script type="module" src="/src/dashboard/main.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#top" aria-label="Deskyrin home">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>Deskyrin</span>
+        </a>
+        <nav aria-label="Report outputs">
+          <a href="/report.md">Report</a>
+          <a href="/data.json">JSON</a>
+          <a href="/methodology.md">Methodology</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div>
+          <p class="eyebrow">Auto-updating network report</p>
+          <h1>Solana, from consensus to ecosystem.</h1>
+          <p class="hero-copy">A static, source-attributed view of network performance, validators, economic activity, and ecosystem growth.</p>
+        </div>
+        <div class="update-panel" aria-live="polite">
+          <span id="overall-status" class="status-badge">Loading</span>
+          <span class="update-label">Last updated</span>
+          <time id="updated-at">Fetching data…</time>
+        </div>
+      </section>
+
+      <div id="load-error" class="load-error" role="alert" hidden></div>
+      <section id="alerts" class="report-section" aria-labelledby="alerts-title"></section>
+      <section id="network" class="report-section" aria-labelledby="network-title"></section>
+      <section id="validators" class="report-section" aria-labelledby="validators-title"></section>
+      <section id="economics" class="report-section" aria-labelledby="economics-title"></section>
+      <section id="ecosystem" class="report-section" aria-labelledby="ecosystem-title"></section>
+      <section id="sources" class="report-section" aria-labelledby="sources-title"></section>
+    </main>
+
+    <footer>
+      <p>Deterministic public data. No wallet, account, prediction, or AI-generated analysis.</p>
+    </footer>
+  </body>
+</html>

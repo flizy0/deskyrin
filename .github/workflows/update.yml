@@ -1,0 +1,44 @@
+name: Update public report
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: solana-report-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      LIVE_REFRESH_MINUTES: ${{ vars.LIVE_REFRESH_MINUTES || '60' }}
+      DAILY_REFRESH_HOURS: ${{ vars.DAILY_REFRESH_HOURS || '6' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Collect, calculate, and generate outputs
+        run: npm run update
+      - name: Verify generated artifacts
+        run: npm run ci
+      - name: Commit changed data
+        shell: bash
+        run: |
+          if git diff --quiet -- public/data.json public/report.md; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data.json public/report.md
+          git commit -m "chore(data): refresh Solana report [skip ci]"
+          git push
