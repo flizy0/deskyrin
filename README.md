@@ -2,7 +2,7 @@
 
 Deskyrin is an auto-updating Solana network and ecosystem report with a dark interactive dashboard, generated Markdown, and machine-readable JSON. It runs without a wallet, database, persistent backend, paid API, or mandatory API key.
 
-**Live dashboard:** deployment URL is added during the Vercel release step.  
+**Live dashboard:** [deskyrin-gamma.vercel.app](https://deskyrin-gamma.vercel.app)  
 **Generated outputs:** [`public/data.json`](public/data.json) · [`public/report.md`](public/report.md)  
 **Full methodology:** [`docs/methodology.md`](docs/methodology.md)  
 **Frozen bounty scope:** [`docs/research/00-frozen-master-scope.md`](docs/research/00-frozen-master-scope.md)
