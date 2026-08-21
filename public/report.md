@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-08-21T09:06:42.490Z**
+Updated: **2026-08-21T10:01:11.504Z**
 
 Update status: **complete**
 
@@ -10,11 +10,11 @@ All values are generated deterministically from the cited public sources; this r
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| TPS (all transactions) | 5,575.58 | 2026-08-21T09:02:03.776Z | Fresh |
-| Non-vote TPS | 3,736.07 | 2026-08-21T09:02:03.776Z | Fresh |
-| Slot time | 365.85 ms | 2026-08-21T09:02:03.776Z | Fresh |
-| Block height | 418,702,127 | 2026-08-21T09:02:03.776Z | Fresh |
-| Epoch progress | 2.88% (epoch 1020) | 2026-08-21T09:02:03.776Z | Fresh |
+| TPS (all transactions) | 4,461.84 | 2026-08-21T10:01:05.953Z | Fresh |
+| Non-vote TPS | 2,607 | 2026-08-21T10:01:05.953Z | Fresh |
+| Slot time | 365.41 ms | 2026-08-21T10:01:05.953Z | Fresh |
+| Block height | 418,711,792 | 2026-08-21T10:01:05.953Z | Fresh |
+| Epoch progress | 5.12% (epoch 1020) | 2026-08-21T10:01:05.953Z | Fresh |
 
 ## Validator Status
 
@@ -22,8 +22,8 @@ Status: **Fresh**. Active and delinquent counts include only vote accounts with 
 
 | Metric | Value |
 |---|---:|
-| Active validators | 679 |
-| Delinquent validators | 14 |
+| Active validators | 680 |
+| Delinquent validators | 13 |
 | Delinquent activated stake | 0.12% |
 | Top 10 stake share | 24.33% |
 
@@ -46,6 +46,7 @@ Status: **Fresh**. Active and delinquent counts include only vote accounts with 
 
 | Observed | Vote account | Previous | New |
 |---|---|---:|---:|
+| 2026-08-21T10:01:05.953Z | `94EhHE7MaKHq4p8oFADeyizDjwYwgFn1YBYGky8mR35z` | 5% | 0% |
 | 2026-08-21T09:02:03.776Z | `QodirbUG8AZQBWpHhPJPfjj1xg4AaQUZCVVtwT8YfPi` | 100% | 0% |
 | 2026-08-21T09:02:03.776Z | `5AC692spnjbegP7ttCXJEzUe8S81sLYsqJd8Ae6Zv1xU` | 100% | 0% |
 | 2026-08-20T13:10:33.559Z | `QodirbUG8AZQBWpHhPJPfjj1xg4AaQUZCVVtwT8YfPi` | 0% | 100% |
@@ -55,11 +56,11 @@ Status: **Fresh**. Active and delinquent counts include only vote accounts with 
 
 | Indicator | Value | Data through | Status |
 |---|---:|---|---|
-| SOL price | $93.07 (+6.35% / 24h) | 2026-08-21T08:58:50.000Z | Fresh |
+| SOL price | $91.57 (+5% / 24h) | 2026-08-21T09:58:50.000Z | Fresh |
 | Stablecoin supply (USD-equivalent circulating) | $16.33B | 2026-08-20 | Fresh |
 | DEX volume (completed UTC day) | $2.42B | 2026-08-20 | Fresh |
 | Real Economic Value (REV) | 13,201.69 SOL | 2026-08-19 | Fresh |
-| Median transaction fee | 5,000 lamports | 2026-08-21T09:02:03.776Z | Fresh |
+| Median transaction fee | 5,000 lamports | 2026-08-21T10:01:05.953Z | Fresh |
 | TVL alert input | $5.23B (+6.72% day/day) | 2026-08-20 | Fresh |
 
 REV components for 2026-08-19: transaction fees 10,929.4 SOL (median of Allium and Dune) + gross Jito tips 2,272.29 SOL.
@@ -98,18 +99,18 @@ No active warning met its full threshold and freshness requirements.
 
 | Check | State | Current / reason |
 |---|---|---|
-| tps-change | normal | +27.8% |
-| slow-slot-time | normal | -0.43% |
+| tps-change | normal | -1.93% |
+| slow-slot-time | normal | -0.24% |
 | high-validator-delinquency | normal | 0.12% |
 | large-tvl-change | normal | +6.72% |
-| large-sol-price-move | normal | +6.35% |
+| large-sol-price-move | normal | +5% |
 
 ## Data Sources and Freshness
 
 | Source | State | Last success | Data through |
 |---|---|---|---|
-| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-08-21T09:02:03.776Z | 2026-08-21T09:02:03.776Z |
-| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-08-21T09:02:03.776Z | 2026-08-21T08:58:50.000Z |
+| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-08-21T10:01:05.953Z | 2026-08-21T10:01:05.953Z |
+| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-08-21T10:01:05.953Z | 2026-08-21T09:58:50.000Z |
 | [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-08-21T09:02:03.776Z | 2026-08-20 |
 | [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-08-21T09:02:03.776Z | 2026-08-20 |
 | [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-21T09:02:03.776Z | 2026-08-20 |
