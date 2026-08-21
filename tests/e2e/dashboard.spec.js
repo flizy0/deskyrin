@@ -19,11 +19,12 @@ test("charts accept hover and tables remain contained", async ({ page }) => {
   await page.goto("/");
   const canvas = page.locator("#economics canvas").first();
   await expect(canvas).toBeVisible();
-  const box = await canvas.boundingBox();
+  await canvas.scrollIntoViewIfNeeded();
   const beforeHover = await canvas.screenshot();
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  const afterHover = await canvas.screenshot();
-  expect(Buffer.compare(beforeHover, afterHover)).not.toBe(0);
+  await expect.poll(async () => Buffer.compare(beforeHover, await canvas.screenshot())).not.toBe(0);
 
   await canvas.focus();
   const keyboardStatus = canvas.locator("xpath=following-sibling::*[contains(@class, 'chart-a11y-status')]");
