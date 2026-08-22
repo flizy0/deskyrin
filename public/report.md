@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-08-22T21:55:28.857Z**
+Updated: **2026-08-22T22:57:13.941Z**
 
 Update status: **complete**
 
@@ -10,11 +10,11 @@ All values are generated deterministically from the cited public sources; this r
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| TPS (all transactions) | 3,621.07 | 2026-08-22T21:55:20.982Z | Fresh |
-| Non-vote TPS | 1,780.13 | 2026-08-22T21:55:20.982Z | Fresh |
-| Slot time | 369.91 ms | 2026-08-22T21:55:20.982Z | Fresh |
-| Block height | 419,063,824 | 2026-08-22T21:55:20.982Z | Fresh |
-| Epoch progress | 86.69% (epoch 1020) | 2026-08-22T21:55:20.982Z | Fresh |
+| TPS (all transactions) | 3,963.99 | 2026-08-22T22:56:59.561Z | Fresh |
+| Non-vote TPS | 2,101.62 | 2026-08-22T22:56:59.561Z | Fresh |
+| Slot time | 366.75 ms | 2026-08-22T22:56:59.561Z | Fresh |
+| Block height | 419,073,909 | 2026-08-22T22:56:59.561Z | Fresh |
+| Epoch progress | 89.03% (epoch 1020) | 2026-08-22T22:56:59.561Z | Fresh |
 
 ## Validator Status
 
@@ -59,11 +59,11 @@ Status: **Fresh**. Active and delinquent counts include only vote accounts with 
 
 | Indicator | Value | Data through | Status |
 |---|---:|---|---|
-| SOL price | $92.93 (-0.75% / 24h) | 2026-08-22T21:53:50.000Z | Fresh |
+| SOL price | $93.85 (-0.22% / 24h) | 2026-08-22T22:54:40.000Z | Fresh |
 | Stablecoin supply (USD-equivalent circulating) | $16.52B | 2026-08-21 | Fresh |
 | DEX volume (completed UTC day) | $3.6B | 2026-08-21 | Fresh |
 | Real Economic Value (REV) | 11,125.43 SOL | 2026-08-21 | Fresh |
-| Median transaction fee | 5,000 lamports | 2026-08-22T21:55:20.982Z | Fresh |
+| Median transaction fee | 5,000 lamports | 2026-08-22T22:56:59.561Z | Fresh |
 | TVL alert input | $5.33B (+2.03% day/day) | 2026-08-21 | Fresh |
 
 REV components for 2026-08-21: transaction fees 9,506.26 SOL (median of Allium and Dune) + gross Jito tips 1,619.17 SOL.
@@ -102,25 +102,25 @@ No active warning met its full threshold and freshness requirements.
 
 | Check | State | Current / reason |
 |---|---|---|
-| tps-change | normal | -8.99% |
-| slow-slot-time | normal | +0.62% |
+| tps-change | normal | +1.02% |
+| slow-slot-time | normal | -0.12% |
 | high-validator-delinquency | normal | 0.01% |
 | large-tvl-change | normal | +2.03% |
-| large-sol-price-move | normal | -0.75% |
+| large-sol-price-move | normal | -0.22% |
 
 ## Data Sources and Freshness
 
 | Source | State | Last success | Data through |
 |---|---|---|---|
-| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-08-22T21:55:20.982Z | 2026-08-22T21:55:20.982Z |
-| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-08-22T21:55:20.982Z | 2026-08-22T21:53:50.000Z |
-| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-08-22T16:59:10.077Z | 2026-08-21 |
-| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-08-22T16:59:10.077Z | 2026-08-21 |
-| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-22T16:59:10.077Z | 2026-08-21 |
-| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-08-22T16:59:10.077Z | 2026-08-22T10:50:19.074Z |
-| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-08-22T16:59:10.077Z | 2026-08-21 |
+| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-08-22T22:56:59.561Z | 2026-08-22T22:56:59.561Z |
+| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-08-22T22:56:59.561Z | 2026-08-22T22:54:40.000Z |
+| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-08-22T22:56:59.561Z | 2026-08-21 |
+| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-08-22T22:56:59.561Z | 2026-08-21 |
+| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-22T22:56:59.561Z | 2026-08-21 |
+| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-08-22T22:56:59.561Z | 2026-08-22T10:50:19.074Z |
+| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-08-22T22:56:59.561Z | 2026-08-21 |
 | [RWA.xyz Solana Network](https://app.rwa.xyz/networks/solana) | fresh | 2026-08-22T21:55:20.982Z | 2026-08-22T06:25:29.671Z |
-| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-08-22T16:59:10.077Z | 2026-08-19T10:00:00.000Z |
-| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-08-22T16:59:10.077Z | 2026-08-22T16:59:10.077Z |
+| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-08-22T22:56:59.561Z | 2026-08-19T10:00:00.000Z |
+| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-08-22T22:56:59.561Z | 2026-08-22T22:56:59.561Z |
 
 Detailed definitions, windows, aggregation rules, and limitations are documented in [`methodology.md`](./methodology.md).
