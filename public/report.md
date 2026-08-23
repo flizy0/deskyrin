@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-08-23T22:55:54.560Z**
+Updated: **2026-08-23T23:54:05.480Z**
 
 Update status: **complete**
 
@@ -10,11 +10,11 @@ All values are generated deterministically from the cited public sources; this r
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| TPS (all transactions) | 3,738.57 | 2026-08-23T22:55:47.847Z | Fresh |
-| Non-vote TPS | 1,906.46 | 2026-08-23T22:55:47.847Z | Fresh |
-| Slot time | 370.37 ms | 2026-08-23T22:55:47.847Z | Fresh |
-| Block height | 419,309,652 | 2026-08-23T22:55:47.847Z | Fresh |
-| Epoch progress | 43.66% (epoch 1021) | 2026-08-23T22:55:47.847Z | Fresh |
+| TPS (all transactions) | 4,016.01 | 2026-08-23T23:53:59.329Z | Fresh |
+| Non-vote TPS | 2,167.11 | 2026-08-23T23:53:59.329Z | Fresh |
+| Slot time | 365.41 ms | 2026-08-23T23:53:59.329Z | Fresh |
+| Block height | 419,319,196 | 2026-08-23T23:53:59.329Z | Fresh |
+| Epoch progress | 45.87% (epoch 1021) | 2026-08-23T23:53:59.329Z | Fresh |
 
 ## Validator Status
 
@@ -61,22 +61,22 @@ Status: **Fresh**. Active and delinquent counts include only vote accounts with 
 
 | Indicator | Value | Data through | Status |
 |---|---:|---|---|
-| SOL price | $95.56 (+1.83% / 24h) | 2026-08-23T22:53:50.000Z | Fresh |
+| SOL price | $95.35 (+1.68% / 24h) | 2026-08-23T23:48:50.000Z | Fresh |
 | Stablecoin supply (USD-equivalent circulating) | $16.42B | 2026-08-22 | Fresh |
 | DEX volume (completed UTC day) | $3.73B | 2026-08-22 | Fresh |
-| Real Economic Value (REV) | 11,212.32 SOL | 2026-08-21 | Fresh |
-| Median transaction fee | 5,000 lamports | 2026-08-23T22:55:47.847Z | Fresh |
+| Real Economic Value (REV) | 10,153.63 SOL | 2026-08-22 | Fresh |
+| Median transaction fee | 5,000 lamports | 2026-08-23T23:53:59.329Z | Fresh |
 | TVL alert input | $5.55B (+4.12% day/day) | 2026-08-22 | Fresh |
 
-REV components for 2026-08-21: transaction fees 9,593.15 SOL (median of Allium and Dune) + gross Jito tips 1,619.17 SOL.
+REV components for 2026-08-22: transaction fees 8,364.4 SOL (median of Allium and Dune) + gross Jito tips 1,789.23 SOL.
 
 ## Ecosystem Growth
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| Tokenized-asset transfer volume (trailing 30d) | $2.94B | 2026-08-23T06:04:56.194Z | Fresh |
-| Tokenized-equity transfer volume (trailing 30d) | $2.02B | 2026-08-23T06:04:56.194Z | Fresh |
-| Daily active addresses (initiating signers/fee payers) | 2,969,082.5 | 2026-08-21 | Fresh |
+| Tokenized-asset transfer volume (trailing 30d) | $2.94B | 2026-08-23T22:45:41.987Z | Fresh |
+| Tokenized-equity transfer volume (trailing 30d) | $2.02B | 2026-08-23T22:45:41.987Z | Fresh |
+| Daily active addresses (initiating signers/fee payers) | 2,770,656 | 2026-08-22 | Fresh |
 
 ### Upcoming upgrades and developments
 
@@ -104,25 +104,25 @@ No active warning met its full threshold and freshness requirements.
 
 | Check | State | Current / reason |
 |---|---|---|
-| tps-change | normal | -6.26% |
-| slow-slot-time | normal | +1.36% |
+| tps-change | normal | +5.55% |
+| slow-slot-time | normal | 0% |
 | high-validator-delinquency | normal | 0.04% |
 | large-tvl-change | normal | +4.12% |
-| large-sol-price-move | normal | +1.83% |
+| large-sol-price-move | normal | +1.68% |
 
 ## Data Sources and Freshness
 
 | Source | State | Last success | Data through |
 |---|---|---|---|
-| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-08-23T22:55:47.847Z | 2026-08-23T22:55:47.847Z |
-| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-08-23T22:55:47.847Z | 2026-08-23T22:53:50.000Z |
-| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-22 |
-| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-22 |
-| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-22 |
-| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-23T11:50:17.526Z |
-| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-22 |
-| [RWA.xyz Solana Network](https://app.rwa.xyz/networks/solana) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-23T06:04:56.194Z |
-| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-19T10:00:00.000Z |
-| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-23T17:53:22.275Z |
+| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-08-23T23:53:59.329Z | 2026-08-23T23:53:59.329Z |
+| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-08-23T23:53:59.329Z | 2026-08-23T23:48:50.000Z |
+| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-08-23T23:53:59.329Z | 2026-08-22 |
+| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-08-23T23:53:59.329Z | 2026-08-22 |
+| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-23T23:53:59.329Z | 2026-08-22 |
+| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-08-23T23:53:59.329Z | 2026-08-23T23:50:31.194Z |
+| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-08-23T23:53:59.329Z | 2026-08-22 |
+| [RWA.xyz Solana Network](https://app.rwa.xyz/networks/solana) | fresh | 2026-08-23T23:53:59.329Z | 2026-08-23T22:45:41.987Z |
+| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-08-23T23:53:59.329Z | 2026-08-19T10:00:00.000Z |
+| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-08-23T23:53:59.329Z | 2026-08-23T23:53:59.329Z |
 
 Detailed definitions, windows, aggregation rules, and limitations are documented in [`methodology.md`](./methodology.md).
