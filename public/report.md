@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-08-23T17:01:29.105Z**
+Updated: **2026-08-23T17:53:23.847Z**
 
 Update status: **complete**
 
@@ -116,13 +116,13 @@ No active warning met its full threshold and freshness requirements.
 |---|---|---|---|
 | [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-08-23T17:01:23.111Z | 2026-08-23T17:01:23.111Z |
 | [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-08-23T17:01:23.111Z | 2026-08-23T16:58:50.000Z |
-| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-08-23T11:55:00.957Z | 2026-08-22 |
-| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-08-23T11:55:00.957Z | 2026-08-22 |
-| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-23T11:55:00.957Z | 2026-08-22 |
-| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-08-23T11:55:00.957Z | 2026-08-23T11:50:17.526Z |
-| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-08-23T11:55:00.957Z | 2026-08-22 |
-| [RWA.xyz Solana Network](https://app.rwa.xyz/networks/solana) | fresh | 2026-08-23T11:55:00.957Z | 2026-08-23T06:04:56.194Z |
-| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-08-23T11:55:00.957Z | 2026-08-19T10:00:00.000Z |
-| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-08-23T11:55:00.957Z | 2026-08-23T11:55:00.957Z |
+| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-22 |
+| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-22 |
+| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-22 |
+| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-23T11:50:17.526Z |
+| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-22 |
+| [RWA.xyz Solana Network](https://app.rwa.xyz/networks/solana) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-23T06:04:56.194Z |
+| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-19T10:00:00.000Z |
+| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-08-23T17:53:22.275Z | 2026-08-23T17:53:22.275Z |
 
 Detailed definitions, windows, aggregation rules, and limitations are documented in [`methodology.md`](./methodology.md).
