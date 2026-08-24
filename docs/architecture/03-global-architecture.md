@@ -417,6 +417,8 @@ This ordering surfaces current issues without creating a separate notification p
 - Fetch `/data.json`, reject unknown schema versions, then render.
 - Metric cards show value, unit, observation date/time, and freshness.
 - Temporal series use Chart.js line/bar charts with hover/touch tooltips and animation disabled.
+- Each temporal chart can lazily create one expanded native-dialog chart over the same in-memory snapshot. Its X-only zoom/pan is clamped to canonical timestamps, its Y scale follows visible source points, and closing it destroys the extra chart instance.
+- The expanded view exposes the visible canonical rows in a native table. It performs no second fetch, polling, interpolation, persistence, or upstream browser request.
 - Current values are present as text outside canvas.
 - Validator table defaults to stake descending and provides only essential client-side column sorting; it remains a native semantic table in a bounded scroll container.
 - Vote-account public keys remain fully visible and selectable in the bounded table.

@@ -1,4 +1,5 @@
 import { destroyCharts, doughnutChart, lineChart } from "./charts.js";
+import { closeChartExplorer, openChartExplorer } from "./chart-explorer.js";
 import { fmt, freshnessText } from "./format.js";
 
 function el(tag, className, text) {
@@ -39,10 +40,21 @@ function metricCard(label, value, note, domain) {
   return card;
 }
 
-function chartCard(title, note) {
+function chartCard(title, note, explorerSpec) {
   const card = el("article", "chart-card");
   const head = el("div", "chart-head");
-  head.append(el("h3", "chart-title", title), el("p", "chart-note", note));
+  const heading = el("div");
+  heading.append(el("h3", "chart-title", title), el("p", "chart-note", note));
+  head.append(heading);
+  if (explorerSpec) {
+    const expand = el("button", "chart-expand-button", "Explore");
+    expand.type = "button";
+    expand.dataset.chartExplorerOpen = "";
+    expand.setAttribute("aria-label", `Explore ${title}`);
+    expand.setAttribute("aria-haspopup", "dialog");
+    expand.addEventListener("click", () => openChartExplorer(explorerSpec, expand));
+    head.append(expand);
+  }
   const wrap = el("div", "chart-wrap");
   const canvas = document.createElement("canvas");
   canvas.setAttribute("role", "img");
@@ -145,17 +157,35 @@ function renderNetwork(snapshot) {
     metricCard("Block height", fmt.integer(BigInt(chain.blockHeight)), `Finalized slot ${fmt.integer(BigInt(chain.slot))}`, chain),
     metricCard("Epoch progress", fmt.pct(chain.epoch.progressPct), `Epoch ${chain.epoch.number} · ${fmt.integer(chain.epoch.slotIndex)} / ${fmt.integer(chain.epoch.slotsInEpoch)} slots`, chain)
   );
+  const labels = performance.history.map((point) => point.observedAt);
+  const tpsSpec = {
+    title: "TPS history",
+    note: "Total and non-vote transactions per second",
+    labels,
+    datasets: [
+      { label: "Total TPS", data: performance.history.map((point) => point.totalTps) },
+      { label: "Non-vote TPS", data: performance.history.map((point) => point.nonVoteTps) }
+    ],
+    yFormatter: fmt.integer,
+    observedAt: performance.observedAt,
+    updatedAt: snapshot.updatedAt
+  };
+  const slotSpec = {
+    title: "Slot-time history",
+    note: "Milliseconds per produced slot",
+    labels,
+    datasets: [{ label: "Slot time", data: performance.history.map((point) => point.slotTimeMs) }],
+    yFormatter: (value) => `${fmt.decimal(value)} ms`,
+    observedAt: performance.observedAt,
+    updatedAt: snapshot.updatedAt
+  };
   const chartGrid = el("div", "chart-grid two");
-  const tpsChart = chartCard("TPS history", "Total and non-vote transactions per second");
-  const slotChart = chartCard("Slot-time history", "Milliseconds per produced slot");
+  const tpsChart = chartCard(tpsSpec.title, tpsSpec.note, tpsSpec);
+  const slotChart = chartCard(slotSpec.title, slotSpec.note, slotSpec);
   chartGrid.append(tpsChart.card, slotChart.card);
   root.append(cards, chartGrid);
-  const labels = performance.history.map((point) => point.observedAt);
-  lineChart(tpsChart.canvas, labels, [
-    { label: "Total TPS", data: performance.history.map((point) => point.totalTps) },
-    { label: "Non-vote TPS", data: performance.history.map((point) => point.nonVoteTps) }
-  ], (value) => fmt.integer(value));
-  lineChart(slotChart.canvas, labels, [{ label: "Slot time", data: performance.history.map((point) => point.slotTimeMs) }], (value) => `${fmt.decimal(value)} ms`);
+  lineChart(tpsChart.canvas, tpsSpec.labels, tpsSpec.datasets, tpsSpec.yFormatter);
+  lineChart(slotChart.canvas, slotSpec.labels, slotSpec.datasets, slotSpec.yFormatter);
 }
 
 function renderValidators(snapshot) {
@@ -235,27 +265,37 @@ function renderEconomics(snapshot) {
   );
   const chartGrid = el("div", "chart-grid three");
   const specs = [
-    { title: "SOL price", note: "USD reference price", history: data.solPrice.history, key: "observedAt", series: [["SOL price", "priceUsd"]], formatter: fmt.usd },
-    { title: "Stablecoin supply", note: "USD-equivalent circulating", history: data.stablecoinSupply.history, key: "date", series: [["Stablecoin supply", "totalCirculatingUsd"]], formatter: fmt.usd },
-    { title: "DEX volume", note: "Direct DEX volume per completed UTC day", history: data.dexVolume.history, key: "date", series: [["DEX volume", "dailyVolumeUsd"]], formatter: fmt.usd },
+    { title: "SOL price", note: "USD reference price", domain: data.solPrice, history: data.solPrice.history, key: "observedAt", series: [["SOL price", "priceUsd"]], formatter: fmt.usd },
+    { title: "Stablecoin supply", note: "USD-equivalent circulating", domain: data.stablecoinSupply, history: data.stablecoinSupply.history, key: "date", series: [["Stablecoin supply", "totalCirculatingUsd"]], formatter: fmt.usd },
+    { title: "DEX volume", note: "Direct DEX volume per completed UTC day", domain: data.dexVolume, history: data.dexVolume.history, key: "date", series: [["DEX volume", "dailyVolumeUsd"]], formatter: fmt.usd },
     {
       title: "Real Economic Value",
       note: "Transaction fees + gross Jito tips",
+      domain: data.rev,
       history: data.rev.history,
       key: "date",
       series: [["REV total", "totalSol"], ["Transaction fees", "transactionFeesSol"], ["Gross Jito tips", "grossJitoTipsSol"]],
       formatter: (value) => `${fmt.compact(value)} SOL`
     },
-    { title: "Median transaction fee", note: "Stratified finalized-block sample", history: data.medianTransactionFee.history, key: "observedAt", series: [["Median transaction fee", "medianLamports"]], formatter: (value) => `${fmt.decimal(value)} lamports` }
+    { title: "Median transaction fee", note: "Stratified finalized-block sample", domain: data.medianTransactionFee, history: data.medianTransactionFee.history, key: "observedAt", series: [["Median transaction fee", "medianLamports"]], formatter: (value) => `${fmt.decimal(value)} lamports` }
   ];
-  for (const { title, note, history, key, series, formatter } of specs) {
-    const chart = chartCard(title, note);
+  for (const { title, note, domain, history, key, series, formatter } of specs) {
+    const explorerSpec = {
+      title,
+      note,
+      labels: history.map((point) => key === "date" ? `${point[key]}T00:00:00.000Z` : point[key]),
+      datasets: series.map(([label, field]) => ({ label, data: history.map((point) => point[field]) })),
+      yFormatter: formatter,
+      observedAt: domain.observedAt,
+      updatedAt: snapshot.updatedAt
+    };
+    const chart = chartCard(title, note, explorerSpec);
     chartGrid.append(chart.card);
     lineChart(
       chart.canvas,
-      history.map((point) => key === "date" ? `${point[key]}T00:00:00.000Z` : point[key]),
-      series.map(([label, field]) => ({ label, data: history.map((point) => point[field]) })),
-      formatter
+      explorerSpec.labels,
+      explorerSpec.datasets,
+      explorerSpec.yFormatter
     );
   }
   root.append(cards, chartGrid);
@@ -271,15 +311,33 @@ function renderEcosystem(snapshot) {
     metricCard("Tokenized equities", fmt.usd(data.tokenizedAssets.equityTransferVolumeUsd), "Stocks subset · trailing 30-day transfer volume", data.tokenizedAssets),
     metricCard("Daily active addresses", fmt.decimal(data.dailyActiveAddresses.value), `Initiating signers / fee payers · ${fmt.date(data.dailyActiveAddresses.date)}`, data.dailyActiveAddresses)
   );
+  const rwaSpec = {
+    title: "Tokenized-asset transfer volume",
+    note: "Trailing 30-day total and Stocks subset",
+    labels: data.tokenizedAssets.history.map((point) => point.observedAt),
+    datasets: [
+      { label: "All tokenized assets", data: data.tokenizedAssets.history.map((point) => point.totalTransferVolumeUsd) },
+      { label: "Tokenized equities", data: data.tokenizedAssets.history.map((point) => point.equityTransferVolumeUsd) }
+    ],
+    yFormatter: fmt.usd,
+    observedAt: data.tokenizedAssets.observedAt,
+    updatedAt: snapshot.updatedAt
+  };
+  const addressSpec = {
+    title: "Daily active addresses",
+    note: "Median of aligned Allium and Dune fee-payer observations",
+    labels: data.dailyActiveAddresses.history.map((point) => `${point.date}T00:00:00.000Z`),
+    datasets: [{ label: "Active addresses", data: data.dailyActiveAddresses.history.map((point) => point.value) }],
+    yFormatter: fmt.compact,
+    observedAt: data.dailyActiveAddresses.observedAt,
+    updatedAt: snapshot.updatedAt
+  };
   const chartGrid = el("div", "chart-grid two");
-  const rwaChart = chartCard("Tokenized-asset transfer volume", "Trailing 30-day total and Stocks subset");
-  const addressChart = chartCard("Daily active addresses", "Median of aligned Allium and Dune fee-payer observations");
+  const rwaChart = chartCard(rwaSpec.title, rwaSpec.note, rwaSpec);
+  const addressChart = chartCard(addressSpec.title, addressSpec.note, addressSpec);
   chartGrid.append(rwaChart.card, addressChart.card);
-  lineChart(rwaChart.canvas, data.tokenizedAssets.history.map((point) => point.observedAt), [
-    { label: "All tokenized assets", data: data.tokenizedAssets.history.map((point) => point.totalTransferVolumeUsd) },
-    { label: "Tokenized equities", data: data.tokenizedAssets.history.map((point) => point.equityTransferVolumeUsd) }
-  ], fmt.usd);
-  lineChart(addressChart.canvas, data.dailyActiveAddresses.history.map((point) => `${point.date}T00:00:00.000Z`), [{ label: "Active addresses", data: data.dailyActiveAddresses.history.map((point) => point.value) }], fmt.compact);
+  lineChart(rwaChart.canvas, rwaSpec.labels, rwaSpec.datasets, rwaSpec.yFormatter);
+  lineChart(addressChart.canvas, addressSpec.labels, addressSpec.datasets, addressSpec.yFormatter);
 
   const contentGrid = el("div", "content-grid");
   const upgrades = el("article", "content-panel");
@@ -337,6 +395,7 @@ function renderSources(snapshot) {
 }
 
 export function renderDashboard(snapshot) {
+  closeChartExplorer();
   destroyCharts();
   const status = document.querySelector("#overall-status");
   status.textContent = snapshot.updateStatus;

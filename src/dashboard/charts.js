@@ -1,6 +1,6 @@
 import Chart from "chart.js/auto";
 
-const charts = [];
+const charts = new Set();
 const COLORS = ["#8b5cf6", "#2dd4bf", "#f59e0b", "#60a5fa", "#f472b6", "#a3e635", "#fb7185", "#94a3b8", "#c084fc", "#22d3ee", "#64748b"];
 
 Chart.defaults.color = "#a9adbd";
@@ -15,7 +15,7 @@ function utcTick(value, spanMs) {
 }
 
 function baseOptions(yFormatter, timestamps) {
-  const spanMs = Math.max(0, timestamps.at(-1) - timestamps[0]);
+  const fullSpanMs = Math.max(0, timestamps.at(-1) - timestamps[0]);
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -35,7 +35,18 @@ function baseOptions(yFormatter, timestamps) {
       }
     },
     scales: {
-      x: { type: "linear", grid: { display: false }, ticks: { maxTicksLimit: 6, maxRotation: 0, callback: (value) => utcTick(value, spanMs) } },
+      x: {
+        type: "linear",
+        grid: { display: false },
+        ticks: {
+          maxTicksLimit: 6,
+          maxRotation: 0,
+          callback(value) {
+            const visibleSpanMs = Number(this.max) - Number(this.min);
+            return utcTick(value, Number.isFinite(visibleSpanMs) ? visibleSpanMs : fullSpanMs);
+          }
+        }
+      },
       y: {
         beginAtZero: false,
         grace: "4%",
@@ -91,7 +102,7 @@ function enableKeyboardTooltip(canvas, chart, validIndices, describe) {
   });
 }
 
-export function lineChart(canvas, labels, datasets, yFormatter) {
+export function lineChart(canvas, labels, datasets, yFormatter, { keyboardTooltip = true, managed = true } = {}) {
   const timestamps = labels.map((label) => Date.parse(label));
   if (timestamps.some((value) => !Number.isFinite(value))) throw new Error("Chart labels must be ISO timestamps");
   const points = timestamps.map((x, index) => ({ x, index }));
@@ -113,14 +124,19 @@ export function lineChart(canvas, labels, datasets, yFormatter) {
   const first = timestamps[0];
   const last = timestamps.at(-1);
   const summary = datasets.map((dataset) => `${dataset.label}: ${yFormatter(dataset.data[0])} to ${yFormatter(dataset.data.at(-1))}`).join("; ");
-  canvas.setAttribute("aria-label", `${canvas.getAttribute("aria-label")}. ${summary}, from ${accessibleTimestamp(first)} to ${accessibleTimestamp(last)}. Focus and use left or right arrow keys to inspect points; the full series is available in data.json.`);
+  const accessNote = keyboardTooltip
+    ? "Focus and use left or right arrow keys to inspect points; the full series is available in data.json."
+    : "The source values for the visible range are available in the adjacent table and the full series is available in data.json.";
+  canvas.setAttribute("aria-label", `${canvas.getAttribute("aria-label")}. ${summary}, from ${accessibleTimestamp(first)} to ${accessibleTimestamp(last)}. ${accessNote}`);
   const validIndices = points.map((point, index) => point.index === null ? -1 : index).filter((index) => index >= 0);
-  enableKeyboardTooltip(canvas, chart, validIndices, (index) => {
-    const timestamp = points[index].x;
-    const values = chart.data.datasets.map((dataset) => `${dataset.label}: ${yFormatter(dataset.data[index].y)}`).join("; ");
-    return `${accessibleTimestamp(timestamp)} UTC. ${values}`;
-  });
-  charts.push(chart);
+  if (keyboardTooltip) {
+    enableKeyboardTooltip(canvas, chart, validIndices, (index) => {
+      const timestamp = points[index].x;
+      const values = chart.data.datasets.map((dataset) => `${dataset.label}: ${yFormatter(dataset.data[index].y)}`).join("; ");
+      return `${accessibleTimestamp(timestamp)} UTC. ${values}`;
+    });
+  }
+  if (managed) charts.add(chart);
   return chart;
 }
 
@@ -141,10 +157,17 @@ export function doughnutChart(canvas, labels, values, formatter) {
   });
   canvas.setAttribute("aria-label", `${canvas.getAttribute("aria-label")}. ${labels.map((label, index) => `${label}: ${formatter(values[index])}`).join("; ")}. Focus and use left or right arrow keys to inspect slices; the full distribution is available in data.json.`);
   enableKeyboardTooltip(canvas, chart, labels.map((_label, index) => index), (index) => `${labels[index]}: ${formatter(values[index])}`);
-  charts.push(chart);
+  charts.add(chart);
   return chart;
 }
 
+export function destroyChart(chart) {
+  if (!chart) return;
+  charts.delete(chart);
+  chart.destroy();
+}
+
 export function destroyCharts() {
-  while (charts.length) charts.pop().destroy();
+  for (const chart of charts) chart.destroy();
+  charts.clear();
 }

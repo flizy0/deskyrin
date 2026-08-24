@@ -16,7 +16,7 @@ Deskyrin is an auto-updating Solana network and ecosystem report with a dark int
 - Official ecosystem/community news and upcoming developments, including Alpenglow and Reduced Slot Times/SIMD-0525 while officially upcoming.
 - Five fixed notable-change checks: TPS drop/spike, slow slots, validator delinquency, TVL movement, and SOL price movement.
 
-The dashboard's charts use hover tooltips, and the full validator/source tables remain horizontally contained and vertically readable. `report.md` is deterministic template output; there is no AI analysis or summary code.
+The dashboard's charts use hover and keyboard tooltips. Every temporal chart can also open a larger source-history explorer with bounded X-axis zoom, horizontal pan, UTC range presets, reset controls, and a native table of the visible canonical observations. The full validator/source tables remain horizontally contained and vertically readable. `report.md` is deterministic template output; there is no AI analysis or summary code.
 
 ## Static-first architecture
 
@@ -127,6 +127,7 @@ Vercel serves only static build output. `/data.json` and `/report.md` are explic
 - RWA values are rolling 30-day transfer volumes from a public website data representation; classification or page-contract changes can make the domain stale.
 - Official news is intentionally not an exhaustive independent-community feed.
 - Static Git/Vercel delivery means a successful data commit is followed by normal deployment latency.
+- Chart exploration changes only the visible range of the checked-in snapshot; it does not interpolate points, poll providers, or make daily/hourly data real-time.
 
 ## Research and verification
 

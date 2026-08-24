@@ -9,7 +9,7 @@ test("renders every required section from canonical data", async ({ page }) => {
   for (const title of ["Alerts / notable changes", "Network Performance", "Validator Status", "Economic Indicators", "Ecosystem Growth", "Data Sources"]) {
     await expect(page.getByRole("heading", { name: title })).toBeVisible();
   }
-  await expect(page.locator("canvas")).toHaveCount(10);
+  await expect(page.locator(".chart-card canvas")).toHaveCount(10);
   await expect(page.locator(".validator-table tbody tr")).toHaveCount(await page.evaluate(async () => (await (await fetch("/data.json")).json()).validators.counts.total));
   await expect(page.locator("#load-error")).toBeHidden();
   expect(errors).toEqual([]);
