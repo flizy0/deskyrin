@@ -14,21 +14,6 @@ function utcTick(value, spanMs) {
   return new Date(Number(value)).toLocaleString("en-US", options);
 }
 
-function expandGaps(timestamps) {
-  if (timestamps.length < 3) return timestamps.map((x, index) => ({ x, index }));
-  const deltas = timestamps.slice(1).map((value, index) => value - timestamps[index]).filter((value) => value > 0).sort((a, b) => a - b);
-  const cadence = deltas[Math.floor((deltas.length - 1) / 2)];
-  const expanded = [];
-  for (const [index, timestamp] of timestamps.entries()) {
-    if (index > 0 && timestamp - timestamps[index - 1] > cadence * 1.75) {
-      expanded.push({ x: timestamps[index - 1] + cadence, index: null });
-      if (timestamp - cadence > timestamps[index - 1] + cadence) expanded.push({ x: timestamp - cadence, index: null });
-    }
-    expanded.push({ x: timestamp, index });
-  }
-  return expanded;
-}
-
 function baseOptions(yFormatter, timestamps) {
   const spanMs = Math.max(0, timestamps.at(-1) - timestamps[0]);
   return {
@@ -51,7 +36,11 @@ function baseOptions(yFormatter, timestamps) {
     },
     scales: {
       x: { type: "linear", grid: { display: false }, ticks: { maxTicksLimit: 6, maxRotation: 0, callback: (value) => utcTick(value, spanMs) } },
-      y: { beginAtZero: false, ticks: { maxTicksLimit: 5, callback: yFormatter } }
+      y: {
+        beginAtZero: false,
+        grace: "4%",
+        ticks: { maxTicksLimit: 8, padding: 6, callback: yFormatter }
+      }
     }
   };
 }
@@ -105,7 +94,7 @@ function enableKeyboardTooltip(canvas, chart, validIndices, describe) {
 export function lineChart(canvas, labels, datasets, yFormatter) {
   const timestamps = labels.map((label) => Date.parse(label));
   if (timestamps.some((value) => !Number.isFinite(value))) throw new Error("Chart labels must be ISO timestamps");
-  const points = expandGaps(timestamps);
+  const points = timestamps.map((x, index) => ({ x, index }));
   const chart = new Chart(canvas, {
     type: "line",
     data: { datasets: datasets.map((dataset, index) => ({
@@ -117,7 +106,7 @@ export function lineChart(canvas, labels, datasets, yFormatter) {
         pointRadius: labels.length < 3 ? 3 : 0,
         pointHoverRadius: 4,
         tension: 0.25,
-        spanGaps: false
+        spanGaps: true
       })) },
     options: { ...baseOptions(yFormatter, timestamps), parsing: false }
   });
