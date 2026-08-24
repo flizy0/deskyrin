@@ -79,7 +79,7 @@ h1 { max-width: 800px; margin: 0; font-size: clamp(2.7rem, 7vw, 5.6rem); line-he
 .metric-value { margin: 1rem 0 0.45rem; font-size: clamp(1.7rem, 3vw, 2.5rem); line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
 .metric-note { min-height: 2.5em; margin: 0; color: var(--muted); font-size: 0.78rem; line-height: 1.5; }
 .freshness { margin-top: 1rem; padding: 0.34rem 0.5rem; border: 1px solid var(--line); color: var(--muted); }
-.freshness.fresh { border-color: rgba(56, 232, 190, 0.25); color: var(--green); }
+.freshness.fresh { padding: 0; border: 0; border-radius: 0; color: var(--muted); font-weight: 600; letter-spacing: 0.03em; text-transform: none; }
 .freshness.stale { border-color: rgba(249, 180, 77, 0.3); color: var(--warning); }
 
 .chart-grid { display: grid; gap: 1rem; margin-top: 1rem; }
@@ -169,7 +169,7 @@ th[aria-sort="descending"] .sort-button::after { content: " ↓"; color: var(--g
 .sort-button:focus-visible, canvas:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
 .row-delinquent { background: rgba(251, 113, 133, 0.04); }
 .validator-state, .stage { padding: 0.35rem 0.48rem; }
-.validator-state.active { background: rgba(56, 232, 190, 0.1); color: var(--green); }
+.validator-state.active { padding: 0; border-radius: 0; background: transparent; color: var(--muted); font-weight: 600; letter-spacing: 0.03em; text-transform: none; }
 .validator-state.delinquent { background: rgba(251, 113, 133, 0.12); color: #fda4af; }
 .commission-panel { margin-top: 1rem; padding: 1.3rem; border: 1px solid var(--line); background: var(--surface); }
 .commission-panel h3 { margin: 0 0 1rem; font-size: 1rem; }
