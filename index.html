@@ -3,71 +3,115 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Deskyrin is an auto-updating, keyless Solana network and ecosystem report.">
+    <meta name="description" content="Deskyrin is a source-attributed Solana network and ecosystem intelligence terminal.">
     <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#08090e">
-    <title>Deskyrin — Solana Ecosystem Report</title>
+    <meta name="theme-color" content="#080a09">
+    <title>Overview — Deskyrin</title>
     <script type="module" src="/src/dashboard/main.js"></script>
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to content</a>
-    <header class="site-header">
-      <div class="header-inner">
-        <a class="brand" href="#top" aria-label="Deskyrin home">
-          <span class="brand-mark" aria-hidden="true"></span>
-          <span class="brand-copy">
-            <strong>Deskyrin</strong>
-            <small>Solana observatory</small>
-          </span>
-        </a>
-        <nav class="section-nav" aria-label="Dashboard sections" data-section-nav>
-          <a href="#top" data-section-link="top">Overview</a>
-          <a href="#network" data-section-link="network">Network</a>
-          <a href="#validators" data-section-link="validators">Validators</a>
-          <a href="#economics" data-section-link="economics">Economy</a>
-          <a href="#ecosystem" data-section-link="ecosystem">Ecosystem</a>
-          <a href="#sources" data-section-link="sources">Sources</a>
-        </nav>
-        <nav class="output-nav" aria-label="Report outputs">
-          <a href="/report.md">Report</a>
-          <a href="/data.json">JSON</a>
-          <a href="/methodology.md">Methodology</a>
-        </nav>
+    <a class="skip-link" href="#view-root">Skip to main content</a>
+
+    <div class="app-shell" data-app-shell>
+      <aside id="app-sidebar" class="app-sidebar" aria-label="Deskyrin navigation">
+        <div class="sidebar-header">
+          <a class="brand" href="#overview" data-route-link="overview" data-route-current="false" aria-label="Deskyrin overview">
+            <span class="brand-mark" data-icon="brand" aria-hidden="true"></span>
+            <span class="brand-copy">
+              <strong>DESKYRIN</strong>
+              <small>Solana Intelligence Terminal</small>
+            </span>
+          </a>
+          <button class="sidebar-close" type="button" data-nav-close aria-controls="app-sidebar" aria-label="Close navigation">
+            <span data-icon="close" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <div class="sidebar-navigation">
+          <p class="sidebar-group-label" id="analytics-navigation-label">Analytics</p>
+          <nav class="sidebar-nav" aria-labelledby="analytics-navigation-label" data-route-nav>
+            <a href="#overview" data-route-link="overview">
+              <span data-icon="overview" aria-hidden="true"></span>
+              <span>Overview</span>
+            </a>
+            <a href="#network" data-route-link="network">
+              <span data-icon="network" aria-hidden="true"></span>
+              <span>Network</span>
+            </a>
+            <a href="#validators" data-route-link="validators">
+              <span data-icon="validators" aria-hidden="true"></span>
+              <span>Validators</span>
+            </a>
+            <a href="#economy" data-route-link="economy">
+              <span data-icon="economy" aria-hidden="true"></span>
+              <span>Economy</span>
+            </a>
+            <a href="#ecosystem" data-route-link="ecosystem">
+              <span data-icon="ecosystem" aria-hidden="true"></span>
+              <span>Ecosystem</span>
+            </a>
+          </nav>
+
+          <p class="sidebar-group-label" id="utility-navigation-label">Data &amp; outputs</p>
+          <nav class="sidebar-nav sidebar-nav-utility" aria-labelledby="utility-navigation-label">
+            <a href="#sources" data-route-link="sources">
+              <span data-icon="sources" aria-hidden="true"></span>
+              <span>Sources</span>
+            </a>
+            <a href="/report.md">
+              <span data-icon="report" aria-hidden="true"></span>
+              <span>Report</span>
+            </a>
+            <a href="/data.json">
+              <span data-icon="json" aria-hidden="true"></span>
+              <span>JSON</span>
+            </a>
+            <a href="/methodology.md">
+              <span data-icon="methodology" aria-hidden="true"></span>
+              <span>Methodology</span>
+            </a>
+          </nav>
+        </div>
+
+        <div class="sidebar-footnote">
+          <span data-icon="database" aria-hidden="true"></span>
+          <span>Scheduled public-data snapshot</span>
+        </div>
+      </aside>
+
+      <button class="navigation-overlay" type="button" data-nav-overlay aria-label="Close navigation" hidden></button>
+
+      <div class="app-workspace">
+        <header class="utility-bar">
+          <div class="utility-bar-leading">
+            <button class="navigation-open" type="button" data-nav-open aria-controls="app-sidebar" aria-expanded="false" aria-label="Open navigation">
+              <span data-icon="menu" aria-hidden="true"></span>
+            </button>
+            <span class="current-view-label" data-current-view-label>Overview</span>
+          </div>
+
+          <div class="snapshot-utility" aria-live="polite" aria-atomic="true">
+            <span class="snapshot-state">
+              <span class="signal-dot" aria-hidden="true"></span>
+              <span id="overall-status" class="status-badge">Loading snapshot</span>
+            </span>
+            <span class="utility-divider" aria-hidden="true"></span>
+            <span class="snapshot-updated">
+              <span class="update-label">Updated</span>
+              <time id="updated-at">Fetching data…</time>
+            </span>
+            <button class="refresh-snapshot" type="button" data-refresh-snapshot aria-label="Refresh snapshot">
+              <span data-icon="refresh" aria-hidden="true"></span>
+              <span class="refresh-label">Refresh</span>
+            </button>
+          </div>
+        </header>
+
+        <main id="main" class="app-main">
+          <div id="load-error" class="load-error" role="alert" hidden></div>
+          <section id="view-root" class="view-root" tabindex="-1" aria-label="Overview" aria-busy="true"></section>
+        </main>
       </div>
-    </header>
-
-    <main id="main">
-      <section class="hero" id="top" aria-labelledby="page-title">
-        <div class="hero-copy-block">
-          <p class="eyebrow">Solana ecosystem observatory</p>
-          <h1 id="page-title">The ecosystem, observed.</h1>
-          <p class="hero-copy">A source-attributed operational snapshot of Solana consensus, validators, economic activity, and ecosystem growth.</p>
-        </div>
-        <div class="update-panel" aria-live="polite">
-          <div class="update-state">
-            <span class="signal-dot" aria-hidden="true"></span>
-            <span id="overall-status" class="status-badge">Loading</span>
-          </div>
-          <div>
-            <span class="update-label">Canonical snapshot</span>
-            <time id="updated-at">Fetching data…</time>
-          </div>
-          <p>Scheduled, deterministic, and independently source-attributed.</p>
-        </div>
-      </section>
-
-      <div id="load-error" class="load-error" role="alert" hidden></div>
-      <section id="alerts" class="report-section domain-panel" aria-labelledby="alerts-title"></section>
-      <section id="network" class="report-section domain-panel" aria-labelledby="network-title"></section>
-      <section id="validators" class="report-section domain-panel" aria-labelledby="validators-title"></section>
-      <section id="economics" class="report-section domain-panel" aria-labelledby="economics-title"></section>
-      <section id="ecosystem" class="report-section domain-panel" aria-labelledby="ecosystem-title"></section>
-      <section id="sources" class="report-section domain-panel" aria-labelledby="sources-title"></section>
-    </main>
-
-    <footer>
-      <p>Deterministic public data · no wallet, account, prediction, or AI-generated analysis.</p>
-      <a href="#top">Back to overview</a>
-    </footer>
+    </div>
   </body>
 </html>

@@ -1,11 +1,45 @@
 import Chart from "chart.js/auto";
 
 const charts = new Set();
-const COLORS = ["#8b5cf6", "#2dd4bf", "#f59e0b", "#60a5fa", "#f472b6", "#a3e635", "#fb7185", "#94a3b8", "#c084fc", "#22d3ee", "#64748b"];
 
-Chart.defaults.color = "#9299aa";
-Chart.defaults.borderColor = "rgba(255,255,255,.065)";
-Chart.defaults.font.family = "Inter, ui-sans-serif, system-ui, sans-serif";
+export const DATA_COLORS = Object.freeze({
+  network: "#49bfae",
+  networkSecondary: "#5da6bd",
+  sol: "#d0a03a",
+  validator: "#8e7eb0",
+  positive: "#55b879",
+  negative: "#d66c68",
+  warning: "#c98342",
+  neutral: "#98a09c",
+  categorical: Object.freeze([
+    "#49bfae",
+    "#5da6bd",
+    "#d0a03a",
+    "#8e7eb0",
+    "#c8766f",
+    "#7f9d86",
+    "#98a09c"
+  ])
+});
+
+const CHART_SURFACES = Object.freeze({
+  text: "#929a96",
+  tooltip: "#121615",
+  tooltipBorder: "rgba(255,255,255,.12)",
+  tooltipText: "#e8ece9",
+  grid: "rgba(255,255,255,.055)",
+  border: "rgba(255,255,255,.07)"
+});
+
+Chart.defaults.color = CHART_SURFACES.text;
+Chart.defaults.borderColor = CHART_SURFACES.border;
+Chart.defaults.font.family = "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif";
+Chart.defaults.plugins.tooltip.backgroundColor = CHART_SURFACES.tooltip;
+Chart.defaults.plugins.tooltip.borderColor = CHART_SURFACES.tooltipBorder;
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.titleColor = CHART_SURFACES.tooltipText;
+Chart.defaults.plugins.tooltip.bodyColor = CHART_SURFACES.tooltipText;
+Chart.defaults.plugins.tooltip.cornerRadius = 6;
 
 function utcTick(value, spanMs) {
   const options = spanMs <= 3 * 86_400_000
@@ -28,10 +62,13 @@ function baseOptions(yFormatter, timestamps, { beginAtZero = false, stacked = fa
         labels: { usePointStyle: true, boxWidth: 7, boxHeight: 7, padding: 16, font: { size: 11 } }
       },
       tooltip: {
-        backgroundColor: "#181d29",
-        borderColor: "rgba(255,255,255,.14)",
+        backgroundColor: CHART_SURFACES.tooltip,
+        borderColor: CHART_SURFACES.tooltipBorder,
         borderWidth: 1,
-        padding: 12,
+        titleColor: CHART_SURFACES.tooltipText,
+        bodyColor: CHART_SURFACES.tooltipText,
+        cornerRadius: 6,
+        padding: 10,
         callbacks: {
           title: (items) => items.length ? new Date(items[0].parsed.x).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }) : "",
           label: (context) => `${context.dataset.label}: ${yFormatter(context.parsed.y)}`
@@ -57,7 +94,7 @@ function baseOptions(yFormatter, timestamps, { beginAtZero = false, stacked = fa
         beginAtZero,
         stacked,
         grace: "4%",
-        grid: { color: "rgba(255,255,255,.055)" },
+        grid: { color: CHART_SURFACES.grid },
         ticks: { maxTicksLimit: 7, padding: 8, callback: yFormatter }
       }
     }
@@ -125,7 +162,7 @@ export function lineChart(canvas, labels, datasets, yFormatter, { beginAtZero = 
   const chart = new Chart(canvas, {
     type: "line",
     data: { datasets: datasets.map((dataset, index) => {
-      const color = dataset.color || COLORS[index];
+      const color = dataset.color || DATA_COLORS.categorical[index % DATA_COLORS.categorical.length];
       return {
         ...dataset,
         data: points.map((point) => ({ x: point.x, y: point.index === null ? null : dataset.data[point.index] })),
@@ -160,7 +197,7 @@ export function lineChart(canvas, labels, datasets, yFormatter, { beginAtZero = 
   return chart;
 }
 
-export function stackedBarChart(canvas, labels, datasets, yFormatter) {
+export function stackedBarChart(canvas, labels, datasets, yFormatter, { keyboardTooltip = true, managed = true } = {}) {
   const timestamps = labels.map((label) => Date.parse(label));
   if (timestamps.some((value) => !Number.isFinite(value))) throw new Error("Chart labels must be ISO timestamps");
   const points = timestamps.map((x, index) => ({ x, index }));
@@ -168,11 +205,11 @@ export function stackedBarChart(canvas, labels, datasets, yFormatter) {
     type: "bar",
     data: {
       datasets: datasets.map((dataset, index) => {
-        const color = dataset.color || COLORS[index];
+        const color = dataset.color || DATA_COLORS.categorical[index % DATA_COLORS.categorical.length];
         return {
           ...dataset,
           data: points.map((point) => ({ x: point.x, y: dataset.data[point.index] })),
-          backgroundColor: colorWithAlpha(color, 0.78),
+          backgroundColor: dataset.backgroundColor || colorWithAlpha(color, 0.78),
           borderColor: color,
           borderWidth: 1,
           borderRadius: 3,
@@ -194,21 +231,23 @@ export function stackedBarChart(canvas, labels, datasets, yFormatter) {
   const lastTotal = datasets.reduce((total, dataset) => total + dataset.data.at(-1), 0);
   canvas.setAttribute(
     "aria-label",
-    `${canvas.getAttribute("aria-label")}. Stacked total: ${yFormatter(firstTotal)} to ${yFormatter(lastTotal)}, from ${accessibleTimestamp(first)} to ${accessibleTimestamp(last)}. Focus and use left or right arrow keys to inspect source components.`
+    `${canvas.getAttribute("aria-label")}. Stacked total: ${yFormatter(firstTotal)} to ${yFormatter(lastTotal)}, from ${accessibleTimestamp(first)} to ${accessibleTimestamp(last)}. ${keyboardTooltip ? "Focus and use left or right arrow keys to inspect source components." : "The source values for the visible range are available in the adjacent table and the full series is available in data.json."}`
   );
-  enableKeyboardTooltip(canvas, chart, points.map((_point, index) => index), (index) => {
-    const values = datasets.map((dataset) => `${dataset.label}: ${yFormatter(dataset.data[index])}`);
-    const total = datasets.reduce((sum, dataset) => sum + dataset.data[index], 0);
-    return `${accessibleTimestamp(points[index].x)} UTC. ${values.join("; ")}; REV total: ${yFormatter(total)}`;
-  });
-  charts.add(chart);
+  if (keyboardTooltip) {
+    enableKeyboardTooltip(canvas, chart, points.map((_point, index) => index), (index) => {
+      const values = datasets.map((dataset) => `${dataset.label}: ${yFormatter(dataset.data[index])}`);
+      const total = datasets.reduce((sum, dataset) => sum + dataset.data[index], 0);
+      return `${accessibleTimestamp(points[index].x)} UTC. ${values.join("; ")}; REV total: ${yFormatter(total)}`;
+    });
+  }
+  if (managed) charts.add(chart);
   return chart;
 }
 
 export function doughnutChart(canvas, labels, values, formatter) {
   const chart = new Chart(canvas, {
     type: "doughnut",
-    data: { labels, datasets: [{ data: values, backgroundColor: labels.map((_label, index) => COLORS[index % COLORS.length]), borderWidth: 0, hoverOffset: 5 }] },
+    data: { labels, datasets: [{ data: values, backgroundColor: labels.map((_label, index) => DATA_COLORS.categorical[index % DATA_COLORS.categorical.length]), borderWidth: 0, hoverOffset: 5 }] },
     options: {
       responsive: true,
       maintainAspectRatio: false,
