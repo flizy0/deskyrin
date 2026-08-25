@@ -18,6 +18,16 @@ Deskyrin is an auto-updating Solana network and ecosystem report with a dark int
 
 The dashboard's charts use hover and keyboard tooltips. Every temporal chart can also open a larger source-history explorer with bounded X-axis zoom, horizontal pan, UTC range presets, reset controls, and a native table of the visible canonical observations. The full validator/source tables remain horizontally contained and vertically readable. `report.md` is deterministic template output; there is no AI analysis or summary code.
 
+## Why Deskyrin is different
+
+- **Evidence-first source correlation:** fee observations from Allium and Dune are reconciled on the same completed UTC date, then joined to matching Jito gross tips to derive an auditable REV total. Provider values, ranges, components, dates, and provenance remain visible instead of being collapsed into an unexplained number.
+- **Explainable, noise-resistant alerts:** TPS and slot-time checks use duration-weighted samples, two adjacent recent bins, a median prior-hour baseline, and simultaneous relative and absolute thresholds. Validator delinquency is stake-weighted and requires a second fresh confirmation, while stale evidence produces an unavailable check rather than a false alert or false all-clear.
+- **Derived on-chain fee sampling:** the median transaction fee is calculated directly from finalized Solana blocks selected through a deterministic 16-block stratified sample across an approximately 9,000-slot window. The sampling frame and transaction counts are published with the result.
+- **Failure-aware state without a database:** the previous validated snapshot acts as bounded state. Independent domains can retain explicit stale last-known-good values when a provider fails, while healthy domains continue to update; missing data is never replaced with invented zeroes.
+- **Auditable presentation from one canonical snapshot:** the dashboard, interactive source-history tables, generated Markdown, alerts, and machine-readable JSON all derive from the same validated artifact. The browser performs no hidden provider fetches, interpolation, prediction, or synthetic history generation.
+
+These are deterministic, domain-specific engineering choices rather than AI/ML claims: the alert thresholds are fixed and documented, Allium/Dune observations arrive through the Solana Foundation data aggregator, and the sampled fee is an estimate rather than an exact network-wide median.
+
 ## Static-first architecture
 
 ```text
