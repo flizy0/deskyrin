@@ -483,7 +483,11 @@ export function openChartExplorer(spec, opener) {
   let chart;
   let controller;
   try {
-    chart = lineChart(canvas, spec.labels, spec.datasets, spec.yFormatter, { keyboardTooltip: false, managed: false });
+    chart = lineChart(canvas, spec.labels, spec.datasets, spec.yFormatter, {
+      beginAtZero: spec.beginAtZero === true,
+      keyboardTooltip: false,
+      managed: false
+    });
     controller = createController(chart, spec, timestamps, bounds);
     chart.resize();
     active = { chart, controller, opener };

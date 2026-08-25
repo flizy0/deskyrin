@@ -3,8 +3,8 @@ import Chart from "chart.js/auto";
 const charts = new Set();
 const COLORS = ["#8b5cf6", "#2dd4bf", "#f59e0b", "#60a5fa", "#f472b6", "#a3e635", "#fb7185", "#94a3b8", "#c084fc", "#22d3ee", "#64748b"];
 
-Chart.defaults.color = "#a9adbd";
-Chart.defaults.borderColor = "rgba(255,255,255,.08)";
+Chart.defaults.color = "#9299aa";
+Chart.defaults.borderColor = "rgba(255,255,255,.065)";
 Chart.defaults.font.family = "Inter, ui-sans-serif, system-ui, sans-serif";
 
 function utcTick(value, spanMs) {
@@ -14,7 +14,7 @@ function utcTick(value, spanMs) {
   return new Date(Number(value)).toLocaleString("en-US", options);
 }
 
-function baseOptions(yFormatter, timestamps) {
+function baseOptions(yFormatter, timestamps, { beginAtZero = false, stacked = false } = {}) {
   const fullSpanMs = Math.max(0, timestamps.at(-1) - timestamps[0]);
   return {
     responsive: true,
@@ -22,9 +22,13 @@ function baseOptions(yFormatter, timestamps) {
     interaction: { intersect: false, mode: "index" },
     animation: false,
     plugins: {
-      legend: { display: true, labels: { usePointStyle: true, boxWidth: 8, boxHeight: 8 } },
+      legend: {
+        display: true,
+        align: "start",
+        labels: { usePointStyle: true, boxWidth: 7, boxHeight: 7, padding: 16, font: { size: 11 } }
+      },
       tooltip: {
-        backgroundColor: "#171821",
+        backgroundColor: "#181d29",
         borderColor: "rgba(255,255,255,.14)",
         borderWidth: 1,
         padding: 12,
@@ -37,6 +41,8 @@ function baseOptions(yFormatter, timestamps) {
     scales: {
       x: {
         type: "linear",
+        stacked,
+        ...(fullSpanMs > 0 ? { min: timestamps[0], max: timestamps.at(-1) } : {}),
         grid: { display: false },
         ticks: {
           maxTicksLimit: 6,
@@ -48,12 +54,22 @@ function baseOptions(yFormatter, timestamps) {
         }
       },
       y: {
-        beginAtZero: false,
+        beginAtZero,
+        stacked,
         grace: "4%",
-        ticks: { maxTicksLimit: 8, padding: 6, callback: yFormatter }
+        grid: { color: "rgba(255,255,255,.055)" },
+        ticks: { maxTicksLimit: 7, padding: 8, callback: yFormatter }
       }
     }
   };
+}
+
+function colorWithAlpha(color, alpha) {
+  if (/^#[0-9a-f]{6}$/i.test(color)) {
+    const value = Number.parseInt(color.slice(1), 16);
+    return `rgba(${value >> 16}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
+  }
+  return color;
 }
 
 function accessibleTimestamp(value) {
@@ -102,24 +118,28 @@ function enableKeyboardTooltip(canvas, chart, validIndices, describe) {
   });
 }
 
-export function lineChart(canvas, labels, datasets, yFormatter, { keyboardTooltip = true, managed = true } = {}) {
+export function lineChart(canvas, labels, datasets, yFormatter, { beginAtZero = false, keyboardTooltip = true, managed = true } = {}) {
   const timestamps = labels.map((label) => Date.parse(label));
   if (timestamps.some((value) => !Number.isFinite(value))) throw new Error("Chart labels must be ISO timestamps");
   const points = timestamps.map((x, index) => ({ x, index }));
   const chart = new Chart(canvas, {
     type: "line",
-    data: { datasets: datasets.map((dataset, index) => ({
+    data: { datasets: datasets.map((dataset, index) => {
+      const color = dataset.color || COLORS[index];
+      return {
         ...dataset,
         data: points.map((point) => ({ x: point.x, y: point.index === null ? null : dataset.data[point.index] })),
-        borderColor: dataset.color || COLORS[index],
-        backgroundColor: dataset.color || COLORS[index],
+        borderColor: color,
+        backgroundColor: dataset.backgroundColor || colorWithAlpha(color, 0.09),
         borderWidth: 2,
+        fill: dataset.fill ?? false,
         pointRadius: labels.length < 3 ? 3 : 0,
         pointHoverRadius: 4,
-        tension: 0.25,
-        spanGaps: true
-      })) },
-    options: { ...baseOptions(yFormatter, timestamps), parsing: false }
+        tension: dataset.tension ?? 0.22,
+        spanGaps: dataset.spanGaps ?? true
+      };
+    }) },
+    options: { ...baseOptions(yFormatter, timestamps, { beginAtZero }), parsing: false }
   });
   const first = timestamps[0];
   const last = timestamps.at(-1);
@@ -137,6 +157,51 @@ export function lineChart(canvas, labels, datasets, yFormatter, { keyboardToolti
     });
   }
   if (managed) charts.add(chart);
+  return chart;
+}
+
+export function stackedBarChart(canvas, labels, datasets, yFormatter) {
+  const timestamps = labels.map((label) => Date.parse(label));
+  if (timestamps.some((value) => !Number.isFinite(value))) throw new Error("Chart labels must be ISO timestamps");
+  const points = timestamps.map((x, index) => ({ x, index }));
+  const chart = new Chart(canvas, {
+    type: "bar",
+    data: {
+      datasets: datasets.map((dataset, index) => {
+        const color = dataset.color || COLORS[index];
+        return {
+          ...dataset,
+          data: points.map((point) => ({ x: point.x, y: dataset.data[point.index] })),
+          backgroundColor: colorWithAlpha(color, 0.78),
+          borderColor: color,
+          borderWidth: 1,
+          borderRadius: 3,
+          borderSkipped: false,
+          stack: "rev-components"
+        };
+      })
+    },
+    options: {
+      ...baseOptions(yFormatter, timestamps, { beginAtZero: true, stacked: true }),
+      parsing: false,
+      datasets: { bar: { barPercentage: 0.82, categoryPercentage: 0.8 } }
+    }
+  });
+
+  const first = timestamps[0];
+  const last = timestamps.at(-1);
+  const firstTotal = datasets.reduce((total, dataset) => total + dataset.data[0], 0);
+  const lastTotal = datasets.reduce((total, dataset) => total + dataset.data.at(-1), 0);
+  canvas.setAttribute(
+    "aria-label",
+    `${canvas.getAttribute("aria-label")}. Stacked total: ${yFormatter(firstTotal)} to ${yFormatter(lastTotal)}, from ${accessibleTimestamp(first)} to ${accessibleTimestamp(last)}. Focus and use left or right arrow keys to inspect source components.`
+  );
+  enableKeyboardTooltip(canvas, chart, points.map((_point, index) => index), (index) => {
+    const values = datasets.map((dataset) => `${dataset.label}: ${yFormatter(dataset.data[index])}`);
+    const total = datasets.reduce((sum, dataset) => sum + dataset.data[index], 0);
+    return `${accessibleTimestamp(points[index].x)} UTC. ${values.join("; ")}; REV total: ${yFormatter(total)}`;
+  });
+  charts.add(chart);
   return chart;
 }
 

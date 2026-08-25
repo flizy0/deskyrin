@@ -9,10 +9,32 @@ test("renders every required section from canonical data", async ({ page }) => {
   for (const title of ["Alerts / notable changes", "Network Performance", "Validator Status", "Economic Indicators", "Ecosystem Growth", "Data Sources"]) {
     await expect(page.getByRole("heading", { name: title })).toBeVisible();
   }
+  await expect(page.locator(".domain-panel")).toHaveCount(6);
   await expect(page.locator(".chart-card canvas")).toHaveCount(10);
   await expect(page.locator(".validator-table tbody tr")).toHaveCount(await page.evaluate(async () => (await (await fetch("/data.json")).json()).validators.counts.total));
   await expect(page.locator("#load-error")).toBeHidden();
   expect(errors).toEqual([]);
+});
+
+test("section navigation and validator filters remain local and reversible", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#overall-status")).toHaveText(/complete|partial/);
+  await expect(page.getByRole("link", { name: "Overview", exact: true })).toHaveAttribute("aria-current", "location");
+  const data = await page.evaluate(async () => (await (await fetch("/data.json")).json()));
+
+  await page.getByRole("link", { name: "Validators", exact: true }).click();
+  await expect(page).toHaveURL(/#validators$/);
+  await expect(page.getByRole("heading", { name: "Validator Status" })).toBeInViewport();
+
+  const search = page.getByRole("searchbox", { name: "Search validators by vote or node key" });
+  const target = data.validators.table[0];
+  await search.fill(target.votePubkey.slice(0, 12));
+  await expect(page.locator(".validator-table tbody tr:not([hidden])")).toHaveCount(1);
+  await search.fill("");
+  await page.getByRole("button", { name: "Delinquent", exact: true }).click();
+  await expect(page.locator(".validator-table tbody tr:not([hidden])")).toHaveCount(data.validators.counts.delinquent);
+  await page.getByRole("button", { name: "All", exact: true }).click();
+  await expect(page.locator(".validator-table tbody tr:not([hidden])")).toHaveCount(data.validators.counts.total);
 });
 
 test("charts accept hover and tables remain contained", async ({ page }) => {

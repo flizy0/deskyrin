@@ -4,6 +4,7 @@ const DAY_MS = 86_400_000;
 const chartTitles = [
   "TPS history",
   "Slot-time history",
+  "Validator health history",
   "SOL price",
   "Stablecoin supply",
   "DEX volume",
@@ -37,7 +38,7 @@ test("temporal charts open one lazy native explorer with canonical source rows",
   for (const title of chartTitles) {
     await expect(page.getByRole("button", { name: `Explore ${title}`, exact: true })).toHaveCount(1);
   }
-  await expect(page.locator("#validators [data-chart-explorer-open]")).toHaveCount(0);
+  await expect(page.locator("#validators [data-chart-explorer-open]")).toHaveCount(1);
   await expect(page.locator("[data-chart-explorer-dialog]")).toHaveCount(0);
 
   const data = await page.evaluate(async () => (await (await fetch("/data.json")).json()));
