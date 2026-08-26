@@ -1,22 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 const DAY_MS = 86_400_000;
-const chartTitles = [
-  "TPS history",
-  "Slot-time history",
-  "Validator health history",
-  "SOL price",
-  "Stablecoin supply",
-  "DEX volume",
-  "Real Economic Value",
-  "Median transaction fee",
-  "Tokenized-asset transfer volume",
-  "Daily active addresses"
-];
 
-async function loadDashboard(page) {
-  await page.goto("/");
+async function loadRoute(page, route) {
+  await page.goto(`/#${route}`);
   await expect(page.locator("#overall-status")).toHaveText(/complete|partial/);
+  await expect(page.locator("#view-root")).toHaveAttribute("data-view", route);
 }
 
 async function explorerWindow(page) {
@@ -27,18 +16,15 @@ async function explorerWindow(page) {
   }));
 }
 
-test("temporal charts open one lazy native explorer with canonical source rows", async ({ page }) => {
+test("network charts open one lazy native explorer with canonical source rows", async ({ page }) => {
   const errors = [];
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   page.on("pageerror", (error) => errors.push(error.message));
-  await loadDashboard(page);
+  await loadRoute(page, "network");
 
-  const openers = page.locator("[data-chart-explorer-open]");
-  await expect(openers).toHaveCount(chartTitles.length);
-  for (const title of chartTitles) {
-    await expect(page.getByRole("button", { name: `Explore ${title}`, exact: true })).toHaveCount(1);
-  }
-  await expect(page.locator("#validators [data-chart-explorer-open]")).toHaveCount(1);
+  await expect(page.locator("[data-chart-explorer-open]")).toHaveCount(2);
+  await expect(page.getByRole("button", { name: "Explore TPS history", exact: true })).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Explore Slot-time history", exact: true })).toHaveCount(1);
   await expect(page.locator("[data-chart-explorer-dialog]")).toHaveCount(0);
 
   const data = await page.evaluate(async () => (await (await fetch("/data.json")).json()));
@@ -47,7 +33,7 @@ test("temporal charts open one lazy native explorer with canonical source rows",
   await expect(dialog).toBeVisible();
   expect(await dialog.evaluate((node) => node.open && node.matches(":modal"))).toBe(true);
   await expect(dialog.getByRole("heading", { name: "TPS history" })).toBeVisible();
-  await expect(page.locator(".chart-card canvas")).toHaveCount(10);
+  await expect(page.locator(".chart-card canvas")).toHaveCount(2);
   await expect(page.locator("[data-chart-explorer-canvas]")).toHaveCount(1);
 
   const table = page.locator("[data-chart-explorer-table]");
@@ -67,7 +53,7 @@ test("temporal charts open one lazy native explorer with canonical source rows",
 
 test("range presets, wheel, pan, drag, and reset stay inside canonical SOL history", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop-chromium", "Pointer precision is covered in the desktop project");
-  await loadDashboard(page);
+  await loadRoute(page, "economy");
   const data = await page.evaluate(async () => (await (await fetch("/data.json")).json()));
   const timestamps = data.economics.solPrice.history.map((point) => Date.parse(point.observedAt));
   const first = timestamps[0];
@@ -123,7 +109,7 @@ test("Escape restores focus and repeat opens do not leak chart canvases", async 
   const errors = [];
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   page.on("pageerror", (error) => errors.push(error.message));
-  await loadDashboard(page);
+  await loadRoute(page, "network");
   const opener = page.getByRole("button", { name: "Explore Slot-time history", exact: true });
 
   await opener.focus();
@@ -147,7 +133,7 @@ test("Escape restores focus and repeat opens do not leak chart canvases", async 
 
 test("mobile explorer supports pinch, horizontal pan, and contained layout", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile-chromium", "Touch gestures are covered in the mobile project");
-  await loadDashboard(page);
+  await loadRoute(page, "economy");
   await page.getByRole("button", { name: "Explore SOL price", exact: true }).click();
   const dialog = page.locator("[data-chart-explorer-dialog]");
   const canvas = page.locator("[data-chart-explorer-canvas]");

@@ -1,4 +1,4 @@
-import { destroyChart, lineChart } from "./charts.js";
+import { destroyChart, lineChart, stackedBarChart } from "./charts.js";
 import {
   clampRange,
   normalizeTimestamps,
@@ -165,9 +165,26 @@ function updateYAxis(chart, range, fullRange) {
   }
 
   const values = [];
-  for (const dataset of chart.data.datasets) {
-    for (const point of dataset.data) {
-      if (point.x >= range.min && point.x <= range.max && Number.isFinite(point.y)) values.push(point.y);
+  if (yScale.stacked === true) {
+    const pointCount = Math.max(0, ...chart.data.datasets.map((dataset) => dataset.data.length));
+    for (let index = 0; index < pointCount; index += 1) {
+      let positive = 0;
+      let negative = 0;
+      let hasValue = false;
+      for (const dataset of chart.data.datasets) {
+        const point = dataset.data[index];
+        if (!point || point.x < range.min || point.x > range.max || !Number.isFinite(point.y)) continue;
+        hasValue = true;
+        if (point.y >= 0) positive += point.y;
+        else negative += point.y;
+      }
+      if (hasValue) values.push(positive, negative);
+    }
+  } else {
+    for (const dataset of chart.data.datasets) {
+      for (const point of dataset.data) {
+        if (point.x >= range.min && point.x <= range.max && Number.isFinite(point.y)) values.push(point.y);
+      }
     }
   }
   if (values.length === 0) {
@@ -179,8 +196,15 @@ function updateYAxis(chart, range, fullRange) {
   const min = Math.min(...values);
   const max = Math.max(...values);
   const padding = min === max ? Math.max(Math.abs(min) * 0.04, 1) : (max - min) * 0.06;
-  yScale.min = min - padding;
-  yScale.max = max + padding;
+  yScale.min = yScale.beginAtZero && min >= 0 ? 0 : min - padding;
+  yScale.max = yScale.beginAtZero && max <= 0 ? 0 : max + padding;
+}
+
+function explorerChartType(spec) {
+  const type = spec.chartType ?? spec.type ?? "line";
+  if (type === "line") return "line";
+  if (type === "bar" || type === "stacked-bar" || type === "stackedBar") return "stacked-bar";
+  throw new TypeError(`Unsupported chart explorer type: ${type}`);
 }
 
 function renderTable(spec, timestamps, range) {
@@ -450,6 +474,7 @@ export function openChartExplorer(spec, opener) {
     throw new TypeError("A chart explorer spec requires labels, datasets, and a formatter");
   }
   const timestamps = spec.labels.map((label) => Date.parse(label));
+  const chartType = explorerChartType(spec);
   normalizeTimestamps(timestamps);
   const bounds = timestampBounds(timestamps);
   if (!bounds) throw new Error("A chart explorer requires at least one timestamp");
@@ -483,11 +508,16 @@ export function openChartExplorer(spec, opener) {
   let chart;
   let controller;
   try {
-    chart = lineChart(canvas, spec.labels, spec.datasets, spec.yFormatter, {
-      beginAtZero: spec.beginAtZero === true,
-      keyboardTooltip: false,
-      managed: false
-    });
+    chart = chartType === "stacked-bar"
+      ? stackedBarChart(canvas, spec.labels, spec.datasets, spec.yFormatter, {
+        keyboardTooltip: false,
+        managed: false
+      })
+      : lineChart(canvas, spec.labels, spec.datasets, spec.yFormatter, {
+        beginAtZero: spec.beginAtZero === true,
+        keyboardTooltip: false,
+        managed: false
+      });
     controller = createController(chart, spec, timestamps, bounds);
     chart.resize();
     active = { chart, controller, opener };

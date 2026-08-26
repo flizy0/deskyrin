@@ -18,7 +18,7 @@ Automated commands: `npm test`, `npm run validate`, `npm run build`, `npm run ve
 | News / upgrades | Official RSS and upgrades pages | Solana Foundation content | Bounded lists; SIMD links | Non-empty contracts; 0326/0525 assertions |
 | Required alerts | Five fixed checks | Underlying fresh metrics | Active warnings and all check states | Pure alert tests + fixed-order canonical invariant |
 | JSON / Markdown | Canonical serializer and pure report renderer | Validated snapshot only | `/data.json`, `/report.md` | `npm run validate` |
-| Interactive static dashboard | Vite + Chart.js; native dialog and pointer controls | One fetch of `/data.json` | 10 hover/keyboard-accessible charts, 9 expanded temporal explorers, canonical visible-point tables, and contained sortable tables | Range unit tests; desktop/mobile Playwright suite; production build |
+| Interactive static terminal | Vite + Chart.js; hash routing, native dialog, and pointer controls | One fetch of `/data.json` | Route-lazy hover/keyboard-accessible charts, expanded temporal explorers, canonical visible-point tables, and contained sortable tables | Range unit tests; desktop/mobile route Playwright suite; production build |
 | Auto-update / deployment | Hourly GitHub Action; configurable 1h/6h source checks; Vercel Git deploy | Committed static artifacts | New deployment reads updated files | Workflow/schema/static-only checks |
 | Necessary error handling | Retry, deadlines, response limits, LKG, atomic publish | Per-source status | Stale/unavailable UI/report labels | Reliability unit tests |
 | README/methodology | Repository documentation | Source links and limitations | Public repository | `npm run verify` required-file check |

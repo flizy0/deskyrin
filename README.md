@@ -1,6 +1,6 @@
 # Deskyrin
 
-Deskyrin is an auto-updating Solana network and ecosystem report with a dark interactive dashboard, generated Markdown, and machine-readable JSON. It runs without a wallet, database, persistent backend, paid API, or mandatory API key.
+Deskyrin is an auto-updating Solana network and ecosystem report with a dark analytical terminal, generated Markdown, and machine-readable JSON. It runs without a wallet, database, persistent backend, paid API, or mandatory API key.
 
 **Live dashboard:** [deskyrin-gamma.vercel.app](https://deskyrin-gamma.vercel.app)  
 **Generated outputs:** [`public/data.json`](public/data.json) · [`public/report.md`](public/report.md)  
@@ -16,7 +16,7 @@ Deskyrin is an auto-updating Solana network and ecosystem report with a dark int
 - Official ecosystem/community news and upcoming developments, including Alpenglow and Reduced Slot Times/SIMD-0525 while officially upcoming.
 - Five fixed notable-change checks: TPS drop/spike, slow slots, validator delinquency, TVL movement, and SOL price movement.
 
-The dashboard's charts use hover and keyboard tooltips. Every temporal chart can also open a larger source-history explorer with bounded X-axis zoom, horizontal pan, UTC range presets, reset controls, and a native table of the visible canonical observations. The full validator/source tables remain horizontally contained and vertically readable. `report.md` is deterministic template output; there is no AI analysis or summary code.
+The terminal separates Overview, Network, Validators, Economy, Ecosystem, and Sources into route-lazy views inside one persistent responsive shell. Charts use hover and keyboard tooltips; every temporal chart can open a larger source-history explorer with bounded X-axis zoom, horizontal pan, UTC range presets, reset controls, and a native table of visible canonical observations. The full validator/source tables remain horizontally contained and vertically readable. `report.md` is deterministic template output; there is no AI analysis or summary code.
 
 ## Why Deskyrin is different
 
