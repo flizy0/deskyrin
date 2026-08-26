@@ -207,6 +207,7 @@ export function makeSortable(table, body, columns = TABLE_COLUMNS.get(table) || 
     button.className = "sort-button";
     button.type = "button";
     button.textContent = label;
+    button.setAttribute("aria-label", label);
     button.addEventListener("click", () => {
       const direction = header.getAttribute("aria-sort") === "ascending" ? "descending" : "ascending";
       for (const item of headers) item.removeAttribute("aria-sort");
