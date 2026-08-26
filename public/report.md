@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-08-26T14:06:51.896Z**
+Updated: **2026-08-26T16:57:53.898Z**
 
 Update status: **complete**
 
@@ -10,11 +10,11 @@ All values are generated deterministically from the cited public sources; this r
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| TPS (all transactions) | 5,052.31 | 2026-08-26T14:06:46.554Z | Fresh |
-| Non-vote TPS | 3,224.98 | 2026-08-26T14:06:46.554Z | Fresh |
-| Slot time | 370.83 ms | 2026-08-26T14:06:46.554Z | Fresh |
-| Block height | 419,931,493 | 2026-08-26T14:06:46.554Z | Fresh |
-| Epoch progress | 87.73% (epoch 1022) | 2026-08-26T14:06:46.554Z | Fresh |
+| TPS (all transactions) | 4,329.23 | 2026-08-26T16:57:44.334Z | Fresh |
+| Non-vote TPS | 2,449.17 | 2026-08-26T16:57:44.334Z | Fresh |
+| Slot time | 364.08 ms | 2026-08-26T16:57:44.334Z | Fresh |
+| Block height | 419,959,472 | 2026-08-26T16:57:44.334Z | Fresh |
+| Epoch progress | 94.21% (epoch 1022) | 2026-08-26T16:57:44.334Z | Fresh |
 
 ## Validator Status
 
@@ -22,9 +22,9 @@ Status: **Fresh**. Active and delinquent counts include only vote accounts with 
 
 | Metric | Value |
 |---|---:|
-| Active validators | 683 |
-| Delinquent validators | 10 |
-| Delinquent activated stake | 0.06% |
+| Active validators | 685 |
+| Delinquent validators | 8 |
+| Delinquent activated stake | 0.03% |
 | Top 10 stake share | 24.28% |
 
 ### Top validators by activated stake
@@ -67,11 +67,11 @@ Status: **Fresh**. Active and delinquent counts include only vote accounts with 
 
 | Indicator | Value | Data through | Status |
 |---|---:|---|---|
-| SOL price | $96.76 (-0.42% / 24h) | 2026-08-26T14:03:50.000Z | Fresh |
+| SOL price | $95.83 (-2.53% / 24h) | 2026-08-26T16:53:50.000Z | Fresh |
 | Stablecoin supply (USD-equivalent circulating) | $16.42B | 2026-08-25 | Fresh |
 | DEX volume (completed UTC day) | $2.93B | 2026-08-25 | Fresh |
 | Real Economic Value (REV) | 11,441.2 SOL | 2026-08-25 | Fresh |
-| Median transaction fee | 5,000 lamports | 2026-08-26T14:06:46.554Z | Fresh |
+| Median transaction fee | 5,001 lamports | 2026-08-26T16:57:44.334Z | Fresh |
 | TVL alert input | $5.74B (+3.16% day/day) | 2026-08-25 | Fresh |
 
 REV components for 2026-08-25: transaction fees 9,175.32 SOL (median of Allium and Dune) + gross Jito tips 2,265.88 SOL.
@@ -110,25 +110,25 @@ No active warning met its full threshold and freshness requirements.
 
 | Check | State | Current / reason |
 |---|---|---|
-| tps-change | normal | +20.08% |
-| slow-slot-time | normal | +1.36% |
-| high-validator-delinquency | normal | 0.06% |
+| tps-change | normal | -4.82% |
+| slow-slot-time | normal | -0.12% |
+| high-validator-delinquency | normal | 0.03% |
 | large-tvl-change | normal | +3.16% |
-| large-sol-price-move | normal | -0.42% |
+| large-sol-price-move | normal | -2.53% |
 
 ## Data Sources and Freshness
 
 | Source | State | Last success | Data through |
 |---|---|---|---|
-| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-08-26T14:06:46.554Z | 2026-08-26T14:06:46.554Z |
-| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-08-26T14:06:46.554Z | 2026-08-26T14:03:50.000Z |
-| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-08-26T11:01:19.275Z | 2026-08-25 |
-| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-08-26T11:01:19.275Z | 2026-08-25 |
-| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-26T11:01:19.275Z | 2026-08-25 |
-| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-08-26T11:01:19.275Z | 2026-08-26T10:49:10.583Z |
-| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-08-26T11:01:19.275Z | 2026-08-25 |
+| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-08-26T16:57:44.334Z | 2026-08-26T16:57:44.334Z |
+| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-08-26T16:57:44.334Z | 2026-08-26T16:53:50.000Z |
+| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-08-26T16:57:44.334Z | 2026-08-25 |
+| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-08-26T16:57:44.334Z | 2026-08-25 |
+| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-26T16:57:44.334Z | 2026-08-25 |
+| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-08-26T16:57:44.334Z | 2026-08-26T10:49:10.583Z |
+| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-08-26T16:57:44.334Z | 2026-08-25 |
 | [RWA.xyz Solana Network](https://app.rwa.xyz/networks/solana) | fresh | 2026-08-26T14:06:46.554Z | 2026-08-26T06:02:39.551Z |
-| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-08-26T11:01:19.275Z | 2026-08-24T14:19:00.000Z |
-| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-08-26T11:01:19.275Z | 2026-08-26T11:01:19.275Z |
+| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-08-26T16:57:44.334Z | 2026-08-24T14:19:00.000Z |
+| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-08-26T16:57:44.334Z | 2026-08-26T16:57:44.334Z |
 
 Detailed definitions, windows, aggregation rules, and limitations are documented in [`methodology.md`](./methodology.md).
