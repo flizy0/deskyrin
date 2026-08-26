@@ -86,7 +86,7 @@ export function createTable(columns, captionText) {
  * Creates one aligned cell. A descriptor can provide content, sortValue,
  * className, title, and ariaLabel without coupling page code to table markup.
  */
-export function createTableCell(value, column, index = 0) {
+function createTableCell(value, column, index = 0) {
   const definition = normalizeColumn(column, index);
   const descriptor = value && typeof value === "object" && !isNode(value) && "content" in value
     ? value

@@ -1,11 +1,6 @@
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 const iconDefinitions = Object.freeze({
-  brand: [
-    ["path", { d: "M12 2.75 19.5 7v10L12 21.25 4.5 17V7L12 2.75Z" }],
-    ["circle", { cx: "12", cy: "12", r: "3.1" }],
-    ["path", { d: "M12 5.9v3M12 15.1v3M6.7 9l2.6 1.5m5.4 3 2.6 1.5m0-6-2.6 1.5m-5.4 3L6.7 15" }]
-  ],
   overview: [
     ["rect", { x: "3", y: "3", width: "7", height: "7", rx: "1" }],
     ["rect", { x: "14", y: "3", width: "7", height: "7", rx: "1" }],
@@ -63,7 +58,7 @@ const iconDefinitions = Object.freeze({
  * Create a small inline line icon without parsing HTML strings.
  * Icons are decorative by default. Pass a title to expose one as an image.
  */
-export function createIcon(name, { size = 18, className = "", title = "" } = {}) {
+function createIcon(name, { size = 18, className = "", title = "" } = {}) {
   const definition = iconDefinitions[name];
   if (!definition) return null;
 

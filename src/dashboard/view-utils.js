@@ -26,7 +26,7 @@ export function pageHeader({ eyebrow, title, copy, meta = [] }) {
   return header;
 }
 
-export function freshnessLabel(domain, { compact = false } = {}) {
+function freshnessLabel(domain, { compact = false } = {}) {
   if (!domain) return null;
   const label = el("span", `freshness-label ${domain.status}`);
   label.dataset.status = domain.status;
@@ -73,7 +73,7 @@ export function metricGrid(cards, className = "") {
   return grid;
 }
 
-export function panelHeader(title, note, { action, domain, eyebrow } = {}) {
+function panelHeader(title, note, { action, domain, eyebrow } = {}) {
   const header = el("header", "panel-header");
   const copy = el("div", "panel-heading");
   if (eyebrow) copy.append(el("p", "panel-eyebrow", eyebrow));
@@ -94,7 +94,7 @@ export function panel({ title, note, className = "", domain, action, eyebrow } =
   return node;
 }
 
-export function isPlottable(history, timestamp, fields) {
+function isPlottable(history, timestamp, fields) {
   if (!Array.isArray(history) || history.length === 0) return false;
   let previous = -Infinity;
   return history.every((point) => {
