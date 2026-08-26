@@ -43,5 +43,3 @@ export function renderDashboard(snapshot, route = "overview", root) {
   document.body.dataset.dashboardReady = "true";
   return target;
 }
-
-export const renderView = renderDashboard;

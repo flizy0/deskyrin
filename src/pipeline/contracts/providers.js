@@ -145,7 +145,3 @@ export const rwaNextDataSchema = z.object({
     })
   })
 });
-
-export function parseProvider(schema, value) {
-  return schema.parse(value);
-}

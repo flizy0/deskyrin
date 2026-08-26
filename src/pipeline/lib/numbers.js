@@ -30,10 +30,6 @@ export function decimalBigInt(value, label, options = {}) {
   return parsed;
 }
 
-export function bigintToDecimal(value) {
-  return decimalBigInt(value, "value").toString();
-}
-
 export function lamportsToSolNumber(value) {
   const lamports = decimalBigInt(value, "lamports");
   const whole = lamports / LAMPORTS_PER_SOL;
@@ -41,12 +37,7 @@ export function lamportsToSolNumber(value) {
   return Number(whole) + Number(fraction) / Number(LAMPORTS_PER_SOL);
 }
 
-export function sumBigInts(values) {
-  return values.reduce((total, value) => total + decimalBigInt(value, "integer"), 0n);
-}
-
 export function nearlyEqual(left, right, tolerance = 1e-9) {
   if (!Number.isFinite(left) || !Number.isFinite(right)) return false;
   return Math.abs(left - right) <= tolerance * Math.max(1, Math.abs(left), Math.abs(right));
 }
-

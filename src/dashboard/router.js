@@ -9,7 +9,7 @@ export const routes = Object.freeze([
   Object.freeze({ id: "sources", label: "Sources", title: "Sources — Deskyrin" })
 ]);
 
-export const routeAliases = Object.freeze({
+const routeAliases = Object.freeze({
   alerts: "overview",
   economics: "economy",
   top: "overview"

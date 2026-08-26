@@ -6,11 +6,7 @@ export const DATA_COLORS = Object.freeze({
   network: "#49bfae",
   networkSecondary: "#5da6bd",
   sol: "#d0a03a",
-  validator: "#8e7eb0",
-  positive: "#55b879",
   negative: "#d66c68",
-  warning: "#c98342",
-  neutral: "#98a09c",
   categorical: Object.freeze([
     "#49bfae",
     "#5da6bd",
@@ -241,27 +237,6 @@ export function stackedBarChart(canvas, labels, datasets, yFormatter, { keyboard
     });
   }
   if (managed) charts.add(chart);
-  return chart;
-}
-
-export function doughnutChart(canvas, labels, values, formatter) {
-  const chart = new Chart(canvas, {
-    type: "doughnut",
-    data: { labels, datasets: [{ data: values, backgroundColor: labels.map((_label, index) => DATA_COLORS.categorical[index % DATA_COLORS.categorical.length]), borderWidth: 0, hoverOffset: 5 }] },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: false,
-      cutout: "68%",
-      plugins: {
-        legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8, boxHeight: 8 } },
-        tooltip: { callbacks: { label: (context) => `${context.label}: ${formatter(context.parsed)}` } }
-      }
-    }
-  });
-  canvas.setAttribute("aria-label", `${canvas.getAttribute("aria-label")}. ${labels.map((label, index) => `${label}: ${formatter(values[index])}`).join("; ")}. Focus and use left or right arrow keys to inspect slices; the full distribution is available in data.json.`);
-  enableKeyboardTooltip(canvas, chart, labels.map((_label, index) => index), (index) => `${labels[index]}: ${formatter(values[index])}`);
-  charts.add(chart);
   return chart;
 }
 
