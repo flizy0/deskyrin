@@ -64,6 +64,7 @@ export function initHashRouter({
   const drawerOpen = element(openButton, "[data-nav-open]");
   const drawerClose = element(closeButton, "[data-nav-close]");
   const drawerOverlay = element(overlay, "[data-nav-overlay]");
+  const workspace = document.querySelector(".app-workspace");
   const links = [...document.querySelectorAll(linkSelector)];
   const labels = [...document.querySelectorAll("[data-current-view-label]")];
   const originalTitle = document.title;
@@ -113,6 +114,7 @@ export function initHashRouter({
   }
 
   function handleLocationChange() {
+    closeDrawer({ restoreFocus: false });
     applyRoute(canonicalizeLocation(), { source: "history" });
   }
 
@@ -122,6 +124,7 @@ export function initHashRouter({
     drawerIsOpen = true;
     drawer?.classList.add("is-open");
     document.body.classList.add("navigation-is-open");
+    if (workspace) workspace.inert = true;
     drawerOpen?.setAttribute("aria-expanded", "true");
     if (drawerOverlay) drawerOverlay.hidden = false;
     requestAnimationFrame(() => (drawerClose ?? drawer?.querySelector("a, button"))?.focus());
@@ -132,6 +135,7 @@ export function initHashRouter({
     drawerIsOpen = false;
     drawer?.classList.remove("is-open");
     document.body.classList.remove("navigation-is-open");
+    if (workspace) workspace.inert = false;
     drawerOpen?.setAttribute("aria-expanded", "false");
     if (drawerOverlay) drawerOverlay.hidden = true;
     if (restoreFocus && previousFocus?.isConnected) previousFocus.focus();
@@ -148,7 +152,8 @@ export function initHashRouter({
 
   function handleRouteClick(event) {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const link = event.currentTarget;
+    const link = event.target.closest?.(linkSelector);
+    if (!link) return;
     if ((link.target && link.target !== "_self") || link.hasAttribute("download")) return;
     event.preventDefault();
     closeDrawer({ restoreFocus: false });
@@ -156,14 +161,30 @@ export function initHashRouter({
   }
 
   function handleKeydown(event) {
-    if (event.key === "Escape" && drawerIsOpen) closeDrawer();
+    if (event.key === "Escape" && drawerIsOpen) {
+      closeDrawer();
+      return;
+    }
+    if (event.key !== "Tab" || !drawerIsOpen || !drawer) return;
+    const focusable = [...drawer.querySelectorAll("a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])")]
+      .filter((node) => !node.hidden && node.getClientRects().length > 0);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   function handleDesktopChange(event) {
     if (event.matches) closeDrawer({ restoreFocus: false });
   }
 
-  for (const link of links) link.addEventListener("click", handleRouteClick);
+  document.addEventListener("click", handleRouteClick);
   drawerOpen?.addEventListener("click", openDrawer);
   drawerClose?.addEventListener("click", closeDrawer);
   drawerOverlay?.addEventListener("click", closeDrawer);
@@ -186,10 +207,8 @@ export function initHashRouter({
       closeDrawer({ restoreFocus: false });
       destroyed = true;
       if (focusFrame !== undefined) cancelAnimationFrame(focusFrame);
-      for (const link of links) {
-        link.removeEventListener("click", handleRouteClick);
-        link.removeAttribute("aria-current");
-      }
+      document.removeEventListener("click", handleRouteClick);
+      for (const link of links) link.removeAttribute("aria-current");
       drawerOpen?.removeEventListener("click", openDrawer);
       drawerClose?.removeEventListener("click", closeDrawer);
       drawerOverlay?.removeEventListener("click", closeDrawer);

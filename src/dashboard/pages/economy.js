@@ -1,4 +1,4 @@
-import { DATA_COLORS } from "../theme.js";
+import { DATA_COLORS } from "../charts.js";
 import { fmt } from "../format.js";
 import { el } from "../ui.js";
 import {
@@ -125,7 +125,7 @@ export function renderEconomy(snapshot, root) {
     domain: tvl,
     history: tvl.history,
     time: (point) => `${point.date}T00:00:00.000Z`,
-    series: [{ label: "TVL", field: "valueUsd", color: DATA_COLORS.solMuted || DATA_COLORS.warning, fill: true }],
+    series: [{ label: "TVL", field: "valueUsd", color: DATA_COLORS.sol, fill: true }],
     formatter: fmt.usd
   });
   const stableSpec = historySpec(snapshot, {
@@ -134,7 +134,7 @@ export function renderEconomy(snapshot, root) {
     domain: data.stablecoinSupply,
     history: data.stablecoinSupply.history,
     time: (point) => `${point.date}T00:00:00.000Z`,
-    series: [{ label: "Stablecoin supply", field: "totalCirculatingUsd", color: DATA_COLORS.sage || DATA_COLORS.categorical[4], fill: true }],
+    series: [{ label: "Stablecoin supply", field: "totalCirculatingUsd", color: DATA_COLORS.categorical[5], fill: true }],
     formatter: fmt.usd
   });
   const dexSpec = historySpec(snapshot, {

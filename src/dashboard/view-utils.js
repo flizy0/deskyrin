@@ -62,7 +62,7 @@ export function metricCard({ label, value, note, domain, tone = "neutral", chang
   const foot = el("div", "metric-card-foot");
   const freshness = freshnessLabel(domain, { compact: true });
   if (freshness) foot.append(freshness);
-  if (href) foot.append(safeLink("Open", href, "metric-link"));
+  if (href) foot.append(href.startsWith("#") ? routeLink("Open", href.slice(1), "metric-link") : safeLink("Open", href, "metric-link"));
   if (foot.childElementCount) card.append(foot);
   return card;
 }
@@ -218,6 +218,7 @@ export function progressBar(value, label, { tone = "network" } = {}) {
 export function routeLink(label, route, className = "text-link") {
   const link = el("a", className, label);
   link.href = `#${route}`;
+  link.dataset.routeLink = route;
   return link;
 }
 

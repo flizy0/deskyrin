@@ -1,4 +1,4 @@
-import { DATA_COLORS } from "../theme.js";
+import { DATA_COLORS } from "../charts.js";
 import { fmt } from "../format.js";
 import { el } from "../ui.js";
 import {
