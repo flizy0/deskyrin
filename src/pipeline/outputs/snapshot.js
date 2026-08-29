@@ -4,7 +4,8 @@ import { addMs, ageMs, isoTimestamp } from "../lib/time.js";
 export const SOURCE_DEFINITIONS = Object.freeze({
   solanaRpc: { name: "Solana JSON-RPC", endpoint: "rpc", interval: "hourly" },
   defiLlamaCoins: { name: "DefiLlama Coins API", endpoint: "defiLlamaCurrentPrice", interval: "hourly" },
-  coinGecko: { name: "CoinGecko Keyless API (price fallback)", endpoint: "coinGeckoPrice", interval: "hourly" },
+  coinGecko: { name: "CoinGecko Keyless API", endpoint: "coinGeckoPrice", interval: "hourly" },
+  coinbaseExchange: { name: "Coinbase Exchange SOL-USD", endpoint: "coinbaseMarket", interval: "dailySourceCheck" },
   defiLlamaTvl: { name: "DefiLlama Chain TVL", endpoint: "defiLlamaTvl", interval: "dailySourceCheck" },
   defiLlamaStablecoins: { name: "DefiLlama Stablecoins", endpoint: "defiLlamaStablecoins", interval: "dailySourceCheck" },
   defiLlamaDex: { name: "DefiLlama DEX Dimensions", endpoint: "defiLlamaDex", interval: "dailySourceCheck" },
@@ -12,7 +13,9 @@ export const SOURCE_DEFINITIONS = Object.freeze({
   jitoMev: { name: "Jito Daily MEV Rewards", endpoint: "jitoMev", interval: "dailySourceCheck" },
   rwa: { name: "RWA.xyz Solana Network", endpoint: "rwaPage", interval: "dailySourceCheck" },
   solanaNews: { name: "Solana News RSS", endpoint: "solanaNews", interval: "dailySourceCheck" },
-  solanaUpgrades: { name: "Solana Upgrades Hub", endpoint: "solanaUpgrades", interval: "dailySourceCheck" }
+  solanaUpgrades: { name: "Solana Upgrades Hub", endpoint: "solanaUpgrades", interval: "dailySourceCheck" },
+  solanaStatus: { name: "Solana Status", endpoint: "solanaStatusSummary", interval: "hourly" },
+  agaveReleases: { name: "Agave Releases", endpoint: "agaveReleases", interval: "dailySourceCheck" }
 });
 
 export function sourceUrl(id, config) {
@@ -33,19 +36,14 @@ export function sourceIsDue(id, previous, now, config) {
   return new Date(now).getTime() >= new Date(source.nextDueAt).getTime() - config.intervals.schedulerGrace;
 }
 
-export function buildPriceSourceResults(priceResult, previous) {
-  const results = {
-    defiLlamaCoins: priceResult.state === "fresh" && priceResult.value.sourceId === "defiLlamaCoins"
-      ? { state: "fresh", dataThrough: priceResult.value.dataThrough }
-      : priceResult.state === "notDue"
-        ? { state: "notDue" }
-        : { state: "failed", error: priceResult.value?.primaryFailure || priceResult.error }
+export function buildPriceSourceResults(defiLlamaResult, coinGeckoResult) {
+  const state = (result) => result.state === "fresh"
+    ? { state: "fresh", dataThrough: result.value.dataThrough }
+    : result;
+  return {
+    defiLlamaCoins: state(defiLlamaResult),
+    coinGecko: state(coinGeckoResult)
   };
-  const coinGeckoUsed = priceResult.state === "fresh" && priceResult.value.sourceId === "coinGecko";
-  const hadCoinGecko = Boolean(previous?.sources?.coinGecko || previous?.economics?.solPrice?.sourceIds?.includes("coinGecko"));
-  if (coinGeckoUsed) results.coinGecko = { state: "fresh", dataThrough: priceResult.value.dataThrough };
-  else if (hadCoinGecko) results.coinGecko = priceResult.state === "failed" ? priceResult : { state: "notDue" };
-  return results;
 }
 
 export function buildSourceRecord(id, result, previous, now, config) {
@@ -107,6 +105,11 @@ export function mergeDomain(previous, result, now, freshnessMs, label) {
   return ageMs(previous.observedAt, now) <= freshnessMs ? freshCopy(previous) : staleCopy(previous, now);
 }
 
+export function mergeOptionalDomain(previous, result, now, freshnessMs) {
+  if (!previous && result.state !== "fresh") return undefined;
+  return mergeDomain(previous, result, now, freshnessMs, "supplemental domain");
+}
+
 export function allDomains(snapshot) {
   return [
     snapshot.network.performance,
@@ -121,6 +124,11 @@ export function allDomains(snapshot) {
     snapshot.ecosystem.tokenizedAssets,
     snapshot.ecosystem.dailyActiveAddresses,
     snapshot.ecosystem.news,
-    snapshot.ecosystem.upgrades
-  ];
+    snapshot.ecosystem.upgrades,
+    snapshot.economics.coinGeckoPrice,
+    snapshot.economics.coinbaseMarket,
+    snapshot.providerComparisons,
+    snapshot.observability?.solanaStatus,
+    snapshot.observability?.agaveReleases
+  ].filter(Boolean);
 }

@@ -37,13 +37,30 @@ function requiredArrays(data) {
   ];
 }
 
+function hasInvalidOptionalArrays(data) {
+  const optional = [
+    data.coverageIncidents,
+    data.providerComparisons?.metrics,
+    data.economics?.coinGeckoPrice?.history,
+    data.economics?.coinbaseMarket?.history,
+    data.observability?.solanaStatus?.components,
+    data.observability?.solanaStatus?.incidents,
+    data.observability?.agaveReleases?.items
+  ];
+  if (optional.some((value) => value !== undefined && !Array.isArray(value))) return true;
+  return Array.isArray(data.providerComparisons?.metrics) && data.providerComparisons.metrics.some((metric) =>
+    !Array.isArray(metric.series) || metric.series.some((series) => !Array.isArray(series.history))
+  );
+}
+
 function validateSnapshot(data) {
   if (
-    data?.schemaVersion !== "1.0.0"
+    data?.schemaVersion !== "1.2.0"
     || !data.network?.chain
     || !data.sources
     || Array.isArray(data.sources)
     || requiredArrays(data).some((value) => !Array.isArray(value))
+    || hasInvalidOptionalArrays(data)
   ) throw new Error("data.json has an unsupported or incomplete schema");
   return data;
 }

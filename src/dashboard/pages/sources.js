@@ -1,4 +1,6 @@
+import { coverageGapCallout } from "../coverage-callout.js";
 import { fmt } from "../format.js";
+import { PROVIDER_COLORS, PROVIDER_ORDER } from "../provider-comparison.js";
 import { appendTableRow, createTable, makeSortable } from "../table.js";
 import { el, emptyStatePanel, safeLink, statusDot } from "../ui.js";
 import {
@@ -26,6 +28,13 @@ const CHECK_COLUMNS = [
   { key: "current", label: "Current evidence", sort: "number", width: "18%" },
   { key: "window", label: "Evaluation window", width: "22%" },
   { key: "threshold", label: "Trigger definition", width: "24%" }
+];
+
+const PROVIDER_COLUMNS = [
+  { key: "provider", label: "Data provider", sort: "text", width: "22%" },
+  { key: "metrics", label: "Available comparisons", width: "48%" },
+  { key: "data-through", label: "Data through", sort: "date", width: "15%" },
+  { key: "transport", label: "Transport", width: "15%" }
 ];
 
 const CHECK_LABELS = {
@@ -122,6 +131,53 @@ function sourceLedger(snapshot) {
     });
   }
   makeSortable(table, body, SOURCE_COLUMNS);
+  card.append(wrap);
+  return card;
+}
+
+function providerLedger(snapshot) {
+  const domain = snapshot.providerComparisons;
+  if (!domain?.metrics?.length) return null;
+
+  const records = new Map();
+  for (const metric of domain.metrics) {
+    for (const series of metric.series) {
+      const record = records.get(series.providerName) || { metrics: [], dataThrough: series.dataThrough };
+      record.metrics.push(metric.name);
+      if (series.dataThrough > record.dataThrough) record.dataThrough = series.dataThrough;
+      records.set(series.providerName, record);
+    }
+  }
+  if (!records.size) return null;
+
+  const transport = snapshot.sources.solanaData;
+  const card = panel({
+    title: "Contributing data providers",
+    note: `${records.size} provider datasets arrive through the single Solana Foundation Data transport. Provider-level health is not inferred.`,
+    className: "provider-ledger-panel",
+    domain,
+    action: transport ? safeLink("Aggregator source", transport.url, "panel-link") : undefined
+  });
+  const { wrap, table, body } = createTable(PROVIDER_COLUMNS, "Analytical providers carried by Solana Foundation Data");
+  const order = new Map(PROVIDER_ORDER.map((name, index) => [name, index]));
+  const providers = [...records].sort(([left], [right]) =>
+    (order.get(left) ?? Number.MAX_SAFE_INTEGER) - (order.get(right) ?? Number.MAX_SAFE_INTEGER)
+    || left.localeCompare(right)
+  );
+
+  for (const [providerName, record] of providers) {
+    const identity = el("div", "provider-ledger-identity");
+    const dot = el("span", "provider-ledger-dot");
+    dot.style.setProperty("--provider-color", PROVIDER_COLORS[providerName] || "#929a96");
+    identity.append(dot, el("span", undefined, providerName));
+    appendTableRow(body, PROVIDER_COLUMNS, [
+      { content: identity, sortValue: providerName },
+      record.metrics.join(" · "),
+      { content: fmt.date(record.dataThrough), sortValue: record.dataThrough },
+      transport?.name || "Solana Foundation Data"
+    ], { dataset: { provider: providerName } });
+  }
+  makeSortable(table, body, PROVIDER_COLUMNS);
   card.append(wrap);
   return card;
 }
@@ -234,6 +290,9 @@ export function renderSources(snapshot, root) {
     ]
   }));
 
+  const coverage = coverageGapCallout(snapshot);
+  if (coverage) root.append(coverage);
+
   root.append(metricGrid([
     metricCard({
       label: "Snapshot",
@@ -244,7 +303,7 @@ export function renderSources(snapshot, root) {
     metricCard({
       label: "Source records",
       value: fmt.integer(sources.length),
-      note: "Canonical public provider records",
+      note: "Canonical collector / transport records",
       tone: "neutral"
     }),
     metricCard({
@@ -263,5 +322,8 @@ export function renderSources(snapshot, root) {
 
   const lowerGrid = el("div", "analytics-grid source-details-grid");
   lowerGrid.append(checksLedger(snapshot), outputsPanel(snapshot));
-  root.append(sourceLedger(snapshot), lowerGrid);
+  root.append(sourceLedger(snapshot));
+  const providers = providerLedger(snapshot);
+  if (providers) root.append(providers);
+  root.append(lowerGrid);
 }

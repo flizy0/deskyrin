@@ -6,7 +6,8 @@ import { validateOutputs } from "../src/pipeline/validate-output.js";
 const root = process.cwd();
 const requiredFiles = [
   "index.html", "public/data.json", "public/report.md", "public/methodology.md", "README.md", "LICENSE", "docs/methodology.md",
-  ".github/workflows/ci.yml", ".github/workflows/update.yml", "vercel.json"
+  ".github/workflows/ci.yml", ".github/workflows/update.yml", ".github/workflows/freshness.yml",
+  "scripts/check-public-freshness.js", "vercel.json"
 ];
 for (const file of requiredFiles) await access(resolve(root, file));
 

@@ -2,13 +2,14 @@ const MINUTE_MS = 60_000;
 const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;
 
-export const SCHEMA_VERSION = "1.0.0";
-export const METHODOLOGY_VERSION = "1.0.0";
+export const SCHEMA_VERSION = "1.2.0";
+export const METHODOLOGY_VERSION = "1.2.0";
 
 export const SOURCE_IDS = Object.freeze({
   solanaRpc: "solanaRpc",
   defiLlamaCoins: "defiLlamaCoins",
   coinGecko: "coinGecko",
+  coinbaseExchange: "coinbaseExchange",
   defiLlamaTvl: "defiLlamaTvl",
   defiLlamaStablecoins: "defiLlamaStablecoins",
   defiLlamaDex: "defiLlamaDex",
@@ -16,7 +17,9 @@ export const SOURCE_IDS = Object.freeze({
   jitoMev: "jitoMev",
   rwa: "rwa",
   solanaNews: "solanaNews",
-  solanaUpgrades: "solanaUpgrades"
+  solanaUpgrades: "solanaUpgrades",
+  solanaStatus: "solanaStatus",
+  agaveReleases: "agaveReleases"
 });
 
 const DEFAULT_RPC_URL = "https://api.mainnet-beta.solana.com";
@@ -72,6 +75,7 @@ export function createConfig(env = process.env) {
       defiLlamaPriceChart: "https://coins.llama.fi/chart/coingecko:solana",
       coinGeckoPrice: "https://api.coingecko.com/api/v3/simple/price",
       coinGeckoChart: "https://api.coingecko.com/api/v3/coins/solana/market_chart",
+      coinbaseMarket: "https://api.exchange.coinbase.com/products/SOL-USD/candles",
       defiLlamaTvl: "https://api.llama.fi/v2/historicalChainTvl/Solana",
       defiLlamaStablecoins: "https://stablecoins.llama.fi/stablecoincharts/Solana",
       defiLlamaDex: "https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true",
@@ -79,7 +83,10 @@ export function createConfig(env = process.env) {
       jitoMev: "https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards",
       rwaPage: "https://app.rwa.xyz/networks/solana",
       solanaNews: "https://solana.com/news/rss.xml",
-      solanaUpgrades: "https://solana.com/upgrades"
+      solanaUpgrades: "https://solana.com/upgrades",
+      solanaStatusSummary: "https://status.solana.com/api/v2/summary.json",
+      solanaStatusIncidents: "https://status.solana.com/api/v2/incidents.json",
+      agaveReleases: "https://api.github.com/repos/anza-xyz/agave/releases"
     }),
     allowedHosts: Object.freeze([...new Set([
       "api.mainnet-beta.solana.com",
@@ -88,10 +95,13 @@ export function createConfig(env = process.env) {
       "api.llama.fi",
       "stablecoins.llama.fi",
       "api.coingecko.com",
+      "api.exchange.coinbase.com",
       "solana.com",
+      "status.solana.com",
       "kobe.mainnet.jito.network",
       "app.rwa.xyz",
-      "github.com"
+      "github.com",
+      "api.github.com"
     ])]),
     intervals: Object.freeze({
       hourly: liveRefreshMinutes * MINUTE_MS,

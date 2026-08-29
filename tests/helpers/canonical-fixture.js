@@ -23,8 +23,8 @@ export function canonicalFixture() {
   const domain = { status: "fresh", observedAt, sourceIds: ["solanaRpc"] };
 
   return {
-    schemaVersion: "1.0.0",
-    methodologyVersion: "1.0.0",
+    schemaVersion: "1.2.0",
+    methodologyVersion: "1.2.0",
     updatedAt: observedAt,
     updateStatus: "complete",
     sources: {

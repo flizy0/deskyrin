@@ -100,7 +100,8 @@ const validatorHistoryPointSchema = z.object({
 }).strict();
 
 const commissionChangeSchema = z.object({
-  observedAt: isoTime,
+  previousObservedAt: isoTime.nullable(),
+  detectedAt: isoTime,
   votePubkey: publicKey,
   previousCommissionPct: nonNegativeInteger.max(100),
   commissionPct: nonNegativeInteger.max(100)
@@ -151,6 +152,33 @@ const solPriceSchema = z.object({
   }).strict(),
   confidence: nonNegative.optional(),
   history: z.array(priceHistoryPointSchema).min(2)
+}).strict();
+
+const coinbaseCandleSchema = z.object({
+  date: utcDate,
+  openUsd: positive,
+  highUsd: positive,
+  lowUsd: positive,
+  closeUsd: positive,
+  volumeSol: nonNegative
+}).strict().superRefine((point, context) => {
+  if (point.lowUsd > point.highUsd) {
+    context.addIssue({ code: "custom", message: "Coinbase candle low must not exceed high", path: ["lowUsd"] });
+  }
+  if (point.openUsd < point.lowUsd || point.openUsd > point.highUsd) {
+    context.addIssue({ code: "custom", message: "Coinbase candle open must be within low/high", path: ["openUsd"] });
+  }
+  if (point.closeUsd < point.lowUsd || point.closeUsd > point.highUsd) {
+    context.addIssue({ code: "custom", message: "Coinbase candle close must be within low/high", path: ["closeUsd"] });
+  }
+});
+
+const coinbaseMarketSchema = z.object({
+  ...domainFields,
+  productId: z.literal("SOL-USD"),
+  granularitySeconds: z.literal(86_400),
+  dataThrough: utcDate,
+  history: z.array(coinbaseCandleSchema).min(2).max(300)
 }).strict();
 
 const dailyValueSchema = (field, valueSchema = nonNegative) => z.object({
@@ -300,6 +328,105 @@ const upgradesSchema = z.object({
   }).strict()).min(1).max(20)
 }).strict();
 
+const providerNameSchema = z.enum([
+  "Allium",
+  "Dune",
+  "DeFiLlama",
+  "Artemis",
+  "Birdeye",
+  "Blockworks",
+  "DexPaprika",
+  "Solscan",
+  "Token Terminal"
+]);
+
+const providerComparisonSchema = z.object({
+  ...domainFields,
+  metrics: z.array(z.object({
+    id: z.enum(["sol-price", "fees", "fee-payers", "dex-volume"]),
+    name: z.string().min(1).max(100),
+    unit: z.string().min(1).max(50),
+    description: z.string().min(1).max(500),
+    series: z.array(z.object({
+      providerName: providerNameSchema,
+      dataThrough: utcDate,
+      history: z.array(z.object({
+        date: utcDate,
+        value: nonNegative
+      }).strict()).min(1)
+    }).strict()).max(9)
+  }).strict()).length(4)
+}).strict();
+
+const coverageIncidentSchema = z.object({
+  id: z.string().min(1).max(100),
+  status: z.enum(["ongoing", "resolved"]),
+  startedAt: isoTime,
+  endedAt: isoTime.nullable(),
+  affectedMetrics: z.array(z.string().min(1).max(100)).min(1).max(10),
+  reason: z.string().min(1).max(500),
+  disclosure: z.string().min(1).max(1_000)
+}).strict();
+
+const statusImpactSchema = z.enum(["none", "minor", "major", "critical", "maintenance"]);
+const statusComponentStateSchema = z.enum(["operational", "degraded_performance", "partial_outage", "major_outage", "under_maintenance"]);
+
+const solanaStatusSchema = z.object({
+  ...domainFields,
+  page: z.object({
+    id: z.string().min(1).max(200),
+    name: z.string().min(1).max(200),
+    url: httpsUrl,
+    updatedAt: isoTime
+  }).strict(),
+  condition: z.object({
+    indicator: statusImpactSchema,
+    description: z.string().min(1).max(300)
+  }).strict(),
+  components: z.array(z.object({
+    id: z.string().min(1).max(200),
+    name: z.string().min(1).max(200),
+    status: statusComponentStateSchema,
+    updatedAt: isoTime,
+    position: nonNegativeInteger.max(Number.MAX_SAFE_INTEGER),
+    group: z.boolean(),
+    description: z.string().min(1).max(500).optional()
+  }).strict()).min(1).max(50),
+  incidents: z.array(z.object({
+    id: z.string().min(1).max(200),
+    name: z.string().min(1).max(300),
+    status: z.enum(["investigating", "identified", "monitoring", "resolved", "postmortem"]),
+    impact: statusImpactSchema,
+    createdAt: isoTime,
+    startedAt: isoTime,
+    updatedAt: isoTime,
+    resolvedAt: isoTime.optional(),
+    url: httpsUrl.optional(),
+    updates: z.array(z.object({
+      id: z.string().min(1).max(200),
+      status: z.string().min(1).max(100),
+      body: z.string().max(1_000),
+      createdAt: isoTime,
+      updatedAt: isoTime
+    }).strict()).max(10)
+  }).strict()).max(20)
+}).strict();
+
+const agaveReleasesSchema = z.object({
+  ...domainFields,
+  repository: z.literal("anza-xyz/agave"),
+  items: z.array(z.object({
+    id: z.string().min(1).max(100),
+    tagName: z.string().min(1).max(100),
+    title: z.string().min(1).max(200),
+    url: httpsUrl,
+    createdAt: isoTime,
+    publishedAt: isoTime,
+    prerelease: z.boolean(),
+    notes: z.string().min(1).max(1_000).optional()
+  }).strict()).min(1).max(20)
+}).strict();
+
 const thresholdValue = z.union([finite, z.string().min(1).max(100), z.boolean()]);
 const alertCheckSchema = z.object({
   id: z.enum(["tps-change", "slow-slot-time", "high-validator-delinquency", "large-tvl-change", "large-sol-price-move"]),
@@ -333,6 +460,7 @@ export const canonicalSnapshotSchema = z.object({
   updatedAt: isoTime,
   updateStatus: z.enum(["complete", "partial"]),
   sources: z.record(z.string(), sourceRecordSchema),
+  coverageIncidents: z.array(coverageIncidentSchema).max(20).optional(),
   network: z.object({
     performance: networkPerformanceSchema,
     chain: networkChainSchema
@@ -344,7 +472,9 @@ export const canonicalSnapshotSchema = z.object({
     stablecoinSupply: stablecoinSchema,
     dexVolume: dexSchema,
     rev: revSchema,
-    medianTransactionFee: medianFeeSchema
+    medianTransactionFee: medianFeeSchema,
+    coinGeckoPrice: solPriceSchema.optional(),
+    coinbaseMarket: coinbaseMarketSchema.optional()
   }).strict(),
   ecosystem: z.object({
     tokenizedAssets: tokenizedAssetsSchema,
@@ -352,6 +482,11 @@ export const canonicalSnapshotSchema = z.object({
     news: newsSchema,
     upgrades: upgradesSchema
   }).strict(),
+  observability: z.object({
+    solanaStatus: solanaStatusSchema.optional(),
+    agaveReleases: agaveReleasesSchema.optional()
+  }).strict().optional(),
+  providerComparisons: providerComparisonSchema.optional(),
   alertChecks: z.array(alertCheckSchema).length(5),
   alerts: z.array(alertSchema).max(5)
 }).strict();
@@ -362,6 +497,13 @@ const EXPECTED_ALERT_IDS = [
   "high-validator-delinquency",
   "large-tvl-change",
   "large-sol-price-move"
+];
+
+const EXPECTED_PROVIDER_METRICS = [
+  { id: "sol-price", name: "SOL Price", unit: "USD" },
+  { id: "fees", name: "Fees", unit: "SOL" },
+  { id: "fee-payers", name: "Fee Payers", unit: "Count" },
+  { id: "dex-volume", name: "DEX Volume", unit: "USD" }
 ];
 
 function assert(condition, code, message) {
@@ -375,6 +517,10 @@ function assertSortedUnique(points, key, limit, label) {
   assert(keys.every((value, index) => index === 0 || keys[index - 1] < value), "UNSORTED_HISTORY", `${label} must be ascending`);
 }
 
+function assertUnique(points, key, code, message) {
+  assert(new Set(points.map(key)).size === points.length, code, message);
+}
+
 function domains(snapshot) {
   return [
     snapshot.network.performance,
@@ -386,11 +532,16 @@ function domains(snapshot) {
     snapshot.economics.dexVolume,
     snapshot.economics.rev,
     snapshot.economics.medianTransactionFee,
+    snapshot.economics.coinGeckoPrice,
+    snapshot.economics.coinbaseMarket,
     snapshot.ecosystem.tokenizedAssets,
     snapshot.ecosystem.dailyActiveAddresses,
     snapshot.ecosystem.news,
-    snapshot.ecosystem.upgrades
-  ];
+    snapshot.ecosystem.upgrades,
+    snapshot.providerComparisons,
+    snapshot.observability?.solanaStatus,
+    snapshot.observability?.agaveReleases
+  ].filter(Boolean);
 }
 
 export function validateCanonicalInvariants(snapshot, limits = {}) {
@@ -427,9 +578,20 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
   const anyStale = domains(snapshot).some((domain) => domain.status === "stale");
   assert(snapshot.updateStatus === (anyStale ? "partial" : "complete"), "INVALID_UPDATE_STATUS", "updateStatus disagrees with domain freshness");
 
+  const coverageIncidents = snapshot.coverageIncidents || [];
+  assertUnique(coverageIncidents, (incident) => incident.id, "DUPLICATE_COVERAGE_INCIDENT", "Coverage incident IDs must be unique");
+  for (const incident of coverageIncidents) {
+    const start = Date.parse(incident.startedAt);
+    const end = incident.endedAt ? Date.parse(incident.endedAt) : undefined;
+    assert(new Set(incident.affectedMetrics).size === incident.affectedMetrics.length, "DUPLICATE_AFFECTED_METRIC", "Coverage incident metrics must be unique");
+    assert(incident.status === (end === undefined ? "ongoing" : "resolved"), "INVALID_COVERAGE_STATUS", "Coverage incident status disagrees with its end time");
+    assert(end === undefined || end >= start, "INVALID_COVERAGE_TIMELINE", "Coverage incident ends before it starts");
+    assert(start <= snapshotTime + 300_000 && (end === undefined || end <= snapshotTime + 300_000), "FUTURE_COVERAGE_INCIDENT", "Coverage incident is later than the snapshot");
+  }
+
   assertSortedUnique(snapshot.network.performance.history, (point) => point.observedAt, hourlyLimit, "network history");
   assertSortedUnique(snapshot.validators.history, (point) => point.observedAt, hourlyLimit, "validator history");
-  assertSortedUnique(snapshot.validators.commissionChanges, (point) => `${point.observedAt}|${point.votePubkey}`, limits.commissionEvents ?? 1_000, "commission changes");
+  assertSortedUnique(snapshot.validators.commissionChanges, (point) => `${point.detectedAt}|${point.votePubkey}`, limits.commissionEvents ?? 1_000, "commission changes");
   assertSortedUnique(snapshot.economics.medianTransactionFee.history, (point) => point.observedAt, hourlyLimit, "fee history");
   assertSortedUnique(snapshot.economics.solPrice.history, (point) => point.observedAt, dailyLimit + 1, "price history");
   assertSortedUnique(snapshot.economics.tvlAlertInput.history, (point) => point.date, dailyLimit, "TVL history");
@@ -438,6 +600,19 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
   assertSortedUnique(snapshot.economics.rev.history, (point) => point.date, dailyLimit, "REV history");
   assertSortedUnique(snapshot.ecosystem.tokenizedAssets.history, (point) => point.observedAt, rwaLimit, "RWA history");
   assertSortedUnique(snapshot.ecosystem.dailyActiveAddresses.history, (point) => point.date, dailyLimit, "active-address history");
+  if (snapshot.economics.coinGeckoPrice) {
+    assertSortedUnique(snapshot.economics.coinGeckoPrice.history, (point) => point.observedAt, dailyLimit + 1, "CoinGecko price history");
+  }
+  if (snapshot.economics.coinbaseMarket) {
+    assertSortedUnique(snapshot.economics.coinbaseMarket.history, (point) => point.date, Math.min(dailyLimit, 300), "Coinbase market history");
+  }
+  if (snapshot.providerComparisons) {
+    for (const metric of snapshot.providerComparisons.metrics) {
+      for (const series of metric.series) {
+        assertSortedUnique(series.history, (point) => point.date, dailyLimit, `${metric.id} ${series.providerName} provider history`);
+      }
+    }
+  }
 
   const performance = snapshot.network.performance;
   const performancePoint = performance.history.find((point) => point.observedAt === performance.observedAt);
@@ -493,13 +668,29 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
   assert(validatorPoint.totalStakeLamports === totalStake.toString() && validatorPoint.delinquentStakeLamports === delinquentStake.toString(), "VALIDATOR_HISTORY_MISMATCH", "Validator stake does not match history");
   assert(nearlyEqual(validatorPoint.delinquentStakePct, delinquentPct, 1e-7), "VALIDATOR_HISTORY_MISMATCH", "Validator delinquency does not match history");
   assert(snapshot.validators.commissionChanges.every((event) => event.previousCommissionPct !== event.commissionPct), "INVALID_COMMISSION_CHANGE", "Commission change events must record an actual change");
-  assert(snapshot.validators.commissionChanges.every((event) => Date.parse(event.observedAt) <= Date.parse(snapshot.updatedAt) + 300_000), "FUTURE_COMMISSION_CHANGE", "Commission change is later than the snapshot");
+  assert(snapshot.validators.commissionChanges.every((event) => Date.parse(event.detectedAt) <= Date.parse(snapshot.updatedAt) + 300_000), "FUTURE_COMMISSION_CHANGE", "Commission detection is later than the snapshot");
+  assert(snapshot.validators.commissionChanges.every((event) => Date.parse(event.detectedAt) <= Date.parse(snapshot.validators.observedAt)), "INVALID_COMMISSION_TIMELINE", "Commission detection is later than the validator observation");
+  assert(snapshot.validators.commissionChanges.every((event) => event.previousObservedAt === null || Date.parse(event.previousObservedAt) < Date.parse(event.detectedAt)), "INVALID_COMMISSION_TIMELINE", "Commission change interval must begin before detection");
 
   const price = snapshot.economics.solPrice;
   const currentPricePoint = price.history.find((point) => point.observedAt === price.observedAt);
   assert(Boolean(currentPricePoint) && nearlyEqual(currentPricePoint.priceUsd, price.currentUsd), "PRICE_HISTORY_MISMATCH", "Current SOL price does not match history");
   assert(nearlyEqual(price.change24hPct, (price.currentUsd / price.reference24h.priceUsd - 1) * 100), "PRICE_CHANGE_MISMATCH", "SOL price change is inconsistent with its reference");
   assert((Date.parse(price.observedAt) - Date.parse(price.reference24h.observedAt)) / 1_000 === price.reference24h.elapsedSeconds, "PRICE_WINDOW_MISMATCH", "SOL price reference timestamps disagree with elapsedSeconds");
+
+  const coinGeckoPrice = snapshot.economics.coinGeckoPrice;
+  if (coinGeckoPrice) {
+    const currentCoinGeckoPoint = coinGeckoPrice.history.find((point) => point.observedAt === coinGeckoPrice.observedAt);
+    assert(Boolean(currentCoinGeckoPoint) && nearlyEqual(currentCoinGeckoPoint.priceUsd, coinGeckoPrice.currentUsd), "COINGECKO_HISTORY_MISMATCH", "Current CoinGecko price does not match history");
+    assert(nearlyEqual(coinGeckoPrice.change24hPct, (coinGeckoPrice.currentUsd / coinGeckoPrice.reference24h.priceUsd - 1) * 100), "COINGECKO_CHANGE_MISMATCH", "CoinGecko price change is inconsistent with its reference");
+    assert((Date.parse(coinGeckoPrice.observedAt) - Date.parse(coinGeckoPrice.reference24h.observedAt)) / 1_000 === coinGeckoPrice.reference24h.elapsedSeconds, "COINGECKO_WINDOW_MISMATCH", "CoinGecko reference timestamps disagree with elapsedSeconds");
+  }
+
+  const coinbaseMarket = snapshot.economics.coinbaseMarket;
+  if (coinbaseMarket) {
+    assert(coinbaseMarket.dataThrough === coinbaseMarket.history.at(-1).date, "COINBASE_HISTORY_MISMATCH", "Coinbase data-through date does not match history");
+    assert(coinbaseMarket.observedAt === `${coinbaseMarket.dataThrough}T23:59:59.999Z`, "COINBASE_OBSERVATION_MISMATCH", "Coinbase observation time must represent the completed UTC day");
+  }
 
   const tvl = snapshot.economics.tvlAlertInput;
   const tvlLatest = tvl.history.at(-1);
@@ -551,6 +742,46 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
   assert(addressLatest.allium === addressValues.Allium && addressLatest.dune === addressValues.Dune, "ADDRESS_HISTORY_MISMATCH", "Active-address providers do not match history");
   assert(addresses.history.every((point) => nearlyEqual(point.value, (point.allium + point.dune) / 2)), "ADDRESS_HISTORY_MISMATCH", "Active-address history contains an invalid provider median");
 
+  const providerComparisons = snapshot.providerComparisons;
+  if (providerComparisons) {
+    assert(providerComparisons.metrics.every((metric, index) => {
+      const expected = EXPECTED_PROVIDER_METRICS[index];
+      return metric.id === expected.id && metric.name === expected.name && metric.unit === expected.unit;
+    }), "INVALID_PROVIDER_METRIC_ORDER", "Provider comparisons must use the fixed metric definitions and order");
+    for (const metric of providerComparisons.metrics) {
+      assertUnique(metric.series, (series) => series.providerName, "DUPLICATE_PROVIDER_SERIES", `${metric.id} contains a duplicate provider series`);
+      for (const series of metric.series) {
+        assert(series.dataThrough === series.history.at(-1).date, "PROVIDER_HISTORY_MISMATCH", `${metric.id} ${series.providerName} data-through date does not match history`);
+      }
+    }
+  }
+
+  const solanaStatus = snapshot.observability?.solanaStatus;
+  if (solanaStatus) {
+    assertUnique(solanaStatus.components, (component) => component.id, "DUPLICATE_STATUS_COMPONENT", "Solana Status component IDs must be unique");
+    assertUnique(solanaStatus.incidents, (incident) => incident.id, "DUPLICATE_STATUS_INCIDENT", "Solana Status incident IDs must be unique");
+    assert(solanaStatus.components.every((component, index, items) => index === 0 || items[index - 1].position < component.position || items[index - 1].position === component.position && items[index - 1].name.localeCompare(component.name) <= 0), "INVALID_STATUS_COMPONENT_ORDER", "Solana Status components must follow provider order");
+    for (const incident of solanaStatus.incidents) {
+      assert(Date.parse(incident.createdAt) <= Date.parse(incident.updatedAt), "INVALID_STATUS_INCIDENT_TIMELINE", "Solana Status incident update precedes its creation");
+      assert(Date.parse(incident.startedAt) <= Date.parse(incident.updatedAt), "INVALID_STATUS_INCIDENT_TIMELINE", "Solana Status incident update precedes its start");
+      assert(!incident.resolvedAt || Date.parse(incident.resolvedAt) >= Date.parse(incident.startedAt), "INVALID_STATUS_INCIDENT_TIMELINE", "Solana Status incident resolves before it starts");
+      assertUnique(incident.updates, (update) => update.id, "DUPLICATE_STATUS_UPDATE", "Solana Status incident update IDs must be unique");
+      assert(incident.updates.every((update) => Date.parse(update.createdAt) <= Date.parse(update.updatedAt)), "INVALID_STATUS_UPDATE_TIMELINE", "Solana Status update precedes its creation");
+    }
+    assert(solanaStatus.incidents.every((incident, index, items) => index === 0 || items[index - 1].startedAt > incident.startedAt || items[index - 1].startedAt === incident.startedAt && items[index - 1].updatedAt >= incident.updatedAt), "INVALID_STATUS_INCIDENT_ORDER", "Solana Status incidents must be newest first");
+  }
+
+  const agaveReleases = snapshot.observability?.agaveReleases;
+  if (agaveReleases) {
+    assertUnique(agaveReleases.items, (item) => item.id, "DUPLICATE_AGAVE_RELEASE", "Agave release IDs must be unique");
+    assert(agaveReleases.items.every((item) => {
+      const url = new URL(item.url);
+      return url.hostname === "github.com" && url.pathname.startsWith("/anza-xyz/agave/releases/");
+    }), "INVALID_AGAVE_RELEASE_URL", "Agave releases must link to the official repository");
+    assert(agaveReleases.items.every((item) => Date.parse(item.createdAt) <= Date.parse(item.publishedAt)), "INVALID_AGAVE_RELEASE_TIMELINE", "Agave release publication precedes creation");
+    assert(agaveReleases.items.every((item, index, items) => index === 0 || items[index - 1].publishedAt > item.publishedAt || items[index - 1].publishedAt === item.publishedAt && items[index - 1].id >= item.id), "INVALID_AGAVE_RELEASE_ORDER", "Agave releases must be newest first");
+  }
+
   assert(snapshot.alertChecks.map((check) => check.id).every((id, index) => id === EXPECTED_ALERT_IDS[index]), "INVALID_ALERT_CHECK_ORDER", "Alert checks must use the fixed order");
   for (const check of snapshot.alertChecks) {
     if (check.status === "unavailable") {
@@ -571,8 +802,53 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
   return snapshot;
 }
 
+function previousValidatorObservation(history, detectedAt) {
+  const detectionTime = Date.parse(detectedAt);
+  if (!Number.isFinite(detectionTime) || !Array.isArray(history)) return null;
+  let previous = null;
+  for (const point of history) {
+    const candidate = point?.observedAt;
+    const candidateTime = Date.parse(candidate);
+    if (Number.isFinite(candidateTime) && candidateTime < detectionTime && (!previous || candidateTime > Date.parse(previous))) {
+      previous = candidate;
+    }
+  }
+  return previous;
+}
+
+function migrateLegacyCommissionChanges(validators) {
+  if (!validators || !Array.isArray(validators.commissionChanges)) return validators;
+  return {
+    ...validators,
+    commissionChanges: validators.commissionChanges.map((event) => {
+      if (!event || typeof event !== "object" || !("observedAt" in event)) return event;
+      return {
+        previousObservedAt: previousValidatorObservation(validators.history, event.observedAt),
+        detectedAt: event.observedAt,
+        votePubkey: event.votePubkey,
+        previousCommissionPct: event.previousCommissionPct,
+        commissionPct: event.commissionPct
+      };
+    })
+  };
+}
+
+export function migrateCanonicalSnapshot(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const isLegacyVersionPair = ["1.0.0", "1.1.0"].some((version) =>
+    value.schemaVersion === version && value.methodologyVersion === version
+  );
+  if (!isLegacyVersionPair) return value;
+  return {
+    ...value,
+    schemaVersion: SCHEMA_VERSION,
+    methodologyVersion: METHODOLOGY_VERSION,
+    validators: migrateLegacyCommissionChanges(value.validators)
+  };
+}
+
 export function parseCanonicalSnapshot(value, limits) {
-  const parsed = canonicalSnapshotSchema.parse(value);
+  const parsed = canonicalSnapshotSchema.parse(migrateCanonicalSnapshot(value));
   return validateCanonicalInvariants(parsed, limits);
 }
 

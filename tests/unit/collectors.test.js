@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { DEFAULT_CONFIG } from "../../src/pipeline/config.js";
 import { collectDexVolume } from "../../src/pipeline/collectors/defi-dex.js";
-import { collectPrice } from "../../src/pipeline/collectors/defi-price.js";
+import { collectDefiLlamaPrice } from "../../src/pipeline/collectors/defi-price.js";
 import { collectStablecoins } from "../../src/pipeline/collectors/defi-stablecoins.js";
 import { collectTvl } from "../../src/pipeline/collectors/defi-tvl.js";
 import { collectJito } from "../../src/pipeline/collectors/jito.js";
@@ -61,13 +61,13 @@ test("SOL price collector enforces a real 24-hour reference", async () => {
     ] } } };
     throw new Error(`Unexpected fixture URL ${url}`);
   });
-  const result = await collectPrice(context);
+  const result = await collectDefiLlamaPrice(context);
   assert.equal(result.sourceId, "defiLlamaCoins");
   assert.ok(Math.abs(result.domain.change24hPct - 10) < 1e-12);
   assert.equal(result.domain.reference24h.elapsedSeconds, 86_400);
 });
 
-test("Solana Data and Jito collectors require fresh two-provider completed data", async () => {
+test("Solana Data and Jito collectors normalize fresh completed data", async () => {
   const rows = [
     { date: "2026-08-19", metricName: "Fees", unit: "SOL", providerName: "Allium", value: 100 },
     { date: "2026-08-19", metricName: "Fees", unit: "SOL", providerName: "Dune", value: 102 },
@@ -78,6 +78,17 @@ test("Solana Data and Jito collectors require fresh two-provider completed data"
   const jito = await collectJito(httpContext(async () => [{ day: "2026-08-19T00:00:00Z", jito_tips: 4, validator_tips: 5 }]));
   assert.equal(solanaData.rows.length, 4);
   assert.deepEqual(jito, [{ date: "2026-08-19", grossTipsSol: 9 }]);
+});
+
+test("Solana Data transport does not freeze independent metrics when one consensus is absent", async () => {
+  const rows = [
+    { date: "2026-08-19", metricName: "SOL Price", unit: "USD", providerName: "Birdeye", value: 150 },
+    { date: "2026-08-19", metricName: "DEX Volume", unit: "USD", providerName: "DexPaprika", value: 2_000_000_000 }
+  ];
+
+  const result = await collectSolanaData(httpContext(async () => ({ generatedAt: now.toISOString(), rows })));
+
+  assert.deepEqual(result.rows, rows);
 });
 
 test("RWA and RSS collectors parse their public page contracts", async () => {

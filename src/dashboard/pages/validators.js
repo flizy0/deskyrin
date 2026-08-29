@@ -1,4 +1,5 @@
 import { DATA_COLORS } from "../charts.js";
+import { coverageGapCallout } from "../coverage-callout.js";
 import { fmt } from "../format.js";
 import { appendTableRow, createTable, makeSortable } from "../table.js";
 import { el, emptyStatePanel, statusDot } from "../ui.js";
@@ -14,6 +15,8 @@ import {
   shortKey
 } from "../view-utils.js";
 
+const LIVE_GAP_MS = 3 * 60 * 60 * 1_000;
+
 const VALIDATOR_COLUMNS = [
   { key: "rank", label: "Rank", align: "right", sort: "number", width: "7%" },
   { key: "identity", label: "Vote account", sort: "text", width: "38%" },
@@ -24,8 +27,8 @@ const VALIDATOR_COLUMNS = [
 ];
 
 const COMMISSION_COLUMNS = [
-  { key: "observed", label: "Observed", sort: "date", width: "25%" },
-  { key: "vote", label: "Vote account", sort: "text", width: "45%" },
+  { key: "window", label: "Possible change window", sort: "date", width: "32%" },
+  { key: "vote", label: "Vote account", sort: "text", width: "38%" },
   { key: "previous", label: "Previous", align: "right", sort: "number", width: "15%" },
   { key: "current", label: "Current", align: "right", sort: "number", width: "15%" }
 ];
@@ -150,19 +153,24 @@ function concentrationPanel(data) {
 function commissionPanel(data) {
   const card = panel({
     title: "Commission changes",
-    note: "Bounded changes observed in retained snapshots.",
+    note: "Detected between successful snapshots; rows do not claim an exact change time.",
     className: "commission-panel"
   });
   if (!data.commissionChanges.length) {
-    card.append(emptyStatePanel("No commission changes are present in the retained window.", { title: "No recorded changes" }));
+    card.append(emptyStatePanel("No commission changes were detected between retained snapshots.", { title: "No recorded changes" }));
     return card;
   }
-  const { wrap, table, body } = createTable(COMMISSION_COLUMNS, "Observed validator commission changes");
+  const { wrap, table, body } = createTable(COMMISSION_COLUMNS, "Validator commission changes detected between successful snapshots");
   for (const change of [...data.commissionChanges].reverse()) {
     const vote = el("code", "validator-key", shortKey(change.votePubkey));
     vote.title = change.votePubkey;
+    const start = change.previousObservedAt ? fmt.utc(change.previousObservedAt) : "Lower bound unavailable";
+    const window = el("span", "commission-window", `${start} → ${fmt.utc(change.detectedAt)}`);
+    window.title = change.previousObservedAt
+      ? "The commission changed sometime after the first snapshot and no later than the second."
+      : "The retained legacy record has no reliable lower-bound timestamp; only detection time is known.";
     appendTableRow(body, COMMISSION_COLUMNS, [
-      { content: fmt.utc(change.observedAt), sortValue: change.observedAt },
+      { content: window, sortValue: change.detectedAt },
       { content: vote, sortValue: change.votePubkey },
       { content: `${change.previousCommissionPct}%`, sortValue: change.previousCommissionPct },
       { content: `${change.commissionPct}%`, sortValue: change.commissionPct }
@@ -181,6 +189,9 @@ export function renderValidators(snapshot, root) {
     copy: "Activated-stake health, network concentration, commission changes, and the complete vote-account directory.",
     meta: [`Observed ${fmt.utc(data.observedAt)}`, `${fmt.integer(data.counts.total)} vote accounts`]
   }));
+
+  const coverage = coverageGapCallout(snapshot, { affectedMetrics: ["Validator snapshots and commission tracking"] });
+  if (coverage) root.append(coverage);
 
   root.append(metricGrid([
     metricCard({
@@ -203,7 +214,8 @@ export function renderValidators(snapshot, root) {
       note: `${fmt.stakeSol(data.stake.delinquentLamports)} SOL`,
       domain: data,
       tone: data.stake.delinquentPct >= 5 ? "negative" : "neutral",
-      series: data.history.map((point) => point.delinquentStakePct)
+      series: data.history.map((point) => ({ observedAt: point.observedAt, value: point.delinquentStakePct })),
+      seriesGapMs: LIVE_GAP_MS
     }),
     metricCard({
       label: "Top 10 stake",
@@ -226,7 +238,7 @@ export function renderValidators(snapshot, root) {
     domain: data,
     history: data.history,
     time: (point) => point.observedAt,
-    series: [{ label: "Delinquent stake", field: "delinquentStakePct", color: DATA_COLORS.negative, fill: true }],
+    series: [{ label: "Delinquent stake", field: "delinquentStakePct", color: DATA_COLORS.negative, fill: true, spanGaps: LIVE_GAP_MS }],
     formatter: fmt.pct,
     beginAtZero: true
   });

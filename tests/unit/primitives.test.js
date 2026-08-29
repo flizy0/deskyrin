@@ -31,6 +31,17 @@ test("history deduplicates, sorts, and trims", () => {
   );
 });
 
+test("history ordering uses the same code-point order as canonical validation", () => {
+  const points = normalizeHistory([
+    { at: "2026-08-28T00:00:00.000Z|aPubkey", value: 1 },
+    { at: "2026-08-28T00:00:00.000Z|ZPubkey", value: 2 }
+  ], { key: (point) => point.at, limit: 2 });
+  assert.deepEqual(points.map((point) => point.at), [
+    "2026-08-28T00:00:00.000Z|ZPubkey",
+    "2026-08-28T00:00:00.000Z|aPubkey"
+  ]);
+});
+
 test("UTC helpers reject partial/current days", () => {
   const now = new Date("2026-08-20T12:00:00.000Z");
   assert.equal(utcDateKey(now), "2026-08-20");

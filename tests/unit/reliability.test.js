@@ -37,13 +37,9 @@ test("due calculation tolerates fixed-cron jitter", () => {
   assert.equal(sourceIsDue("solanaRpc", previous, new Date("2026-08-20T01:10:00.000Z"), DEFAULT_CONFIG), false);
 });
 
-test("failed price fallback retains the prior CoinGecko source state", () => {
-  const previous = {
-    sources: { coinGecko: { lastSuccessAt: "2026-08-20T00:00:00.000Z" } },
-    economics: { solPrice: { sourceIds: ["coinGecko"] } }
-  };
+test("failed independent price collectors retain their failure states", () => {
   const failure = { state: "failed", error: { code: "PRICE_SOURCES_FAILED", message: "both failed" } };
-  const results = buildPriceSourceResults(failure, previous);
+  const results = buildPriceSourceResults(failure, failure);
   assert.equal(results.defiLlamaCoins.state, "failed");
   assert.equal(results.coinGecko.state, "failed");
 });

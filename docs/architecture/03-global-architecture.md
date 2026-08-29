@@ -130,8 +130,8 @@ The following is the fixed top-level contract. Formal runtime schemas mirror it 
 
 ```json
 {
-  "schemaVersion": "1.0.0",
-  "methodologyVersion": "1.0.0",
+  "schemaVersion": "1.2.0",
+  "methodologyVersion": "1.2.0",
   "updatedAt": "2026-08-20T00:00:00.000Z",
   "updateStatus": "complete",
   "sources": {},
@@ -213,6 +213,9 @@ stake:
   distribution[]: label, optional votePubkey, stakeLamports, sharePct, status
 top[]: ValidatorRow (10)
 table[]: ValidatorRow (all positive-stake rows)
+commissionChanges[]:
+  previousObservedAt (ISO timestamp or null), detectedAt,
+  votePubkey, previousCommissionPct, commissionPct
 history[]:
   observedAt, activeCount, delinquentCount,
   totalStakeLamports, delinquentStakeLamports, delinquentStakePct
@@ -223,6 +226,7 @@ ValidatorRow:
 ```
 
 Status is exactly `active | delinquent`; distribution's synthetic `Other` row uses `status: "aggregate"`.
+Commission changes are interval observations: the change happened after `previousObservedAt` and no later than `detectedAt`. A null lower bound is retained only when a migrated legacy event has no earlier validator snapshot available; it is never replaced with an invented timestamp.
 
 ### `economics`
 

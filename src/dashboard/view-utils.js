@@ -44,7 +44,7 @@ function deltaNode(change) {
   return node;
 }
 
-export function metricCard({ label, value, note, domain, tone = "neutral", change, series, href, ariaLabel }) {
+export function metricCard({ label, value, note, domain, tone = "neutral", change, series, seriesGapMs, href, ariaLabel }) {
   const card = el("article", `metric-card tone-${tone}`);
   card.setAttribute("aria-label", ariaLabel || label);
   const head = el("div", "metric-card-head");
@@ -55,7 +55,7 @@ export function metricCard({ label, value, note, domain, tone = "neutral", chang
   if (note) card.append(el("p", "metric-note", note));
 
   if (Array.isArray(series) && series.length) {
-    const chart = sparkline(series, { className: "metric-sparkline", tone, label: `${label} recent history` });
+    const chart = sparkline(series, { className: "metric-sparkline", tone, label: `${label} recent history`, maxGapMs: seriesGapMs });
     if (chart) card.append(chart);
   }
 
@@ -164,7 +164,10 @@ export function chartPanel(spec, { title, note, className = "", meta = [], empty
     draw() {
       const chartType = type || spec.type || "line";
       if (chartType === "stackedBar") return stackedBarChart(canvas, spec.labels, spec.datasets, spec.yFormatter);
-      return lineChart(canvas, spec.labels, spec.datasets, spec.yFormatter, { beginAtZero: spec.beginAtZero === true });
+      return lineChart(canvas, spec.labels, spec.datasets, spec.yFormatter, {
+        beginAtZero: spec.beginAtZero === true,
+        legend: spec.legend !== false
+      });
     }
   };
 }

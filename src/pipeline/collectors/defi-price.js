@@ -5,7 +5,6 @@ import {
   defiLlamaPriceChartSchema
 } from "../contracts/providers.js";
 import { PipelineError } from "../lib/errors.js";
-import { safeError } from "../lib/errors.js";
 import { normalizeHistory } from "../lib/history.js";
 import { percentageChange } from "../lib/statistics.js";
 import { assertFreshObservation, epochSecondsToIso, isoTimestamp } from "../lib/time.js";
@@ -17,7 +16,7 @@ function boundedHistory(points, current, config) {
   });
 }
 
-async function collectDefiLlama(context) {
+export async function collectDefiLlamaPrice(context) {
   const { http, config, now } = context;
   const currentRaw = await http.request(config.endpoints.defiLlamaCurrentPrice, {
     sourceId: "defiLlamaCoins", expectedContentTypes: ["application/json"], timeoutMs: config.http.ordinaryTimeoutMs
@@ -59,13 +58,19 @@ async function collectDefiLlama(context) {
   };
 }
 
-async function collectCoinGecko(context) {
+export async function collectCoinGeckoPrice(context) {
   const { http, config, now } = context;
   const priceUrl = `${config.endpoints.coinGeckoPrice}?ids=solana&vs_currencies=usd&include_24hr_change=true&include_last_updated_at=true`;
   const chartUrl = `${config.endpoints.coinGeckoChart}?vs_currency=usd&days=${config.history.dailyPoints}&interval=daily`;
+  const requestOptions = {
+    sourceId: "coinGecko",
+    expectedContentTypes: ["application/json"],
+    timeoutMs: config.http.ordinaryTimeoutMs,
+    maxBytes: config.http.maxBytes.ordinary
+  };
   const [priceRaw, chartRaw] = await Promise.all([
-    http.request(priceUrl, { sourceId: "coinGecko", expectedContentTypes: ["application/json"] }),
-    http.request(chartUrl, { sourceId: "coinGecko", expectedContentTypes: ["application/json"] })
+    http.request(priceUrl, requestOptions),
+    http.request(chartUrl, requestOptions)
   ]);
   const price = coinGeckoPriceSchema.parse(priceRaw).solana;
   const chart = coinGeckoChartSchema.parse(chartRaw).prices.map(([milliseconds, value]) => ({ observedAt: isoTimestamp(milliseconds), priceUsd: value }));
@@ -82,16 +87,4 @@ async function collectCoinGecko(context) {
     },
     dataThrough: observedAt
   };
-}
-
-export async function collectPrice(context) {
-  try {
-    return await collectDefiLlama(context);
-  } catch (primaryError) {
-    try {
-      return { ...(await collectCoinGecko(context)), primaryFailure: safeError(primaryError) };
-    } catch (fallbackError) {
-      throw new PipelineError("PRICE_SOURCES_FAILED", "Both keyless SOL price sources failed", { cause: new AggregateError([primaryError, fallbackError]) });
-    }
-  }
 }

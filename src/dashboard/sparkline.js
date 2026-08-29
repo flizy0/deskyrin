@@ -46,6 +46,19 @@ function pathData(points) {
   return points.map((point, index) => `${index === 0 ? "M" : "L"}${rounded(point.x)} ${rounded(point.y)}`).join(" ");
 }
 
+export function splitSparklinePoints(points, maxGapMs) {
+  if (!Array.isArray(points) || points.length === 0) return [];
+  if (!Number.isFinite(maxGapMs) || maxGapMs <= 0) return [points];
+  const segments = [[points[0]]];
+  for (let index = 1; index < points.length; index += 1) {
+    const previous = points[index - 1];
+    const current = points[index];
+    if (current.time - previous.time > maxGapMs) segments.push([]);
+    segments.at(-1).push(current);
+  }
+  return segments;
+}
+
 /**
  * Creates a small dependency-free SVG trend line.
  *
@@ -95,6 +108,7 @@ export function sparkline(values, options = {}) {
   const sameValue = maxValue === minValue;
 
   const plotted = points.map((point, index) => ({
+    time: point.time,
     x: sameTime
       ? padding + (points.length === 1 ? plotWidth / 2 : index / (points.length - 1) * plotWidth)
       : padding + (point.time - minTime) / (maxTime - minTime) * plotWidth,
@@ -114,29 +128,43 @@ export function sparkline(values, options = {}) {
     return svg;
   }
 
-  const lineData = pathData(plotted);
-  if (options.fill) {
-    const area = svgElement("path");
-    const baseline = height - padding;
-    area.setAttribute("class", "sparkline-area");
-    area.setAttribute(
-      "d",
-      `${lineData} L${rounded(plotted[plotted.length - 1].x)} ${rounded(baseline)} L${rounded(plotted[0].x)} ${rounded(baseline)} Z`
-    );
-    area.setAttribute("fill", color);
-    area.setAttribute("fill-opacity", String(options.fillOpacity ?? 0.09));
-    svg.append(area);
-  }
+  const segments = splitSparklinePoints(plotted, options.maxGapMs);
+  svg.dataset.segmentCount = String(segments.length);
+  for (const segment of segments) {
+    if (segment.length === 1) {
+      const dot = svgElement("circle");
+      dot.setAttribute("class", "sparkline-point");
+      dot.setAttribute("cx", String(rounded(segment[0].x)));
+      dot.setAttribute("cy", String(rounded(segment[0].y)));
+      dot.setAttribute("r", String(Math.max(strokeWidth, 1.5)));
+      dot.setAttribute("fill", color);
+      svg.append(dot);
+      continue;
+    }
+    const lineData = pathData(segment);
+    if (options.fill) {
+      const area = svgElement("path");
+      const baseline = height - padding;
+      area.setAttribute("class", "sparkline-area");
+      area.setAttribute(
+        "d",
+        `${lineData} L${rounded(segment.at(-1).x)} ${rounded(baseline)} L${rounded(segment[0].x)} ${rounded(baseline)} Z`
+      );
+      area.setAttribute("fill", color);
+      area.setAttribute("fill-opacity", String(options.fillOpacity ?? 0.09));
+      svg.append(area);
+    }
 
-  const path = svgElement("path");
-  path.setAttribute("class", "sparkline-line");
-  path.setAttribute("d", lineData);
-  path.setAttribute("fill", "none");
-  path.setAttribute("stroke", color);
-  path.setAttribute("stroke-width", String(strokeWidth));
-  path.setAttribute("stroke-linecap", "round");
-  path.setAttribute("stroke-linejoin", "round");
-  path.setAttribute("vector-effect", "non-scaling-stroke");
-  svg.append(path);
+    const path = svgElement("path");
+    path.setAttribute("class", "sparkline-line");
+    path.setAttribute("d", lineData);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", color);
+    path.setAttribute("stroke-width", String(strokeWidth));
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    path.setAttribute("vector-effect", "non-scaling-stroke");
+    svg.append(path);
+  }
   return svg;
 }

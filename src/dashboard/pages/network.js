@@ -1,4 +1,5 @@
 import { DATA_COLORS } from "../charts.js";
+import { coverageGapCallout } from "../coverage-callout.js";
 import { fmt } from "../format.js";
 import { el } from "../ui.js";
 import {
@@ -13,6 +14,8 @@ import {
   panel,
   progressBar
 } from "../view-utils.js";
+
+const LIVE_GAP_MS = 3 * 60 * 60 * 1_000;
 
 function chainStatePanel(chain, performance) {
   const card = panel({
@@ -68,6 +71,9 @@ export function renderNetwork(snapshot, root) {
     meta: [`Observed ${fmt.utc(performance.observedAt)}`, `${performance.history.length} stored observations`]
   }));
 
+  const coverage = coverageGapCallout(snapshot, { affectedMetrics: ["TPS", "Non-vote TPS", "Slot time"] });
+  if (coverage) root.append(coverage);
+
   root.append(metricGrid([
     metricCard({
       label: "Total TPS",
@@ -75,7 +81,8 @@ export function renderNetwork(snapshot, root) {
       note: "All transactions · latest 5 minutes",
       domain: performance,
       tone: "network",
-      series: performance.history.map((point) => point.totalTps)
+      series: performance.history.map((point) => ({ observedAt: point.observedAt, value: point.totalTps })),
+      seriesGapMs: LIVE_GAP_MS
     }),
     metricCard({
       label: "Non-vote TPS",
@@ -83,7 +90,8 @@ export function renderNetwork(snapshot, root) {
       note: "Provenance for transaction composition",
       domain: performance,
       tone: "network-secondary",
-      series: performance.history.map((point) => point.nonVoteTps)
+      series: performance.history.map((point) => ({ observedAt: point.observedAt, value: point.nonVoteTps })),
+      seriesGapMs: LIVE_GAP_MS
     }),
     metricCard({
       label: "Slot time",
@@ -91,7 +99,8 @@ export function renderNetwork(snapshot, root) {
       note: "Duration divided by produced slots",
       domain: performance,
       tone: "network-secondary",
-      series: performance.history.map((point) => point.slotTimeMs)
+      series: performance.history.map((point) => ({ observedAt: point.observedAt, value: point.slotTimeMs })),
+      seriesGapMs: LIVE_GAP_MS
     }),
     metricCard({
       label: "Block height",
@@ -116,8 +125,8 @@ export function renderNetwork(snapshot, root) {
     history: performance.history,
     time: (point) => point.observedAt,
     series: [
-      { label: "Total TPS", field: "totalTps", color: DATA_COLORS.network, fill: true },
-      { label: "Non-vote TPS", field: "nonVoteTps", color: DATA_COLORS.networkSecondary }
+      { label: "Total TPS", field: "totalTps", color: DATA_COLORS.network, fill: true, spanGaps: LIVE_GAP_MS },
+      { label: "Non-vote TPS", field: "nonVoteTps", color: DATA_COLORS.networkSecondary, spanGaps: LIVE_GAP_MS }
     ],
     formatter: fmt.integer
   });
@@ -127,7 +136,7 @@ export function renderNetwork(snapshot, root) {
     domain: performance,
     history: performance.history,
     time: (point) => point.observedAt,
-    series: [{ label: "Slot time", field: "slotTimeMs", color: DATA_COLORS.networkSecondary, fill: true }],
+    series: [{ label: "Slot time", field: "slotTimeMs", color: DATA_COLORS.networkSecondary, fill: true, spanGaps: LIVE_GAP_MS }],
     formatter: (value) => `${fmt.decimal(value)} ms`
   });
 

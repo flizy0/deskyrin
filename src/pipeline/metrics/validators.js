@@ -74,12 +74,19 @@ export function calculateValidators(voteAccounts, now, previousValidators, confi
     delinquentStakeLamports: delinquentStake.toString(),
     delinquentStakePct: delinquentPct
   };
+  const previousObservedAt = previousValidators?.observedAt
+    ? isoTimestamp(previousValidators.observedAt, "previous validator observation")
+    : null;
+  if (previousObservedAt && Date.parse(previousObservedAt) >= Date.parse(observedAt)) {
+    throw new PipelineError("INVALID_VALIDATOR_TIMELINE", "Previous validator observation must precede the current observation");
+  }
   const previousCommission = new Map((previousValidators?.table || []).map((row) => [row.votePubkey, row.commissionPct]));
   const newCommissionChanges = table.flatMap((row) => {
     const oldCommissionPct = previousCommission.get(row.votePubkey);
     if (oldCommissionPct === undefined || oldCommissionPct === row.commissionPct) return [];
     return [{
-      observedAt,
+      previousObservedAt,
+      detectedAt: observedAt,
       votePubkey: row.votePubkey,
       previousCommissionPct: oldCommissionPct,
       commissionPct: row.commissionPct
@@ -89,7 +96,7 @@ export function calculateValidators(voteAccounts, now, previousValidators, confi
     ...(previousValidators?.commissionChanges || []),
     ...newCommissionChanges
   ], {
-    key: (point) => `${point.observedAt}|${point.votePubkey}`,
+    key: (point) => `${point.detectedAt}|${point.votePubkey}`,
     limit: config.history.commissionEvents
   });
 
