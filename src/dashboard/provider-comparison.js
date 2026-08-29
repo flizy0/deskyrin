@@ -75,7 +75,9 @@ export function buildProviderComparisonSpec(snapshot, metricId, options = {}) {
   const metric = findProviderMetric(snapshot, metricId);
   if (!domain || !metric || metric.series.length === 0) return null;
 
-  const references = options.references || [];
+  const references = (options.references || []).filter((series) =>
+    typeof series.providerName === "string" && series.providerName.length > 0
+  );
   const allDates = [
     ...metric.series.flatMap((series) => series.history.map((point) => point.date)),
     ...references.flatMap((series) => series.history.map((point) => point.date))
@@ -84,28 +86,19 @@ export function buildProviderComparisonSpec(snapshot, metricId, options = {}) {
   if (dates.length === 0) return null;
 
   const selectedProviders = options.selectedProviders ? new Set(options.selectedProviders) : null;
-  const pinnedReferences = references.filter((series) => !series.providerName);
   const selectableSeries = orderedSeries([
-    ...references.filter((series) => series.providerName),
+    ...references,
     ...metric.series
   ]);
-  const datasets = [
-    ...pinnedReferences.map((series) => alignedDataset(dates, series.history, {
-      label: series.label,
-      color: series.color,
-      fill: series.fill,
-      borderWidth: series.borderWidth
-    })),
-    ...selectableSeries.map((series) => alignedDataset(dates, series.history, {
-      label: series.label || series.providerName,
-      providerName: series.providerName,
-      color: series.color || PROVIDER_COLORS[series.providerName],
-      fill: series.fill,
-      borderWidth: series.borderWidth,
-      dataThrough: series.dataThrough,
-      hidden: selectedProviders ? !selectedProviders.has(series.providerName) : false
-    }))
-  ];
+  const datasets = selectableSeries.map((series) => alignedDataset(dates, series.history, {
+    label: series.label || series.providerName,
+    providerName: series.providerName,
+    color: series.color || PROVIDER_COLORS[series.providerName],
+    fill: series.fill,
+    borderWidth: series.borderWidth,
+    dataThrough: series.dataThrough,
+    hidden: selectedProviders ? !selectedProviders.has(series.providerName) : false
+  }));
 
   return {
     title: options.title || `${metric.name} · provider comparison`,

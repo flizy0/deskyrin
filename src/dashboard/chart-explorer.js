@@ -1,10 +1,10 @@
-import { destroyChart, lineChart, stackedBarChart } from "./charts.js";
+import { destroyChart, fitChartXDomain, lineChart, stackedBarChart } from "./charts.js";
 import {
   clampRange,
   normalizeTimestamps,
   panRange,
   presetRange,
-  timestampBounds,
+  visibleDataTimestampBounds,
   visiblePointIndexes,
   zoomRange
 } from "./chart-range.js";
@@ -254,10 +254,11 @@ function chartAreaCssWidth(chart) {
   return (chart.chartArea.right - chart.chartArea.left) * (rect.width / chart.width);
 }
 
-function createController(chart, spec, timestamps, bounds) {
+function createController(chart, spec, timestamps, initialBounds) {
   const { controls, presetButtons, windowOutput } = explorer;
-  const minRange = deriveMinimumRange(timestamps, bounds);
-  const fullWidth = bounds.max - bounds.min;
+  let bounds = { ...initialBounds };
+  let minRange = deriveMinimumRange(timestamps.filter((value) => value >= bounds.min && value <= bounds.max), bounds);
+  let fullWidth = bounds.max - bounds.min;
   const pointers = new Map();
   let animationFrame;
   let commitTimer;
@@ -439,6 +440,14 @@ function createController(chart, spec, timestamps, bounds) {
       apply(duration === "all" ? bounds : presetRange(bounds, Number(duration), { minRange }));
     },
     reset() { apply(bounds); },
+    setBounds(nextBounds) {
+      if (!nextBounds) return;
+      bounds = { ...nextBounds };
+      const visibleTimestamps = timestamps.filter((value) => value >= bounds.min && value <= bounds.max);
+      minRange = deriveMinimumRange(visibleTimestamps, bounds);
+      fullWidth = bounds.max - bounds.min;
+      apply(bounds);
+    },
     zoom: centeredZoom,
     destroy() {
       chart.canvas.removeEventListener("wheel", wheel);
@@ -476,13 +485,13 @@ export function openChartExplorer(spec, opener) {
   const timestamps = spec.labels.map((label) => Date.parse(label));
   const chartType = explorerChartType(spec);
   normalizeTimestamps(timestamps);
-  const bounds = timestampBounds(timestamps);
-  if (!bounds) throw new Error("A chart explorer requires at least one timestamp");
   for (const dataset of spec.datasets) {
     if (!Array.isArray(dataset.data) || dataset.data.length !== timestamps.length) {
       throw new Error("Every chart explorer dataset must align with its timestamps");
     }
   }
+  const bounds = visibleDataTimestampBounds(timestamps, spec.datasets);
+  if (!bounds) throw new Error("A chart explorer requires at least one visible source observation");
 
   const ui = ensureExplorer();
   if (ui.dialog.open) {
@@ -508,15 +517,21 @@ export function openChartExplorer(spec, opener) {
   let chart;
   let controller;
   try {
+    const handleDatasetVisibilityChange = (instance) => {
+      const nextBounds = fitChartXDomain(instance);
+      controller?.setBounds(nextBounds);
+    };
     chart = chartType === "stacked-bar"
       ? stackedBarChart(canvas, spec.labels, spec.datasets, spec.yFormatter, {
         keyboardTooltip: false,
-        managed: false
+        managed: false,
+        onDatasetVisibilityChange: handleDatasetVisibilityChange
       })
       : lineChart(canvas, spec.labels, spec.datasets, spec.yFormatter, {
         beginAtZero: spec.beginAtZero === true,
         keyboardTooltip: false,
-        managed: false
+        managed: false,
+        onDatasetVisibilityChange: handleDatasetVisibilityChange
       });
     controller = createController(chart, spec, timestamps, bounds);
     chart.resize();

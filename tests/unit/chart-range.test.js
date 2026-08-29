@@ -6,6 +6,7 @@ import {
   panRange,
   presetRange,
   timestampBounds,
+  visibleDataTimestampBounds,
   visiblePointIndexes,
   zoomRange
 } from "../../src/dashboard/chart-range.js";
@@ -26,6 +27,27 @@ test("timestamp bounds handle empty, single-point, and irregular input", () => {
   assert.equal(timestampBounds([]), null);
   assert.deepEqual(timestampBounds([42]), { min: 42, max: 42 });
   assert.deepEqual(timestampBounds([70, 10, 55, 30]), { min: 10, max: 70 });
+});
+
+test("visible data bounds ignore hidden and null-only chart edges", () => {
+  const timestamps = [10, 20, 30, 40];
+  const datasets = [
+    { data: [null, 2, null, 4], hidden: true },
+    { data: [1, null, 3, null] },
+    { data: [null, { x: 20, y: 5 }, null, null] }
+  ];
+
+  assert.deepEqual(visibleDataTimestampBounds(timestamps, datasets), { min: 10, max: 30 });
+  assert.deepEqual(visibleDataTimestampBounds(timestamps, datasets, {
+    isDatasetVisible: (_dataset, index) => index === 0
+  }), { min: 20, max: 40 });
+  assert.equal(visibleDataTimestampBounds(timestamps, datasets, {
+    isDatasetVisible: () => false
+  }), null);
+  assert.deepEqual(datasets[1].data, [1, null, 3, null]);
+
+  assert.throws(() => visibleDataTimestampBounds(timestamps, [{ data: [1] }]), /align/);
+  assert.throws(() => visibleDataTimestampBounds(timestamps, "datasets"), /array/);
 });
 
 test("clamping shifts ranges at boundaries and constrains overlarge ranges", () => {

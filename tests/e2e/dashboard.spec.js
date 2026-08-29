@@ -17,7 +17,7 @@ test("renders every terminal route lazily from the canonical snapshot", async ({
     ["overview", "Overview", 1],
     ["network", "Network", 2],
     ["validators", "Validators", 1],
-    ["economy", "Economy", 6],
+    ["economy", "Economy", 7],
     ["ecosystem", "Ecosystem", 2],
     ["sources", "Sources", 0]
   ];
@@ -71,7 +71,9 @@ test("charts accept hover and keyboard inspection while tables stay contained", 
 
   await canvas.focus();
   const keyboardStatus = canvas.locator("xpath=following-sibling::*[contains(@class, 'chart-a11y-status')]");
-  await expect(keyboardStatus).toContainText("SOL price");
+  await expect(keyboardStatus).toContainText("UTC");
+  await expect(keyboardStatus).toContainText(/Allium|Artemis|Birdeye|Blockworks|DeFiLlama|DexPaprika|Dune|Token Terminal|Coinbase|CoinGecko/);
+  await expect(keyboardStatus).not.toContainText("Published headline");
   const latestStatus = await keyboardStatus.textContent();
   await canvas.press("ArrowLeft");
   expect(await keyboardStatus.textContent()).not.toBe(latestStatus);

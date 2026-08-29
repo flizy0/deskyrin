@@ -16,6 +16,7 @@ import {
 } from "../view-utils.js";
 
 const LIVE_GAP_MS = 3 * 60 * 60 * 1_000;
+const VALIDATOR_CHART_START = "2026-08-21T00:00:00.000Z";
 
 const VALIDATOR_COLUMNS = [
   { key: "rank", label: "Rank", align: "right", sort: "number", width: "7%" },
@@ -183,6 +184,7 @@ function commissionPanel(data) {
 
 export function renderValidators(snapshot, root) {
   const data = snapshot.validators;
+  const chartHistory = data.history.filter((point) => point.observedAt >= VALIDATOR_CHART_START);
   root.append(pageHeader({
     eyebrow: "Stake and consensus participation",
     title: "Validators",
@@ -214,7 +216,7 @@ export function renderValidators(snapshot, root) {
       note: `${fmt.stakeSol(data.stake.delinquentLamports)} SOL`,
       domain: data,
       tone: data.stake.delinquentPct >= 5 ? "negative" : "neutral",
-      series: data.history.map((point) => ({ observedAt: point.observedAt, value: point.delinquentStakePct })),
+      series: chartHistory.map((point) => ({ observedAt: point.observedAt, value: point.delinquentStakePct })),
       seriesGapMs: LIVE_GAP_MS
     }),
     metricCard({
@@ -236,7 +238,7 @@ export function renderValidators(snapshot, root) {
     title: "Validator health history",
     note: "Delinquent activated stake share at exact snapshot observations",
     domain: data,
-    history: data.history,
+    history: chartHistory,
     time: (point) => point.observedAt,
     series: [{ label: "Delinquent stake", field: "delinquentStakePct", color: DATA_COLORS.negative, fill: true, spanGaps: LIVE_GAP_MS }],
     formatter: fmt.pct,
@@ -244,7 +246,7 @@ export function renderValidators(snapshot, root) {
   });
   const history = chartPanel(healthSpec, {
     className: "span-7 chart-primary cut-corner",
-    meta: [`${data.history.length} observations`, "Stake-weighted · no synthetic points"]
+    meta: [`${chartHistory.length} observations`, "Stake-weighted · no synthetic points"]
   });
   const grid = el("div", "analytics-grid validator-analysis-grid");
   grid.append(history.card, concentrationPanel(data));

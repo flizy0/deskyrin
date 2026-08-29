@@ -1,4 +1,5 @@
 import Chart from "chart.js/auto";
+import { visibleDataTimestampBounds } from "./chart-range.js";
 
 const charts = new Set();
 
@@ -44,8 +45,13 @@ function utcTick(value, spanMs) {
   return new Date(Number(value)).toLocaleString("en-US", options);
 }
 
-function baseOptions(yFormatter, timestamps, { beginAtZero = false, stacked = false, legend = true } = {}) {
-  const fullSpanMs = Math.max(0, timestamps.at(-1) - timestamps[0]);
+function baseOptions(yFormatter, bounds, {
+  beginAtZero = false,
+  stacked = false,
+  legend = true,
+  onDatasetVisibilityChange
+} = {}) {
+  const fullSpanMs = bounds ? Math.max(0, bounds.max - bounds.min) : 0;
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -55,7 +61,17 @@ function baseOptions(yFormatter, timestamps, { beginAtZero = false, stacked = fa
       legend: {
         display: legend,
         align: "start",
-        labels: { usePointStyle: true, boxWidth: 7, boxHeight: 7, padding: 16, font: { size: 11 } }
+        labels: { usePointStyle: true, boxWidth: 7, boxHeight: 7, padding: 16, font: { size: 11 } },
+        onClick(event, item, plugin) {
+          const datasetIndex = item.datasetIndex;
+          const visibleCount = plugin.chart.data.datasets.reduce(
+            (count, _dataset, index) => count + Number(plugin.chart.isDatasetVisible(index)),
+            0
+          );
+          if (plugin.chart.isDatasetVisible(datasetIndex) && visibleCount <= 1) return;
+          Chart.defaults.plugins.legend.onClick(event, item, plugin);
+          onDatasetVisibilityChange?.(plugin.chart);
+        }
       },
       tooltip: {
         backgroundColor: CHART_SURFACES.tooltip,
@@ -76,7 +92,8 @@ function baseOptions(yFormatter, timestamps, { beginAtZero = false, stacked = fa
       x: {
         type: "linear",
         stacked,
-        ...(fullSpanMs > 0 ? { min: timestamps[0], max: timestamps.at(-1) } : {}),
+        offset: stacked,
+        ...(bounds && bounds.min < bounds.max ? { min: bounds.min, max: bounds.max } : {}),
         grid: { display: false },
         ticks: {
           maxTicksLimit: 6,
@@ -96,6 +113,28 @@ function baseOptions(yFormatter, timestamps, { beginAtZero = false, stacked = fa
       }
     }
   };
+}
+
+function applyXBounds(scale, bounds) {
+  if (bounds && bounds.min < bounds.max) {
+    scale.min = bounds.min;
+    scale.max = bounds.max;
+  } else {
+    delete scale.min;
+    delete scale.max;
+  }
+}
+
+export function fitChartXDomain(chart) {
+  const reference = chart?.data?.datasets?.find((dataset) => Array.isArray(dataset.data));
+  const scale = chart?.options?.scales?.x;
+  if (!reference || !scale) return null;
+  const timestamps = reference.data.map((point) => point?.x);
+  const bounds = visibleDataTimestampBounds(timestamps, chart.data.datasets, {
+    isDatasetVisible: (_dataset, index) => chart.isDatasetVisible(index)
+  });
+  applyXBounds(scale, bounds);
+  return bounds;
 }
 
 function colorWithAlpha(color, alpha) {
@@ -119,11 +158,20 @@ function enableKeyboardTooltip(canvas, chart, validIndices, describe) {
   const status = canvas.parentElement?.querySelector(".chart-a11y-status");
   let cursor = validIndices.length - 1;
 
+  const currentlyVisibleIndices = () => validIndices.filter((index) =>
+    chart.data.datasets.some((dataset, datasetIndex) =>
+      chart.isDatasetVisible(datasetIndex) && Number.isFinite(dataset.data[index]?.y)
+    )
+  );
+
   const activate = () => {
-    const index = validIndices[cursor];
+    const visibleIndices = currentlyVisibleIndices();
+    if (visibleIndices.length === 0) return;
+    cursor = Math.min(cursor, visibleIndices.length - 1);
+    const index = visibleIndices[cursor];
     const active = chart.data.datasets.flatMap((dataset, datasetIndex) => {
       const value = dataset.data[index];
-      return value === null || value?.y === null ? [] : [{ datasetIndex, index }];
+      return !chart.isDatasetVisible(datasetIndex) || !Number.isFinite(value?.y) ? [] : [{ datasetIndex, index }];
     });
     chart.setActiveElements(active);
     if (chart.tooltip && active.length > 0) {
@@ -137,10 +185,12 @@ function enableKeyboardTooltip(canvas, chart, validIndices, describe) {
 
   canvas.addEventListener("focus", activate);
   canvas.addEventListener("keydown", (event) => {
+    const visibleIndices = currentlyVisibleIndices();
+    if (visibleIndices.length === 0) return;
     if (event.key === "ArrowLeft") cursor = Math.max(0, cursor - 1);
-    else if (event.key === "ArrowRight") cursor = Math.min(validIndices.length - 1, cursor + 1);
+    else if (event.key === "ArrowRight") cursor = Math.min(visibleIndices.length - 1, cursor + 1);
     else if (event.key === "Home") cursor = 0;
-    else if (event.key === "End") cursor = validIndices.length - 1;
+    else if (event.key === "End") cursor = visibleIndices.length - 1;
     else return;
     event.preventDefault();
     activate();
@@ -152,10 +202,21 @@ function enableKeyboardTooltip(canvas, chart, validIndices, describe) {
   });
 }
 
-export function lineChart(canvas, labels, datasets, yFormatter, { beginAtZero = false, keyboardTooltip = true, managed = true, legend = true } = {}) {
+export function lineChart(canvas, labels, datasets, yFormatter, {
+  beginAtZero = false,
+  keyboardTooltip = true,
+  managed = true,
+  legend = true,
+  onDatasetVisibilityChange
+} = {}) {
   const timestamps = labels.map((label) => Date.parse(label));
   if (timestamps.some((value) => !Number.isFinite(value))) throw new Error("Chart labels must be ISO timestamps");
   const points = timestamps.map((x, index) => ({ x, index }));
+  const bounds = visibleDataTimestampBounds(timestamps, datasets);
+  const visibilityChange = onDatasetVisibilityChange || ((instance) => {
+    fitChartXDomain(instance);
+    instance.update("none");
+  });
   const chart = new Chart(canvas, {
     type: "line",
     data: { datasets: datasets.map((dataset, index) => {
@@ -175,10 +236,17 @@ export function lineChart(canvas, labels, datasets, yFormatter, { beginAtZero = 
         spanGaps: dataset.spanGaps ?? 129_600_000
       };
     }) },
-    options: { ...baseOptions(yFormatter, timestamps, { beginAtZero, legend }), parsing: false }
+    options: {
+      ...baseOptions(yFormatter, bounds, {
+        beginAtZero,
+        legend,
+        onDatasetVisibilityChange: visibilityChange
+      }),
+      parsing: false
+    }
   });
-  const first = timestamps[0];
-  const last = timestamps.at(-1);
+  const first = bounds?.min ?? timestamps[0];
+  const last = bounds?.max ?? timestamps.at(-1);
   const summary = datasets.flatMap((dataset) => {
     const values = dataset.data.filter(Number.isFinite);
     return values.length ? [`${dataset.label}: ${yFormatter(values[0])} to ${yFormatter(values.at(-1))}`] : [];
@@ -193,9 +261,11 @@ export function lineChart(canvas, labels, datasets, yFormatter, { beginAtZero = 
   if (keyboardTooltip) {
     enableKeyboardTooltip(canvas, chart, validIndices, (index) => {
       const timestamp = points[index].x;
-      const values = chart.data.datasets.flatMap((dataset) => {
+      const values = chart.data.datasets.flatMap((dataset, datasetIndex) => {
         const value = dataset.data[index]?.y;
-        return Number.isFinite(value) ? [`${dataset.label}: ${yFormatter(value)}`] : [];
+        return chart.isDatasetVisible(datasetIndex) && Number.isFinite(value)
+          ? [`${dataset.label}: ${yFormatter(value)}`]
+          : [];
       }).join("; ");
       return `${accessibleTimestamp(timestamp)} UTC. ${values}`;
     });
@@ -204,10 +274,19 @@ export function lineChart(canvas, labels, datasets, yFormatter, { beginAtZero = 
   return chart;
 }
 
-export function stackedBarChart(canvas, labels, datasets, yFormatter, { keyboardTooltip = true, managed = true } = {}) {
+export function stackedBarChart(canvas, labels, datasets, yFormatter, {
+  keyboardTooltip = true,
+  managed = true,
+  onDatasetVisibilityChange
+} = {}) {
   const timestamps = labels.map((label) => Date.parse(label));
   if (timestamps.some((value) => !Number.isFinite(value))) throw new Error("Chart labels must be ISO timestamps");
   const points = timestamps.map((x, index) => ({ x, index }));
+  const bounds = visibleDataTimestampBounds(timestamps, datasets);
+  const visibilityChange = onDatasetVisibilityChange || ((instance) => {
+    fitChartXDomain(instance);
+    instance.update("none");
+  });
   const chart = new Chart(canvas, {
     type: "bar",
     data: {
@@ -226,14 +305,18 @@ export function stackedBarChart(canvas, labels, datasets, yFormatter, { keyboard
       })
     },
     options: {
-      ...baseOptions(yFormatter, timestamps, { beginAtZero: true, stacked: true }),
+      ...baseOptions(yFormatter, bounds, {
+        beginAtZero: true,
+        stacked: true,
+        onDatasetVisibilityChange: visibilityChange
+      }),
       parsing: false,
       datasets: { bar: { barPercentage: 0.82, categoryPercentage: 0.8 } }
     }
   });
 
-  const first = timestamps[0];
-  const last = timestamps.at(-1);
+  const first = bounds?.min ?? timestamps[0];
+  const last = bounds?.max ?? timestamps.at(-1);
   const firstTotal = datasets.reduce((total, dataset) => total + dataset.data[0], 0);
   const lastTotal = datasets.reduce((total, dataset) => total + dataset.data.at(-1), 0);
   canvas.setAttribute(
@@ -242,8 +325,11 @@ export function stackedBarChart(canvas, labels, datasets, yFormatter, { keyboard
   );
   if (keyboardTooltip) {
     enableKeyboardTooltip(canvas, chart, points.map((_point, index) => index), (index) => {
-      const values = datasets.map((dataset) => `${dataset.label}: ${yFormatter(dataset.data[index])}`);
-      const total = datasets.reduce((sum, dataset) => sum + dataset.data[index], 0);
+      const values = datasets.flatMap((dataset, datasetIndex) => chart.isDatasetVisible(datasetIndex)
+        ? [`${dataset.label}: ${yFormatter(dataset.data[index])}`]
+        : []);
+      const total = datasets.reduce((sum, dataset, datasetIndex) =>
+        chart.isDatasetVisible(datasetIndex) ? sum + dataset.data[index] : sum, 0);
       return `${accessibleTimestamp(points[index].x)} UTC. ${values.join("; ")}; REV total: ${yFormatter(total)}`;
     });
   }
