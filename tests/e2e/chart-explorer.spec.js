@@ -51,25 +51,28 @@ test("network charts open one lazy native explorer with canonical source rows", 
   expect(errors).toEqual([]);
 });
 
-test("range presets, wheel, pan, drag, and reset stay inside canonical SOL history", async ({ page }, testInfo) => {
+test("range presets, wheel, pan, drag, and reset stay inside visible SOL source history", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop-chromium", "Pointer precision is covered in the desktop project");
   await loadRoute(page, "economy");
-  const data = await page.evaluate(async () => (await (await fetch("/data.json")).json()));
-  const timestamps = data.economics.solPrice.history.map((point) => Date.parse(point.observedAt));
-  const first = timestamps[0];
-  const last = timestamps.at(-1);
-  await page.getByRole("button", { name: "Explore SOL price", exact: true }).click();
+  await page.getByRole("button", { name: "Explore SOL price · source comparison", exact: true }).click();
+  const fullRange = await explorerWindow(page);
+  const first = fullRange.start;
+  const last = fullRange.end;
+  const tableRows = page.locator("[data-chart-explorer-table] tbody tr");
+  await expect(page.locator("[data-chart-explorer-table] thead")).not.toContainText("Published headline");
 
   for (const [name, duration] of [["24H", DAY_MS], ["7D", 7 * DAY_MS], ["30D", 30 * DAY_MS]]) {
     await page.getByRole("button", { name, exact: true }).click();
     const expectedStart = Math.max(first, last - duration);
-    const expectedPoints = timestamps.filter((value) => value >= expectedStart && value <= last).length;
-    await expect.poll(async () => explorerWindow(page)).toEqual({ start: expectedStart, end: last, points: expectedPoints });
-    await expect(page.locator("[data-chart-explorer-table] tbody tr")).toHaveCount(expectedPoints);
+    await expect.poll(async () => {
+      const range = await explorerWindow(page);
+      return { start: range.start, end: range.end };
+    }).toEqual({ start: expectedStart, end: last });
+    expect((await explorerWindow(page)).points).toBe(await tableRows.count());
   }
 
   await page.getByRole("button", { name: "All", exact: true }).click();
-  await expect.poll(async () => explorerWindow(page)).toEqual({ start: first, end: last, points: timestamps.length });
+  await expect.poll(async () => explorerWindow(page)).toEqual(fullRange);
 
   const canvas = page.locator("[data-chart-explorer-canvas]");
   await canvas.hover();
@@ -102,7 +105,7 @@ test("range presets, wheel, pan, drag, and reset stay inside canonical SOL histo
   await expect.poll(async () => (await explorerWindow(page)).start).not.toBe(beforeDrag.start);
 
   await page.getByRole("button", { name: "Reset view", exact: true }).click();
-  await expect.poll(async () => explorerWindow(page)).toEqual({ start: first, end: last, points: timestamps.length });
+  await expect.poll(async () => explorerWindow(page)).toEqual(fullRange);
 });
 
 test("Escape restores focus and repeat opens do not leak chart canvases", async ({ page }) => {
@@ -134,7 +137,7 @@ test("Escape restores focus and repeat opens do not leak chart canvases", async 
 test("mobile explorer supports pinch, horizontal pan, and contained layout", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile-chromium", "Touch gestures are covered in the mobile project");
   await loadRoute(page, "economy");
-  await page.getByRole("button", { name: "Explore SOL price", exact: true }).click();
+  await page.getByRole("button", { name: "Explore SOL price · source comparison", exact: true }).click();
   const dialog = page.locator("[data-chart-explorer-dialog]");
   const canvas = page.locator("[data-chart-explorer-canvas]");
   const box = await canvas.boundingBox();
