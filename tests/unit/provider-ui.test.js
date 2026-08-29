@@ -47,7 +47,7 @@ function providerSnapshot() {
   };
 }
 
-test("provider comparison aligns daily series with explicit gaps and stable colors", () => {
+test("provider comparison aligns real source series with explicit gaps and stable colors", () => {
   const snapshot = providerSnapshot();
   const spec = buildProviderComparisonSpec(snapshot, "dex-volume", {
     formatter: String,
@@ -77,14 +77,15 @@ test("provider comparison aligns daily series with explicit gaps and stable colo
   ]);
   assert.deepEqual(spec.providerSeries.map((series) => series.providerName), ["Allium", "Blockworks", "Dune", "CoinGecko"]);
   assert.deepEqual(spec.datasets.find((series) => series.providerName === "Dune").data, [null, 20, null, 22]);
+  assert.deepEqual(spec.datasets.find((series) => series.providerName === "Allium").data, [10, null, 12, null]);
   assert.equal(spec.datasets.find((series) => series.providerName === "Allium").color, PROVIDER_COLORS.Allium);
   assert.equal(spec.datasets.every((series) => series.spanGaps === false), true);
-  assert.equal(spec.datasets[0].label, "Published headline");
-  assert.equal(spec.datasets[0].providerName, undefined);
+  assert.equal(spec.datasets.every((series) => typeof series.providerName === "string"), true);
+  assert.equal(spec.datasets.some((series) => series.label === "Published headline"), false);
   assert.equal(spec.legend, false);
 });
 
-test("provider comparison selection never changes the pinned published series", () => {
+test("provider comparison ignores providerless references and preserves provider selection", () => {
   const spec = buildProviderComparisonSpec(providerSnapshot(), "dex-volume", {
     formatter: String,
     selectedProviders: ["Allium"],
@@ -95,7 +96,7 @@ test("provider comparison selection never changes the pinned published series", 
     }]
   });
 
-  assert.equal(spec.datasets[0].hidden, undefined);
+  assert.equal(spec.datasets.some((series) => series.label === "Published headline"), false);
   assert.equal(spec.datasets.find((series) => series.providerName === "Allium").hidden, undefined);
   assert.equal(spec.datasets.find((series) => series.providerName === "Dune").hidden, true);
   assert.equal(findProviderMetric({}, "dex-volume"), null);

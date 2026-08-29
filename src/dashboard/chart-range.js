@@ -56,6 +56,45 @@ export function timestampBounds(values) {
   return { min: timestamps[0], max: timestamps[timestamps.length - 1] };
 }
 
+function plottedValue(point) {
+  return point && typeof point === "object" && !Array.isArray(point) ? point.y : point;
+}
+
+/**
+ * Return exact boundaries of finite points in visible datasets.
+ * Null values remain gaps; hidden datasets cannot enlarge the visible domain.
+ */
+export function visibleDataTimestampBounds(values, datasets, options = {}) {
+  const timestamps = timestampList(values);
+  if (!Array.isArray(datasets)) throw new TypeError("Datasets must be an array");
+  if (!options || typeof options !== "object" || Array.isArray(options)) {
+    throw new TypeError("Options must be an object");
+  }
+  const isDatasetVisible = options.isDatasetVisible
+    ?? ((dataset) => dataset?.hidden !== true);
+  if (typeof isDatasetVisible !== "function") throw new TypeError("isDatasetVisible must be a function");
+
+  let min = Number.POSITIVE_INFINITY;
+  let max = Number.NEGATIVE_INFINITY;
+  datasets.forEach((dataset, datasetIndex) => {
+    if (!dataset || typeof dataset !== "object" || Array.isArray(dataset)) {
+      throw new TypeError(`Dataset at index ${datasetIndex} must be an object`);
+    }
+    if (!Array.isArray(dataset.data) || dataset.data.length !== timestamps.length) {
+      throw new TypeError(`Dataset at index ${datasetIndex} must align with its timestamps`);
+    }
+    if (!isDatasetVisible(dataset, datasetIndex)) return;
+    dataset.data.forEach((point, pointIndex) => {
+      if (!Number.isFinite(plottedValue(point))) return;
+      const timestamp = timestamps[pointIndex];
+      min = Math.min(min, timestamp);
+      max = Math.max(max, timestamp);
+    });
+  });
+
+  return Number.isFinite(min) ? { min, max } : null;
+}
+
 /**
  * Fit a range inside the data boundaries, shifting it before reducing its width.
  */

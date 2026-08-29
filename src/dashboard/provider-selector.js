@@ -1,4 +1,5 @@
 import { buildProviderComparisonSpec } from "./provider-comparison.js";
+import { fitChartXDomain } from "./charts.js";
 import { el } from "./ui.js";
 import { chartPanel } from "./view-utils.js";
 
@@ -80,6 +81,7 @@ export function providerComparisonPanel(snapshot, metricId, options = {}) {
     } else {
       instance.data.datasets[datasetIndex].hidden = hidden;
     }
+    fitChartXDomain(instance);
     instance.update("none");
   });
   const chartWrap = chart.card.querySelector(".chart-wrap");

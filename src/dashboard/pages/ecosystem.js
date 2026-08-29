@@ -157,12 +157,11 @@ export function renderEcosystem(snapshot, root) {
 
   const addressSpec = historySpec(snapshot, {
     title: "Daily active addresses",
-    note: "Median initiating signers plus visible provider evidence",
+    note: "Visible Allium and Dune initiating-signer evidence",
     domain: addresses,
     history: addresses.history,
     time: (point) => `${point.date}T00:00:00.000Z`,
     series: [
-      { label: "Published median", field: "value", color: DATA_COLORS.network, fill: true },
       { label: "Allium", field: "allium", color: DATA_COLORS.networkSecondary },
       { label: "Dune", field: "dune", color: DATA_COLORS.categorical[5] }
     ],
@@ -185,15 +184,9 @@ export function renderEcosystem(snapshot, root) {
 
   const addressesChart = providerComparisonPanel(snapshot, "fee-payers", {
     title: "Daily active addresses · provider comparison",
-    note: "Provider-reported fee-payer proxies can differ; the teal published line remains the Allium + Dune median.",
+    note: "Provider-reported fee-payer proxies can differ; each line retains its source methodology.",
     formatter: fmt.integer,
     beginAtZero: true,
-    references: [{
-      label: "Published median",
-      color: DATA_COLORS.network,
-      fill: true,
-      history: addresses.history.map((point) => ({ date: point.date, value: point.value }))
-    }],
     className: "span-8 chart-primary cut-corner",
     meta: [`${addresses.history.length} canonical days`, "Provider methodologies may differ"]
   }) || chartPanel(addressSpec, {

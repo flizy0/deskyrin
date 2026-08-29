@@ -27,13 +27,7 @@ function dailyReference(history, dateOf, valueOf) {
 }
 
 function sourcePriceReferences(data) {
-  const published = dailyReference(data.solPrice.history, (point) => point.observedAt.slice(0, 10), (point) => point.priceUsd);
-  const references = [{
-    label: "Published headline",
-    history: published,
-    color: DATA_COLORS.sol,
-    fill: true
-  }];
+  const references = [];
 
   if (data.coinbaseMarket?.history?.length) {
     references.push({
@@ -221,7 +215,7 @@ export function renderEconomy(snapshot, root) {
 
   const sol = providerComparisonPanel(snapshot, "sol-price", {
     title: "SOL price · source comparison",
-    note: "Independent daily observations; the gold published headline remains Deskyrin's canonical price and is not recalculated here.",
+    note: "Independent daily source observations; each line retains its provider methodology.",
     formatter: fmt.usd,
     references: sourcePriceReferences(data),
     className: "span-7 chart-primary cut-corner",
@@ -234,15 +228,9 @@ export function renderEconomy(snapshot, root) {
   const stable = chartPanel(stableSpec, { className: "span-6" });
   const dex = providerComparisonPanel(snapshot, "dex-volume", {
     title: "DEX volume · provider comparison",
-    note: "Provider venue coverage and filtering can differ; the teal published line remains the canonical Deskyrin headline.",
+    note: "Provider venue coverage and filtering can differ; each line retains its source methodology.",
     formatter: fmt.usd,
     beginAtZero: true,
-    references: [{
-      label: "Published headline",
-      color: DATA_COLORS.network,
-      fill: true,
-      history: dailyReference(data.dexVolume.history, (point) => point.date, (point) => point.dailyVolumeUsd)
-    }],
     className: "span-6",
     meta: ["No cross-provider median", "Completed UTC days"]
   }) || chartPanel(dexSpec, { className: "span-6" });
@@ -257,12 +245,6 @@ export function renderEconomy(snapshot, root) {
     note: "Independent daily provider observations; Deskyrin REV continues to use the documented Allium + Dune same-date median.",
     formatter: (value) => `${fmt.compact(value)} SOL`,
     beginAtZero: true,
-    references: [{
-      label: "Published fee consensus",
-      color: DATA_COLORS.networkSecondary,
-      fill: true,
-      history: dailyReference(data.rev.history, (point) => point.date, (point) => point.transactionFeesSol)
-    }],
     className: "chart-wide",
     meta: ["Comparison only", "Canonical REV methodology unchanged"]
   });
