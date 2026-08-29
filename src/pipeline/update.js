@@ -2,8 +2,10 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { collectAgaveReleases } from "./collectors/agave-releases.js";
+import { collectCoinbaseMarket } from "./collectors/coinbase-market.js";
 import { collectDexVolume } from "./collectors/defi-dex.js";
-import { collectPrice } from "./collectors/defi-price.js";
+import { collectCoinGeckoPrice, collectDefiLlamaPrice } from "./collectors/defi-price.js";
 import { collectStablecoins } from "./collectors/defi-stablecoins.js";
 import { collectTvl } from "./collectors/defi-tvl.js";
 import { collectJito } from "./collectors/jito.js";
@@ -12,15 +14,18 @@ import { collectNews } from "./collectors/news.js";
 import { collectRwa } from "./collectors/rwa.js";
 import { collectSolanaCore } from "./collectors/solana-core.js";
 import { collectSolanaData } from "./collectors/solana-data.js";
+import { collectSolanaStatus } from "./collectors/solana-status.js";
 import { collectUpgrades } from "./collectors/upgrades.js";
 import { parseCanonicalSnapshot } from "./contracts/canonical.js";
 import { createConfig } from "./config.js";
+import { buildCoverageIncidents } from "./coverage.js";
 import { asPipelineError, safeError } from "./lib/errors.js";
 import { createHttpClient } from "./lib/http.js";
 import { createRpcClient } from "./lib/rpc.js";
 import { isoTimestamp } from "./lib/time.js";
 import { calculateAlerts } from "./metrics/alerts.js";
 import { calculateChainState, calculateNetworkPerformance } from "./metrics/network.js";
+import { calculateProviderComparisons } from "./metrics/provider-comparisons.js";
 import { calculateActiveAddresses, calculateRev } from "./metrics/rev.js";
 import { calculateValidators } from "./metrics/validators.js";
 import { publishOutputs } from "./outputs/publish.js";
@@ -30,6 +35,7 @@ import {
   buildPriceSourceResults,
   buildSourceRecord,
   mergeDomain,
+  mergeOptionalDomain,
   sourceIsDue
 } from "./outputs/snapshot.js";
 
@@ -110,7 +116,6 @@ export async function runUpdate(options = {}) {
   const due = (id) => !previous || sourceIsDue(id, previous, now, config);
   const rpcDue = due("solanaRpc");
   const revDue = due("solanaData") || due("jitoMev");
-  const priceDue = due("defiLlamaCoins");
   const coreResult = rpcDue ? await attempt(() => collectSolanaCore(context)) : notDue();
   const coreTask = Promise.resolve(coreResult);
   const feeTask = rpcDue
@@ -119,7 +124,9 @@ export async function runUpdate(options = {}) {
   const tasks = {
     core: coreTask,
     fee: feeTask,
-    price: priceDue ? attempt(() => collectPrice(context)) : Promise.resolve(notDue()),
+    priceDefiLlama: due("defiLlamaCoins") ? attempt(() => collectDefiLlamaPrice(context)) : Promise.resolve(notDue()),
+    priceCoinGecko: due("coinGecko") ? attempt(() => collectCoinGeckoPrice(context)) : Promise.resolve(notDue()),
+    coinbase: due("coinbaseExchange") ? attempt(() => collectCoinbaseMarket(context)) : Promise.resolve(notDue()),
     tvl: due("defiLlamaTvl") ? attempt(() => collectTvl(context)) : Promise.resolve(notDue()),
     stablecoins: due("defiLlamaStablecoins") ? attempt(() => collectStablecoins(context)) : Promise.resolve(notDue()),
     dex: due("defiLlamaDex") ? attempt(() => collectDexVolume(context)) : Promise.resolve(notDue()),
@@ -127,7 +134,9 @@ export async function runUpdate(options = {}) {
     jito: revDue ? attempt(() => collectJito(context)) : Promise.resolve(notDue()),
     rwa: due("rwa") ? attempt(() => collectRwa(context, previous?.ecosystem.tokenizedAssets.history)) : Promise.resolve(notDue()),
     news: due("solanaNews") ? attempt(() => collectNews(context)) : Promise.resolve(notDue()),
-    upgrades: due("solanaUpgrades") ? attempt(() => collectUpgrades(context)) : Promise.resolve(notDue())
+    upgrades: due("solanaUpgrades") ? attempt(() => collectUpgrades(context)) : Promise.resolve(notDue()),
+    status: due("solanaStatus") ? attempt(() => collectSolanaStatus(context)) : Promise.resolve(notDue()),
+    releases: due("agaveReleases") ? attempt(() => collectAgaveReleases(context)) : Promise.resolve(notDue())
   };
   const collected = Object.fromEntries(await Promise.all(Object.entries(tasks).map(async ([key, promise]) => [key, await promise])));
 
@@ -143,28 +152,68 @@ export async function runUpdate(options = {}) {
   const chainResult = metricAttempt(epochInput, (value) => calculateChainState(value, now));
   const validatorResult = metricAttempt(validatorInput, (value) => calculateValidators(value, now, previous?.validators, config));
 
-  const priceResult = collected.price.state === "fresh"
-    ? { state: "fresh", value: collected.price.value.domain }
-    : collected.price;
+  const defiLlamaPriceResult = collected.priceDefiLlama.state === "fresh"
+    ? { state: "fresh", value: collected.priceDefiLlama.value.domain }
+    : collected.priceDefiLlama;
+  const coinGeckoPriceResult = collected.priceCoinGecko.state === "fresh"
+    ? { state: "fresh", value: collected.priceCoinGecko.value.domain }
+    : collected.priceCoinGecko;
+  const priceResult = defiLlamaPriceResult.state === "fresh"
+    ? defiLlamaPriceResult
+    : defiLlamaPriceResult.state === "failed" && coinGeckoPriceResult.state === "fresh"
+      ? coinGeckoPriceResult
+      : defiLlamaPriceResult;
   const revResult = collected.solanaData.state === "fresh" && collected.jito.state === "fresh"
     ? metricAttempt({ state: "fresh", value: [collected.solanaData.value, collected.jito.value] }, ([data, jito]) => calculateRev(data.rows, jito, now, config))
     : collected.solanaData.state === "failed" ? collected.solanaData : collected.jito;
   const addressesResult = collected.solanaData.state === "fresh"
     ? metricAttempt(collected.solanaData, (data) => calculateActiveAddresses(data.rows, now, config))
     : collected.solanaData;
+  const providerComparisonsResult = collected.solanaData.state === "fresh"
+    ? metricAttempt(collected.solanaData, (data) => calculateProviderComparisons(data.rows, data.generatedAt, now, config))
+    : collected.solanaData;
+  const coinbaseResult = metricAttempt(collected.coinbase, (value) => ({
+    status: "fresh",
+    observedAt: `${value.dataThrough}T23:59:59.999Z`,
+    sourceIds: ["coinbaseExchange"],
+    productId: value.productId,
+    granularitySeconds: value.granularitySeconds,
+    dataThrough: value.dataThrough,
+    history: value.history
+  }));
+  const statusResult = metricAttempt(collected.status, (value) => ({
+    status: "fresh",
+    observedAt: value.observedAt,
+    sourceIds: ["solanaStatus"],
+    page: value.page,
+    condition: value.status,
+    components: value.components,
+    incidents: value.incidents
+  }));
+  const releasesResult = metricAttempt(collected.releases, (value) => ({
+    status: "fresh",
+    observedAt: value.observedAt,
+    sourceIds: ["agaveReleases"],
+    repository: value.repository,
+    items: value.items
+  }));
 
   const network = {
     performance: mergeDomain(previous?.network.performance, performanceResult, now, config.freshness.live, "network performance"),
     chain: mergeDomain(previous?.network.chain, chainResult, now, config.freshness.live, "chain state")
   };
   const validators = mergeDomain(previous?.validators, validatorResult, now, config.freshness.live, "validators");
+  const coinGeckoPrice = mergeOptionalDomain(previous?.economics.coinGeckoPrice, coinGeckoPriceResult, now, config.freshness.price);
+  const coinbaseMarket = mergeOptionalDomain(previous?.economics.coinbaseMarket, coinbaseResult, now, config.freshness.daily);
   const economics = {
     solPrice: mergeDomain(previous?.economics.solPrice, priceResult, now, config.freshness.price, "SOL price"),
     tvlAlertInput: mergeDomain(previous?.economics.tvlAlertInput, collected.tvl, now, config.freshness.daily, "TVL"),
     stablecoinSupply: mergeDomain(previous?.economics.stablecoinSupply, collected.stablecoins, now, config.freshness.daily, "stablecoin supply"),
     dexVolume: mergeDomain(previous?.economics.dexVolume, collected.dex, now, config.freshness.daily, "DEX volume"),
     rev: mergeDomain(previous?.economics.rev, revResult, now, config.freshness.daily, "REV"),
-    medianTransactionFee: mergeDomain(previous?.economics.medianTransactionFee, collected.fee, now, config.freshness.live, "median transaction fee")
+    medianTransactionFee: mergeDomain(previous?.economics.medianTransactionFee, collected.fee, now, config.freshness.live, "median transaction fee"),
+    ...(coinGeckoPrice ? { coinGeckoPrice } : {}),
+    ...(coinbaseMarket ? { coinbaseMarket } : {})
   };
   const ecosystem = {
     tokenizedAssets: mergeDomain(previous?.ecosystem.tokenizedAssets, collected.rwa, now, config.freshness.daily, "tokenized assets"),
@@ -172,10 +221,18 @@ export async function runUpdate(options = {}) {
     news: mergeDomain(previous?.ecosystem.news, collected.news, now, config.freshness.content, "news"),
     upgrades: mergeDomain(previous?.ecosystem.upgrades, collected.upgrades, now, config.freshness.content, "upgrades")
   };
+  const providerComparisons = mergeOptionalDomain(previous?.providerComparisons, providerComparisonsResult, now, config.freshness.daily);
+  const solanaStatus = mergeOptionalDomain(previous?.observability?.solanaStatus, statusResult, now, config.freshness.live);
+  const agaveReleases = mergeOptionalDomain(previous?.observability?.agaveReleases, releasesResult, now, config.freshness.content);
+  const observability = {
+    ...(solanaStatus ? { solanaStatus } : {}),
+    ...(agaveReleases ? { agaveReleases } : {})
+  };
 
   const sourceResults = {
     solanaRpc: sourceStateFromDomains([performanceResult, chainResult, validatorResult, collected.fee], runObservedAt),
-    ...buildPriceSourceResults(collected.price, previous),
+    ...buildPriceSourceResults(collected.priceDefiLlama, collected.priceCoinGecko),
+    coinbaseExchange: collected.coinbase.state === "fresh" ? { state: "fresh", dataThrough: collected.coinbase.value.dataThrough } : collected.coinbase,
     defiLlamaTvl: collected.tvl.state === "fresh" ? { state: "fresh", dataThrough: collected.tvl.value.latest.date } : collected.tvl,
     defiLlamaStablecoins: collected.stablecoins.state === "fresh" ? { state: "fresh", dataThrough: collected.stablecoins.value.date } : collected.stablecoins,
     defiLlamaDex: collected.dex.state === "fresh" ? { state: "fresh", dataThrough: collected.dex.value.date } : collected.dex,
@@ -183,11 +240,19 @@ export async function runUpdate(options = {}) {
     jitoMev: collected.jito.state === "fresh" ? { state: "fresh", dataThrough: collected.jito.value.at(-1)?.date } : collected.jito,
     rwa: collected.rwa.state === "fresh" ? { state: "fresh", dataThrough: collected.rwa.value.observedAt } : collected.rwa,
     solanaNews: collected.news.state === "fresh" ? { state: "fresh", dataThrough: collected.news.value.feedUpdatedAt || collected.news.value.observedAt } : collected.news,
-    solanaUpgrades: collected.upgrades.state === "fresh" ? { state: "fresh", dataThrough: collected.upgrades.value.observedAt } : collected.upgrades
+    solanaUpgrades: collected.upgrades.state === "fresh" ? { state: "fresh", dataThrough: collected.upgrades.value.observedAt } : collected.upgrades,
+    solanaStatus: collected.status.state === "fresh" ? { state: "fresh", dataThrough: collected.status.value.dataThrough } : collected.status,
+    agaveReleases: collected.releases.state === "fresh" ? { state: "fresh", dataThrough: collected.releases.value.dataThrough } : collected.releases
   };
 
   const publicationNow = options.now || new Date();
   const updatedAt = isoTimestamp(publicationNow);
+  const coverageIncidents = buildCoverageIncidents(
+    previous?.coverageIncidents,
+    performanceResult.state === "fresh" && validatorResult.state === "fresh" && collected.fee.state === "fresh",
+    runObservedAt,
+    previous?.sources?.solanaRpc?.nextDueAt
+  );
   const sources = {};
   for (const [id, result] of Object.entries(sourceResults)) sources[id] = buildSourceRecord(id, result, previous, now, config);
   const preliminary = {
@@ -196,10 +261,13 @@ export async function runUpdate(options = {}) {
     updatedAt,
     updateStatus: "complete",
     sources,
+    coverageIncidents,
     network,
     validators,
     economics,
     ecosystem,
+    observability,
+    ...(providerComparisons ? { providerComparisons } : {}),
     alertChecks: [],
     alerts: []
   };

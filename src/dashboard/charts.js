@@ -44,7 +44,7 @@ function utcTick(value, spanMs) {
   return new Date(Number(value)).toLocaleString("en-US", options);
 }
 
-function baseOptions(yFormatter, timestamps, { beginAtZero = false, stacked = false } = {}) {
+function baseOptions(yFormatter, timestamps, { beginAtZero = false, stacked = false, legend = true } = {}) {
   const fullSpanMs = Math.max(0, timestamps.at(-1) - timestamps[0]);
   return {
     responsive: true,
@@ -53,7 +53,7 @@ function baseOptions(yFormatter, timestamps, { beginAtZero = false, stacked = fa
     animation: false,
     plugins: {
       legend: {
-        display: true,
+        display: legend,
         align: "start",
         labels: { usePointStyle: true, boxWidth: 7, boxHeight: 7, padding: 16, font: { size: 11 } }
       },
@@ -65,6 +65,7 @@ function baseOptions(yFormatter, timestamps, { beginAtZero = false, stacked = fa
         bodyColor: CHART_SURFACES.tooltipText,
         cornerRadius: 6,
         padding: 10,
+        filter: (context) => Number.isFinite(context.parsed.y),
         callbacks: {
           title: (items) => items.length ? new Date(items[0].parsed.x).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }) : "",
           label: (context) => `${context.dataset.label}: ${yFormatter(context.parsed.y)}`
@@ -151,7 +152,7 @@ function enableKeyboardTooltip(canvas, chart, validIndices, describe) {
   });
 }
 
-export function lineChart(canvas, labels, datasets, yFormatter, { beginAtZero = false, keyboardTooltip = true, managed = true } = {}) {
+export function lineChart(canvas, labels, datasets, yFormatter, { beginAtZero = false, keyboardTooltip = true, managed = true, legend = true } = {}) {
   const timestamps = labels.map((label) => Date.parse(label));
   if (timestamps.some((value) => !Number.isFinite(value))) throw new Error("Chart labels must be ISO timestamps");
   const points = timestamps.map((x, index) => ({ x, index }));
@@ -159,33 +160,43 @@ export function lineChart(canvas, labels, datasets, yFormatter, { beginAtZero = 
     type: "line",
     data: { datasets: datasets.map((dataset, index) => {
       const color = dataset.color || DATA_COLORS.categorical[index % DATA_COLORS.categorical.length];
+      const values = dataset.data.map((value) => Number.isFinite(value) ? value : null);
+      const finitePointCount = values.filter(Number.isFinite).length;
       return {
         ...dataset,
-        data: points.map((point) => ({ x: point.x, y: point.index === null ? null : dataset.data[point.index] })),
+        data: points.map((point) => ({ x: point.x, y: values[point.index] })),
         borderColor: color,
         backgroundColor: dataset.backgroundColor || colorWithAlpha(color, 0.09),
-        borderWidth: 2,
+        borderWidth: dataset.borderWidth ?? 2,
         fill: dataset.fill ?? false,
-        pointRadius: labels.length < 3 ? 3 : 0,
+        pointRadius: dataset.pointRadius ?? (finitePointCount < 3 ? 3 : 0),
         pointHoverRadius: 4,
         tension: dataset.tension ?? 0.22,
-        spanGaps: dataset.spanGaps ?? true
+        spanGaps: dataset.spanGaps ?? 129_600_000
       };
     }) },
-    options: { ...baseOptions(yFormatter, timestamps, { beginAtZero }), parsing: false }
+    options: { ...baseOptions(yFormatter, timestamps, { beginAtZero, legend }), parsing: false }
   });
   const first = timestamps[0];
   const last = timestamps.at(-1);
-  const summary = datasets.map((dataset) => `${dataset.label}: ${yFormatter(dataset.data[0])} to ${yFormatter(dataset.data.at(-1))}`).join("; ");
+  const summary = datasets.flatMap((dataset) => {
+    const values = dataset.data.filter(Number.isFinite);
+    return values.length ? [`${dataset.label}: ${yFormatter(values[0])} to ${yFormatter(values.at(-1))}`] : [];
+  }).join("; ");
   const accessNote = keyboardTooltip
     ? "Focus and use left or right arrow keys to inspect points; the full series is available in data.json."
     : "The source values for the visible range are available in the adjacent table and the full series is available in data.json.";
   canvas.setAttribute("aria-label", `${canvas.getAttribute("aria-label")}. ${summary}, from ${accessibleTimestamp(first)} to ${accessibleTimestamp(last)}. ${accessNote}`);
-  const validIndices = points.map((point, index) => point.index === null ? -1 : index).filter((index) => index >= 0);
+  const validIndices = points
+    .map((_point, index) => datasets.some((dataset) => Number.isFinite(dataset.data[index])) ? index : -1)
+    .filter((index) => index >= 0);
   if (keyboardTooltip) {
     enableKeyboardTooltip(canvas, chart, validIndices, (index) => {
       const timestamp = points[index].x;
-      const values = chart.data.datasets.map((dataset) => `${dataset.label}: ${yFormatter(dataset.data[index].y)}`).join("; ");
+      const values = chart.data.datasets.flatMap((dataset) => {
+        const value = dataset.data[index]?.y;
+        return Number.isFinite(value) ? [`${dataset.label}: ${yFormatter(value)}`] : [];
+      }).join("; ");
       return `${accessibleTimestamp(timestamp)} UTC. ${values}`;
     });
   }

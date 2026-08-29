@@ -1,0 +1,120 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { selectCoverageIncidents } from "../../src/dashboard/coverage-callout.js";
+import {
+  buildProviderComparisonSpec,
+  findProviderMetric,
+  PROVIDER_COLORS
+} from "../../src/dashboard/provider-comparison.js";
+
+function providerSnapshot() {
+  return {
+    updatedAt: "2026-08-29T10:00:00.000Z",
+    providerComparisons: {
+      status: "fresh",
+      observedAt: "2026-08-29T09:00:00.000Z",
+      sourceIds: ["solanaData"],
+      metrics: [{
+        id: "dex-volume",
+        name: "DEX Volume",
+        unit: "USD",
+        description: "Independent daily observations.",
+        series: [
+          {
+            providerName: "Dune",
+            dataThrough: "2026-08-29",
+            history: [
+              { date: "2026-08-27", value: 20 },
+              { date: "2026-08-29", value: 22 }
+            ]
+          },
+          {
+            providerName: "Allium",
+            dataThrough: "2026-08-28",
+            history: [
+              { date: "2026-08-26", value: 10 },
+              { date: "2026-08-28", value: 12 }
+            ]
+          },
+          {
+            providerName: "Blockworks",
+            dataThrough: "2026-08-29",
+            history: [{ date: "2026-08-29", value: 30 }]
+          }
+        ]
+      }]
+    }
+  };
+}
+
+test("provider comparison aligns daily series with explicit gaps and stable colors", () => {
+  const snapshot = providerSnapshot();
+  const spec = buildProviderComparisonSpec(snapshot, "dex-volume", {
+    formatter: String,
+    references: [
+      {
+        label: "Published headline",
+        color: "#ffffff",
+        history: [
+          { date: "2026-08-26", value: 15 },
+          { date: "2026-08-29", value: 18 }
+        ]
+      },
+      {
+        label: "CoinGecko",
+        providerName: "CoinGecko",
+        dataThrough: "2026-08-29",
+        history: [{ date: "2026-08-29", value: 19 }]
+      }
+    ]
+  });
+
+  assert.deepEqual(spec.labels, [
+    "2026-08-26T00:00:00.000Z",
+    "2026-08-27T00:00:00.000Z",
+    "2026-08-28T00:00:00.000Z",
+    "2026-08-29T00:00:00.000Z"
+  ]);
+  assert.deepEqual(spec.providerSeries.map((series) => series.providerName), ["Allium", "Blockworks", "Dune", "CoinGecko"]);
+  assert.deepEqual(spec.datasets.find((series) => series.providerName === "Dune").data, [null, 20, null, 22]);
+  assert.equal(spec.datasets.find((series) => series.providerName === "Allium").color, PROVIDER_COLORS.Allium);
+  assert.equal(spec.datasets.every((series) => series.spanGaps === false), true);
+  assert.equal(spec.datasets[0].label, "Published headline");
+  assert.equal(spec.datasets[0].providerName, undefined);
+  assert.equal(spec.legend, false);
+});
+
+test("provider comparison selection never changes the pinned published series", () => {
+  const spec = buildProviderComparisonSpec(providerSnapshot(), "dex-volume", {
+    formatter: String,
+    selectedProviders: ["Allium"],
+    references: [{
+      label: "Published headline",
+      color: "#ffffff",
+      history: [{ date: "2026-08-29", value: 18 }]
+    }]
+  });
+
+  assert.equal(spec.datasets[0].hidden, undefined);
+  assert.equal(spec.datasets.find((series) => series.providerName === "Allium").hidden, undefined);
+  assert.equal(spec.datasets.find((series) => series.providerName === "Dune").hidden, true);
+  assert.equal(findProviderMetric({}, "dex-volume"), null);
+  assert.equal(buildProviderComparisonSpec({}, "dex-volume", { formatter: String }), null);
+});
+
+test("coverage incident selection is scoped to the affected dashboard domain", () => {
+  const snapshot = {
+    coverageIncidents: [{
+      id: "network-gap",
+      affectedMetrics: ["TPS", "Slot time"]
+    }, {
+      id: "validator-gap",
+      affectedMetrics: ["Validator snapshots and commission tracking"]
+    }]
+  };
+
+  assert.deepEqual(selectCoverageIncidents(snapshot, ["TPS"]).map((incident) => incident.id), ["network-gap"]);
+  assert.deepEqual(selectCoverageIncidents(snapshot, ["Sampled median transaction fee"]), []);
+  assert.equal(selectCoverageIncidents(snapshot).length, 2);
+  assert.deepEqual(selectCoverageIncidents({}, ["TPS"]), []);
+});

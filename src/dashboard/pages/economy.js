@@ -1,5 +1,7 @@
 import { DATA_COLORS } from "../charts.js";
+import { coverageGapCallout } from "../coverage-callout.js";
 import { fmt } from "../format.js";
+import { providerComparisonPanel } from "../provider-selector.js";
 import { el } from "../ui.js";
 import {
   chartPanel,
@@ -9,6 +11,49 @@ import {
   pageHeader,
   panel
 } from "../view-utils.js";
+
+const LIVE_GAP_MS = 3 * 60 * 60 * 1_000;
+
+function dailyReference(history, dateOf, valueOf) {
+  const values = new Map();
+  for (const point of history || []) {
+    const date = dateOf(point);
+    const value = valueOf(point);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(value)) values.set(date, value);
+  }
+  return [...values]
+    .map(([date, value]) => ({ date, value }))
+    .sort((left, right) => left.date < right.date ? -1 : left.date > right.date ? 1 : 0);
+}
+
+function sourcePriceReferences(data) {
+  const published = dailyReference(data.solPrice.history, (point) => point.observedAt.slice(0, 10), (point) => point.priceUsd);
+  const references = [{
+    label: "Published headline",
+    history: published,
+    color: DATA_COLORS.sol,
+    fill: true
+  }];
+
+  if (data.coinbaseMarket?.history?.length) {
+    references.push({
+      label: "Coinbase",
+      providerName: "Coinbase",
+      dataThrough: data.coinbaseMarket.dataThrough,
+      history: dailyReference(data.coinbaseMarket.history, (point) => point.date, (point) => point.closeUsd)
+    });
+  }
+  if (data.coinGeckoPrice?.history?.length) {
+    const history = dailyReference(data.coinGeckoPrice.history, (point) => point.observedAt.slice(0, 10), (point) => point.priceUsd);
+    references.push({
+      label: "CoinGecko",
+      providerName: "CoinGecko",
+      dataThrough: history.at(-1)?.date,
+      history
+    });
+  }
+  return references;
+}
 
 function evidencePanels(data) {
   const grid = el("div", "evidence-grid");
@@ -65,6 +110,9 @@ export function renderEconomy(snapshot, root) {
     meta: ["Mixed source cadences", "Every panel carries its own observation time"]
   }));
 
+  const coverage = coverageGapCallout(snapshot, { affectedMetrics: ["Sampled median transaction fee"] });
+  if (coverage) root.append(coverage);
+
   root.append(metricGrid([
     metricCard({
       label: "SOL price",
@@ -105,7 +153,8 @@ export function renderEconomy(snapshot, root) {
       note: `${fmt.integer(data.medianTransactionFee.sample.transactionCount)} transactions sampled`,
       domain: data.medianTransactionFee,
       tone: "network-secondary",
-      series: data.medianTransactionFee.history.map((point) => point.medianLamports)
+      series: data.medianTransactionFee.history.map((point) => ({ observedAt: point.observedAt, value: point.medianLamports })),
+      seriesGapMs: LIVE_GAP_MS
     })
   ], "metric-grid-five"));
 
@@ -166,23 +215,57 @@ export function renderEconomy(snapshot, root) {
     domain: data.medianTransactionFee,
     history: data.medianTransactionFee.history,
     time: (point) => point.observedAt,
-    series: [{ label: "Median transaction fee", field: "medianLamports", color: DATA_COLORS.networkSecondary, fill: true }],
+    series: [{ label: "Median transaction fee", field: "medianLamports", color: DATA_COLORS.networkSecondary, fill: true, spanGaps: LIVE_GAP_MS }],
     formatter: (value) => `${fmt.decimal(value)} lamports`
   });
 
-  const sol = chartPanel(solSpec, { className: "span-7 chart-primary cut-corner" });
+  const sol = providerComparisonPanel(snapshot, "sol-price", {
+    title: "SOL price · source comparison",
+    note: "Independent daily observations; the gold published headline remains Deskyrin's canonical price and is not recalculated here.",
+    formatter: fmt.usd,
+    references: sourcePriceReferences(data),
+    className: "span-7 chart-primary cut-corner",
+    meta: ["Provider lines are independently selectable", "Missing dates remain visible gaps"]
+  }) || chartPanel(solSpec, { className: "span-7 chart-primary cut-corner" });
   const tvlChart = chartPanel(tvlSpec, {
     className: "span-5",
     meta: [`Current ${fmt.usd(tvl.latest.valueUsd)}`, `${fmt.pct(tvl.change1dPct, true)} day/day`, `Data through ${fmt.date(tvl.latest.date)}`]
   });
   const stable = chartPanel(stableSpec, { className: "span-6" });
-  const dex = chartPanel(dexSpec, { className: "span-6" });
+  const dex = providerComparisonPanel(snapshot, "dex-volume", {
+    title: "DEX volume · provider comparison",
+    note: "Provider venue coverage and filtering can differ; the teal published line remains the canonical Deskyrin headline.",
+    formatter: fmt.usd,
+    beginAtZero: true,
+    references: [{
+      label: "Published headline",
+      color: DATA_COLORS.network,
+      fill: true,
+      history: dailyReference(data.dexVolume.history, (point) => point.date, (point) => point.dailyVolumeUsd)
+    }],
+    className: "span-6",
+    meta: ["No cross-provider median", "Completed UTC days"]
+  }) || chartPanel(dexSpec, { className: "span-6" });
   const rev = chartPanel(revSpec, {
     className: "span-8 chart-primary",
     type: "stackedBar",
     meta: [`Total ${fmt.compact(data.rev.totalSol)} SOL`, `Data through ${fmt.date(data.rev.date)}`]
   });
   const fee = chartPanel(feeSpec, { className: "span-4" });
+  const providerFees = providerComparisonPanel(snapshot, "fees", {
+    title: "Transaction fees · provider comparison",
+    note: "Independent daily provider observations; Deskyrin REV continues to use the documented Allium + Dune same-date median.",
+    formatter: (value) => `${fmt.compact(value)} SOL`,
+    beginAtZero: true,
+    references: [{
+      label: "Published fee consensus",
+      color: DATA_COLORS.networkSecondary,
+      fill: true,
+      history: dailyReference(data.rev.history, (point) => point.date, (point) => point.transactionFeesSol)
+    }],
+    className: "chart-wide",
+    meta: ["Comparison only", "Canonical REV methodology unchanged"]
+  });
 
   const rowOne = el("div", "analytics-grid");
   rowOne.append(sol.card, tvlChart.card);
@@ -190,6 +273,8 @@ export function renderEconomy(snapshot, root) {
   rowTwo.append(stable.card, dex.card);
   const rowThree = el("div", "analytics-grid");
   rowThree.append(rev.card, fee.card);
-  root.append(rowOne, rowTwo, rowThree, evidencePanels(data));
-  for (const chart of [sol, tvlChart, stable, dex, rev, fee]) chart.draw();
+  root.append(rowOne, rowTwo, rowThree);
+  if (providerFees) root.append(providerFees.card);
+  root.append(evidencePanels(data));
+  for (const chart of [sol, tvlChart, stable, dex, rev, fee, providerFees].filter(Boolean)) chart.draw();
 }

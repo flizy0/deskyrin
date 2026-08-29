@@ -1,7 +1,8 @@
 # Methodology
 
-Version: `1.0.0`  
-Canonical schema: `1.0.0`
+Version: `1.2.0`
+
+Canonical schema: `1.2.0`
 
 This document defines every published value. Changing a definition, population, comparison window, or threshold requires a `methodologyVersion` change. `updatedAt` is captured immediately before candidate validation/publication; every domain also keeps its own `observedAt`, and every source records attempts, successes, data coverage, and next due time.
 
@@ -21,12 +22,14 @@ This document defines every published value. Changing a definition, population, 
 - Stake values use exact `BigInt` arithmetic and are serialized as decimal lamport strings.
 - Stake share is activated stake divided by total activated stake.
 - The table is sorted by activated stake descending, then vote pubkey; the first ten rows are the top validators.
-- Commission is the vote-account commission percentage returned by RPC. Each successful validator refresh compares current rows with the prior successful table and retains up to 1,000 actual changes (`observedAt`, vote account, previous percentage, new percentage). New or returning vote accounts establish a baseline and do not create a false change event.
+- Commission is the vote-account commission percentage returned by RPC. Each successful validator refresh compares current rows with the prior successful table and retains up to 1,000 actual changes (`previousObservedAt`, `detectedAt`, vote account, previous percentage, new percentage). A record means the change occurred sometime after the previous successful snapshot and no later than the detection snapshot; it never claims the exact on-chain change time. Migrated legacy events use the preceding retained validator observation as the lower bound when available, otherwise `previousObservedAt` is explicitly `null`. New or returning vote accounts establish a baseline and do not create a false change event.
 - Stake distribution is the top ten plus one aggregate “Other validators” slice.
 
 ## SOL price and TVL
 
-- **SOL price:** DefiLlama's free Coins API for `coingecko:solana`. The 24-hour reference is requested at current provider timestamp minus 86,400 seconds; change is `100 × (current/reference − 1)`. The bounded chart comes from the same source family. CoinGecko's keyless public endpoint is a whole-domain fallback and is identified explicitly if used.
+- **SOL price:** DefiLlama's free Coins API for `coingecko:solana` remains the canonical primary source. The 24-hour reference is requested at current provider timestamp minus 86,400 seconds; change is `100 × (current/reference − 1)`. The bounded chart comes from the same source family.
+- **CoinGecko always-on comparison and fallback:** CoinGecko's keyless public price and daily history are attempted independently on their hourly schedule, including while DefiLlama is healthy, and retained as a separately identified comparison domain. If DefiLlama fails while CoinGecko succeeds, CoinGecko may replace the complete canonical price domain; individual fields or histories from the two providers are never spliced together.
+- **Coinbase market evidence:** the public Coinbase Exchange `SOL-USD` candles endpoint is requested at 86,400-second granularity. Every retained tuple must be aligned to 00:00 UTC, finite, and satisfy `low ≤ open ≤ high` and `low ≤ close ≤ high`; volume is non-negative. Only buckets strictly before the current UTC day are retained, sorted ascending, and capped at the configured daily-history limit (never more than the endpoint's 300-candle maximum). Coinbase OHLC, daily close, and SOL volume remain comparison evidence and do not alter the canonical price or its alert.
 - **TVL:** the newest two valid adjacent completed UTC-day observations from DefiLlama's Solana historical chain TVL series. Change is `100 × (latest/previous − 1)`. This provider definition excludes liquid staking and double-counted TVL. TVL exists as a required alert input and evidence series.
 
 ## Stablecoin supply
@@ -54,6 +57,15 @@ REV              = transaction fees + gross Jito tips, SOL
 ```
 
 Fee rows come from the Solana Foundation public data aggregator and must have metric `Fees`, unit `SOL`, and both Allium and Dune values. Tips come from Jito's daily MEV rewards dataset. Components are never joined across different dates, and fees alone are never labelled REV.
+
+## Provider comparison evidence
+
+The Solana Foundation Data response also contains contributor-labelled daily rows. Deskyrin retains completed-UTC-day comparisons for exactly four metric/unit pairs: `SOL Price`/`USD`, `Fees`/`SOL`, `Fee Payers`/`Count`, and `DEX Volume`/`USD`. The provider allowlist is Allium, Dune, DeFiLlama, Artemis, Birdeye, Blockworks, DexPaprika, Solscan, and Token Terminal.
+
+- Each provider history is independently sorted, deduplicated by metric/provider/date, capped at 90 points, and carries its own `dataThrough` date. Missing dates remain missing.
+- These names identify contributing methodologies inside one Solana Foundation Data payload. They are not nine separate Deskyrin HTTP requests and do not receive fabricated source-health records.
+- Cross-provider values can diverge because of venue coverage, address definitions, pricing, filtering, and revision policies. Comparison rows are never averaged into a headline merely to produce a consensus.
+- Existing canonical definitions do not change: REV transaction fees still require the Allium/Dune median, daily active addresses still use the documented Allium/Dune `Fee Payers` median, and the primary DEX history remains DefiLlama's direct-DEX series.
 
 ## Median transaction fee
 
@@ -89,6 +101,13 @@ This is a proxy for unique transaction-initiating signers/fee payers, not people
 
 - News is the newest eight valid items from the official Solana RSS feed. Titles, dates, links, and optional descriptions are publisher-authored; HTML is converted to bounded plain text.
 - Upcoming developments are current non-live cards from the official Solana upgrades hub. Recognized stages are `In Development`, `Pending Feature Activation`, and `Action Required`; unknown stages fail the collector. Official detail pages provide SIMD links. The current contract asserts Alpenglow/SIMD-0326 and Reduced Slot Times/SIMD-0525 while they remain officially upcoming.
+- Agave releases come independently from the public `anza-xyz/agave` GitHub releases endpoint. Drafts and unpublished entries are excluded; published releases and prereleases retain their exact publication time and prerelease flag, are sorted newest first, and are capped at 20. Release-note text is bounded to 1,000 characters. Shipped Agave releases are not mixed with upcoming Solana upgrade cards.
+
+## Network observability
+
+The public Solana Statuspage summary and incidents endpoints provide a separately timestamped operational view. Deskyrin retains the overall indicator, at most 50 deterministically ordered components, 20 newest incidents, and 10 updates per incident. Unknown state values, mismatched Statuspage identities, non-HTTPS links, or unexpectedly future timestamps fail collection rather than being coerced.
+
+Solana Status is evidence about the official service-status record, not a substitute for on-chain measurements. An empty incident list does not prove that the chain or every data collector had uninterrupted coverage, and a Deskyrin collection gap is not automatically labelled a Solana network outage.
 
 ## Alerts
 
@@ -112,6 +131,8 @@ A stale input makes its check `unavailable`; it does not keep or create an activ
 - Intentionally not-due data stays fresh only inside its budget; a stale value cannot heal without a successful fetch.
 - Due checks include a five-minute scheduler-jitter allowance, preventing a fixed hourly cron from slipping to every other hour because the previous run completed a few seconds after `:17`.
 - Provider histories are trimmed to 90 daily points. Project hourly histories are capped at 720; RWA history is capped at 365; validator commission tracking is capped at 1,000 sparse events.
+- A persistent `coverageIncidents` record discloses the collection gap beginning at the first missed due observation, `2026-08-26T17:57:44.334Z`. The affected project-owned observations are TPS, non-vote TPS, slot time, validator snapshots/commission tracking, and sampled median transaction fee. The incident closes only at the first run where all three corresponding live collectors succeed.
+- Scheduled collection did not publish during part of this interval, and the first subsequent candidate was rejected by canonical commission-history ordering validation. This records the known publication sequence without claiming that Solana itself was unavailable. No missing live observations are interpolated, carried forward under false timestamps, or reconstructed. Provider-dated daily histories may reappear only when their original public providers return those historical dates; the report keeps that distinction explicit.
 - The final snapshot and exact deterministic Markdown rendering are validated before each temporary file is atomically renamed into place. The updater's Git commit is the pair-level publication boundary; `data.json` must remain below 2 MB.
 
 ## Sources
@@ -119,10 +140,13 @@ A stale input makes its check `unavailable`; it does not keep or create an activ
 - [Solana JSON-RPC methods](https://solana.com/docs/rpc)
 - [DefiLlama free API](https://api-docs.defillama.com/)
 - [CoinGecko Keyless Public API](https://docs.coingecko.com/docs/keyless-public-api)
+- [Coinbase Exchange SOL-USD candles](https://docs.cdp.coinbase.com/api-reference/exchange-api/rest-api/products/get-product-candles)
 - [Solana Foundation data aggregator](https://github.com/solana-foundation/solana-data-aggregator)
 - [Jito daily MEV rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards)
 - [RWA.xyz methodology](https://docs.rwa.xyz/methodology/data-coverage)
 - [Solana News](https://solana.com/news)
 - [Solana Upgrades](https://solana.com/upgrades)
+- [Solana Status](https://status.solana.com/)
+- [Anza Agave releases](https://github.com/anza-xyz/agave/releases)
 
 The complete source-option research and rejected alternatives are retained in the repository's `docs/research` directory.

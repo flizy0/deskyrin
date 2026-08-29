@@ -41,7 +41,8 @@ test("validator calculation filters unstaked accounts and preserves exact aggreg
     delinquent: [account("33333333333333333333333333333333", 5_000_000_000_000_001n)]
   }, new Date("2026-08-20T01:00:00.000Z"), result, config);
   assert.deepEqual(changed.commissionChanges, [{
-    observedAt: "2026-08-20T01:00:00.000Z",
+    previousObservedAt: "2026-08-20T00:00:00.000Z",
+    detectedAt: "2026-08-20T01:00:00.000Z",
     votePubkey: "11111111111111111111111111111111",
     previousCommissionPct: 5,
     commissionPct: 7

@@ -29,7 +29,7 @@ export function normalizeHistory(points, options) {
   }
 
   return uniqueByKey(points, key, "History")
-    .sort((left, right) => key(left).localeCompare(key(right)))
+    .sort((left, right) => key(left) < key(right) ? -1 : key(left) > key(right) ? 1 : 0)
     .slice(-limit);
 }
 

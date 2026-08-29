@@ -21,6 +21,106 @@ function section(lines, title) {
   lines.push("", `## ${title}`, "");
 }
 
+function renderCoverage(lines, incidents) {
+  if (!Array.isArray(incidents) || incidents.length === 0) return;
+  section(lines, "Data Coverage");
+  lines.push("Coverage incidents describe missing observations; they are not network incidents and are never filled with synthetic values.", "");
+  for (const incident of incidents) {
+    const end = incident.endedAt || "ongoing";
+    lines.push(
+      `### ${md(incident.id)}`,
+      "",
+      `State: **${incident.status}** · ${incident.startedAt} → ${end}`,
+      "",
+      `Affected observations: ${incident.affectedMetrics.map(md).join(", ")}.`,
+      "",
+      `Reason: ${md(incident.reason)}`,
+      "",
+      `Disclosure: **${md(incident.disclosure)}**`,
+      ""
+    );
+  }
+}
+
+function renderPriceEvidence(lines, economics) {
+  const rows = [];
+  if (economics.coinGeckoPrice) {
+    rows.push([
+      "CoinGecko keyless comparison",
+      usd.format(economics.coinGeckoPrice.currentUsd),
+      economics.coinGeckoPrice.observedAt,
+      status(economics.coinGeckoPrice)
+    ]);
+  }
+  if (economics.coinbaseMarket) {
+    const latest = economics.coinbaseMarket.history.at(-1);
+    rows.push([
+      `Coinbase Exchange ${economics.coinbaseMarket.productId} daily close`,
+      usd.format(latest.closeUsd),
+      economics.coinbaseMarket.dataThrough,
+      status(economics.coinbaseMarket)
+    ]);
+  }
+  if (rows.length === 0) return;
+  lines.push(
+    "",
+    "### Independent market-price evidence",
+    "",
+    "These comparison observations are retained separately and are not averaged into the headline SOL price or its 24-hour alert.",
+    "",
+    "| Series | Value | Data through | Status |",
+    "|---|---:|---|---|"
+  );
+  for (const row of rows) lines.push(`| ${md(row[0])} | ${row[1]} | ${row[2]} | ${row[3]} |`);
+}
+
+function renderProviderComparisons(lines, comparisons) {
+  if (!comparisons) return;
+  section(lines, "Provider Comparison Evidence");
+  lines.push(
+    `Status: **${status(comparisons)}**. These contributor-labelled series are delivered through the Solana Foundation Data endpoint; they are not separate Deskyrin HTTP collectors or source-health records.`,
+    "",
+    "Provider definitions can differ materially. The values are shown side by side, never averaged into the canonical headline metrics unless an existing methodology explicitly says otherwise.",
+    "",
+    "| Metric | Provider | Data through | Retained points |",
+    "|---|---|---|---:|"
+  );
+  for (const metric of comparisons.metrics) {
+    for (const series of metric.series) {
+      lines.push(`| ${md(metric.name)} (${md(metric.unit)}) | ${md(series.providerName)} | ${series.dataThrough} | ${integer.format(series.history.length)} |`);
+    }
+  }
+}
+
+function renderStatusEvidence(lines, statusData) {
+  if (!statusData) return;
+  section(lines, "Network Observability");
+  const nonOperational = statusData.components.filter((component) => component.status !== "operational");
+  lines.push(
+    `Official Solana Status: **${md(statusData.condition.description)}** (${md(statusData.condition.indicator)}). Observed ${statusData.observedAt}; provider page updated ${statusData.page.updatedAt}.`,
+    "",
+    `${integer.format(statusData.components.length - nonOperational.length)} of ${integer.format(statusData.components.length)} retained components report operational.`,
+    "",
+    "Solana Status incidents and Deskyrin collection gaps are independent records: the absence of an official network incident does not imply that every Deskyrin observation was collected.",
+    ""
+  );
+  if (nonOperational.length) {
+    lines.push("### Non-operational components", "", "| Component | State | Updated |", "|---|---|---|");
+    for (const component of nonOperational) lines.push(`| ${md(component.name)} | ${md(component.status)} | ${component.updatedAt} |`);
+    lines.push("");
+  }
+  lines.push("### Recent official incidents", "");
+  if (statusData.incidents.length === 0) {
+    lines.push("The bounded Statuspage response contains no incidents.", "");
+  } else {
+    lines.push("| Incident | Impact | State | Started | Resolved |", "|---|---|---|---|---|");
+    for (const incident of statusData.incidents.slice(0, 10)) {
+      const label = incident.url ? `[${md(incident.name)}](${incident.url})` : md(incident.name);
+      lines.push(`| ${label} | ${md(incident.impact)} | ${md(incident.status)} | ${incident.startedAt} | ${incident.resolvedAt || "—"} |`);
+    }
+  }
+}
+
 export function renderReport(snapshot) {
   const lines = [
     "# Deskyrin",
@@ -31,6 +131,8 @@ export function renderReport(snapshot) {
     "",
     "All values are generated deterministically from the cited public sources; this report contains no AI-generated analysis."
   ];
+
+  renderCoverage(lines, snapshot.coverageIncidents);
 
   section(lines, "Network Performance");
   const performance = snapshot.network.performance;
@@ -67,14 +169,17 @@ export function renderReport(snapshot) {
   }
   lines.push("", "### Commission tracking", "");
   if (validators.commissionChanges.length === 0) {
-    lines.push("No commission changes have been observed since tracking began.");
+    lines.push("No commission changes have been detected between retained snapshots since tracking began.");
   } else {
     lines.push(
-      "| Observed | Vote account | Previous | New |",
+      "A row means the commission differed between two successful validator snapshots. The interval is evidence of when the change could have occurred, not an exact change timestamp.",
+      "",
+      "| Possible change window | Vote account | Previous | New |",
       "|---|---|---:|---:|"
     );
     for (const event of validators.commissionChanges.slice(-20).reverse()) {
-      lines.push(`| ${event.observedAt} | \`${md(event.votePubkey)}\` | ${event.previousCommissionPct}% | ${event.commissionPct}% |`);
+      const start = event.previousObservedAt || "lower bound unavailable";
+      lines.push(`| ${start} → ${event.detectedAt} | \`${md(event.votePubkey)}\` | ${event.previousCommissionPct}% | ${event.commissionPct}% |`);
     }
   }
 
@@ -92,6 +197,9 @@ export function renderReport(snapshot) {
     "",
     `REV components for ${economics.rev.date}: transaction fees ${number.format(economics.rev.components.transactionFeesSol)} SOL (median of Allium and Dune) + gross Jito tips ${number.format(economics.rev.components.grossJitoTipsSol)} SOL.`
   );
+  renderPriceEvidence(lines, economics);
+
+  renderProviderComparisons(lines, snapshot.providerComparisons);
 
   section(lines, "Ecosystem Growth");
   const ecosystem = snapshot.ecosystem;
@@ -113,6 +221,16 @@ export function renderReport(snapshot) {
   for (const item of ecosystem.news.items) {
     lines.push(`- ${item.publishedAt.slice(0, 10)} — [${md(item.title)}](${item.url})`);
   }
+
+  const releases = snapshot.observability?.agaveReleases;
+  if (releases) {
+    lines.push("", "### Recent Agave releases", "", `Status: **${status(releases)}**. Published releases and prereleases are kept separate from upcoming Solana upgrade cards.`, "");
+    for (const item of releases.items.slice(0, 10)) {
+      lines.push(`- ${item.publishedAt.slice(0, 10)} — [${md(item.title)}](${item.url}) — \`${md(item.tagName)}\`${item.prerelease ? " (prerelease)" : ""}`);
+    }
+  }
+
+  renderStatusEvidence(lines, snapshot.observability?.solanaStatus);
 
   section(lines, "Alerts / notable changes");
   if (snapshot.alerts.length === 0) lines.push("No active warning met its full threshold and freshness requirements.", "");

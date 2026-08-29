@@ -57,15 +57,17 @@ There are no Vercel Functions, Cron Functions, API routes, Blob/KV stores, SQL d
 | Data | Default source | Authentication | Refresh check |
 |---|---|---|---|
 | Network, validators, median fee | Solana JSON-RPC | None | Hourly |
-| SOL price/history | DefiLlama Coins; CoinGecko keyless fallback | None | Hourly |
+| SOL price/history | DefiLlama primary; CoinGecko always-on comparison/fallback; Coinbase daily candles | None | Hourly / daily |
 | TVL | DefiLlama chain TVL | None | Every 6 hours |
 | Stablecoin supply | DefiLlama Stablecoins | None | Every 6 hours |
 | DEX volume | DefiLlama Dimensions | None | Every 6 hours |
-| Fees and active addresses | Solana Foundation public data aggregator | None | Every 6 hours |
+| Fees, active addresses, and provider comparisons | Solana Foundation public data aggregator | None | Every 6 hours |
 | Jito tips | Jito daily MEV rewards | None | Every 6 hours |
 | Tokenized assets/equities | RWA.xyz public Solana page data | None | Every 6 hours |
 | News | Official Solana RSS | None | Every 6 hours |
 | Upgrades | Official Solana upgrades hub/detail pages | None | Every 6 hours |
+| Operational status | Official Solana Statuspage | None | Hourly |
+| Agave releases | Official `anza-xyz/agave` GitHub releases | None | Every 6 hours |
 
 `SOLANA_RPC_URL` is optional and must be HTTPS; the default is `https://api.mainnet-beta.solana.com`. Collection checks are configurable with `LIVE_REFRESH_MINUTES` (default `60`, range `60–1440`) and `DAILY_REFRESH_HOURS` (default `6`, range `1–48`). The hourly GitHub scheduler is versioned in the workflow, so intervals below one hour are intentionally unsupported. These settings are ordinary repository variables, not secrets; no source requires an environment secret.
 
@@ -88,6 +90,7 @@ npm run build     # production static bundle
 npm run verify    # scope/static architecture/artifact checks
 npm run ci        # complete non-browser verification
 npm run update:dry
+npm run check:freshness
 ```
 
 `npm run e2e` runs the reproducible Chromium suite after `npx playwright install chromium`. Installing the browser locally is optional because GitHub Actions installs and runs it on every push and pull request; a successful browser job is still required before submission. The browser binary is not required to update, build, or deploy the dashboard.
@@ -107,6 +110,19 @@ npm run update:dry
 9. commits only the two generated artifacts.
 
 The workflow has a non-cancelling concurrency group, so scheduled runs cannot overlap. A critical bootstrap/contract/publication error exits non-zero before any commit.
+
+### Freshness monitoring and recovery
+
+`.github/workflows/freshness.yml` checks the deployed `/data.json` separately from the updater. It fails on an HTTP/JSON error, an incompatible public schema envelope, an invalid `updatedAt`, or data older than three hours. `PUBLIC_DATA_URL`, `MAX_DATA_AGE_MINUTES`, and `EXPECTED_SCHEMA_VERSION` are configurable repository variables; no secret or API key is required.
+
+For true scheduler independence, run the same dependency-free checker from an external cron or uptime service and alert on its non-zero exit code:
+
+```bash
+PUBLIC_DATA_URL=https://deskyrin-gamma.vercel.app/data.json \
+MAX_DATA_AGE_MINUTES=180 npm run check:freshness
+```
+
+If data is stale, first use **Update public report → Run workflow** in GitHub Actions. Recovery must start from the latest publication branch and its newest validated canonical snapshot—never from a stale feature branch, because that can erase legitimate history points. If scheduled Actions are unavailable, use a clean, up-to-date checkout of `main`, run `npm ci`, `npm run update`, then `npm run ci`; inspect the diff and commit only `public/data.json` and `public/report.md`. Never hand-edit generated values or publish after validation fails. Authoritative historical source data may be recovered normally, while unavailable point-in-time observations remain an explicit gap.
 
 ## Deploying to Vercel
 

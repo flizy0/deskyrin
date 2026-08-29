@@ -1,5 +1,6 @@
 import { DATA_COLORS } from "../charts.js";
 import { fmt } from "../format.js";
+import { providerComparisonPanel } from "../provider-selector.js";
 import { el, emptyStatePanel, safeLink } from "../ui.js";
 import {
   chartPanel,
@@ -182,7 +183,20 @@ export function renderEcosystem(snapshot, root) {
     beginAtZero: true
   });
 
-  const addressesChart = chartPanel(addressSpec, {
+  const addressesChart = providerComparisonPanel(snapshot, "fee-payers", {
+    title: "Daily active addresses · provider comparison",
+    note: "Provider-reported fee-payer proxies can differ; the teal published line remains the Allium + Dune median.",
+    formatter: fmt.integer,
+    beginAtZero: true,
+    references: [{
+      label: "Published median",
+      color: DATA_COLORS.network,
+      fill: true,
+      history: addresses.history.map((point) => ({ date: point.date, value: point.value }))
+    }],
+    className: "span-8 chart-primary cut-corner",
+    meta: [`${addresses.history.length} canonical days`, "Provider methodologies may differ"]
+  }) || chartPanel(addressSpec, {
     className: "span-8 chart-primary cut-corner",
     meta: [`${addresses.history.length} completed UTC days`, `Consensus: ${addresses.consensusMethod}`]
   });
