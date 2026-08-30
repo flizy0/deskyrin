@@ -11,12 +11,12 @@ import { collectTvl } from "./collectors/defi-tvl.js";
 import { collectJito } from "./collectors/jito.js";
 import { collectMedianFee } from "./collectors/median-fee.js";
 import { collectNews } from "./collectors/news.js";
-import { collectRwa } from "./collectors/rwa.js";
 import { collectSolanaCore } from "./collectors/solana-core.js";
 import { collectSolanaData } from "./collectors/solana-data.js";
 import { collectSolanaStatus } from "./collectors/solana-status.js";
+import { collectTokenizedMarkets, TOKENIZED_MARKETS_METHODOLOGY } from "./collectors/tokens.js";
 import { collectUpgrades } from "./collectors/upgrades.js";
-import { parseCanonicalSnapshot } from "./contracts/canonical.js";
+import { parseCanonicalSnapshot, parsePreviousCanonicalSnapshot } from "./contracts/canonical.js";
 import { createConfig } from "./config.js";
 import { buildCoverageIncidents } from "./coverage.js";
 import { asPipelineError, safeError } from "./lib/errors.js";
@@ -42,7 +42,7 @@ import {
 async function readPrevious(root, config) {
   try {
     const text = await readFile(resolve(root, config.output.dataPath), "utf8");
-    return parseCanonicalSnapshot(JSON.parse(text), config.history);
+    return parsePreviousCanonicalSnapshot(JSON.parse(text), config.history);
   } catch (error) {
     if (error?.code === "ENOENT") return undefined;
     throw asPipelineError(error, { code: "INVALID_PREVIOUS_SNAPSHOT", message: "Existing data.json is not a valid canonical snapshot" });
@@ -132,7 +132,9 @@ export async function runUpdate(options = {}) {
     dex: due("defiLlamaDex") ? attempt(() => collectDexVolume(context)) : Promise.resolve(notDue()),
     solanaData: revDue ? attempt(() => collectSolanaData(context)) : Promise.resolve(notDue()),
     jito: revDue ? attempt(() => collectJito(context)) : Promise.resolve(notDue()),
-    rwa: due("rwa") ? attempt(() => collectRwa(context, previous?.ecosystem.tokenizedAssets.history)) : Promise.resolve(notDue()),
+    tokenized: due("tokensXyz")
+      ? attempt(() => collectTokenizedMarkets(context, previous?.ecosystem.tokenizedAssets))
+      : Promise.resolve(notDue()),
     news: due("solanaNews") ? attempt(() => collectNews(context)) : Promise.resolve(notDue()),
     upgrades: due("solanaUpgrades") ? attempt(() => collectUpgrades(context)) : Promise.resolve(notDue()),
     status: due("solanaStatus") ? attempt(() => collectSolanaStatus(context)) : Promise.resolve(notDue()),
@@ -215,8 +217,11 @@ export async function runUpdate(options = {}) {
     ...(coinGeckoPrice ? { coinGeckoPrice } : {}),
     ...(coinbaseMarket ? { coinbaseMarket } : {})
   };
+  const previousTokenizedMarkets = previous?.ecosystem.tokenizedAssets?.methodology === TOKENIZED_MARKETS_METHODOLOGY
+    ? previous.ecosystem.tokenizedAssets
+    : undefined;
   const ecosystem = {
-    tokenizedAssets: mergeDomain(previous?.ecosystem.tokenizedAssets, collected.rwa, now, config.freshness.daily, "tokenized assets"),
+    tokenizedAssets: mergeDomain(previousTokenizedMarkets, collected.tokenized, now, config.freshness.daily, "tokenized markets"),
     dailyActiveAddresses: mergeDomain(previous?.ecosystem.dailyActiveAddresses, addressesResult, now, config.freshness.daily, "daily active addresses"),
     news: mergeDomain(previous?.ecosystem.news, collected.news, now, config.freshness.content, "news"),
     upgrades: mergeDomain(previous?.ecosystem.upgrades, collected.upgrades, now, config.freshness.content, "upgrades")
@@ -238,7 +243,7 @@ export async function runUpdate(options = {}) {
     defiLlamaDex: collected.dex.state === "fresh" ? { state: "fresh", dataThrough: collected.dex.value.date } : collected.dex,
     solanaData: collected.solanaData.state === "fresh" ? { state: "fresh", dataThrough: collected.solanaData.value.generatedAt } : collected.solanaData,
     jitoMev: collected.jito.state === "fresh" ? { state: "fresh", dataThrough: collected.jito.value.at(-1)?.date } : collected.jito,
-    rwa: collected.rwa.state === "fresh" ? { state: "fresh", dataThrough: collected.rwa.value.observedAt } : collected.rwa,
+    tokensXyz: collected.tokenized.state === "fresh" ? { state: "fresh", dataThrough: collected.tokenized.value.observedAt } : collected.tokenized,
     solanaNews: collected.news.state === "fresh" ? { state: "fresh", dataThrough: collected.news.value.feedUpdatedAt || collected.news.value.observedAt } : collected.news,
     solanaUpgrades: collected.upgrades.state === "fresh" ? { state: "fresh", dataThrough: collected.upgrades.value.observedAt } : collected.upgrades,
     solanaStatus: collected.status.state === "fresh" ? { state: "fresh", dataThrough: collected.status.value.dataThrough } : collected.status,

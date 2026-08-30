@@ -1,8 +1,8 @@
 # Methodology
 
-Version: `1.2.0`
+Version: `1.3.0`
 
-Canonical schema: `1.2.0`
+Canonical schema: `1.3.0`
 
 This document defines every published value. Changing a definition, population, comparison window, or threshold requires a `methodologyVersion` change. `updatedAt` is captured immediately before candidate validation/publication; every domain also keeps its own `observedAt`, and every source records attempts, successes, data coverage, and next due time.
 
@@ -60,10 +60,10 @@ Fee rows come from the Solana Foundation public data aggregator and must have me
 
 ## Provider comparison evidence
 
-The Solana Foundation Data response also contains contributor-labelled daily rows. Deskyrin retains completed-UTC-day comparisons for exactly four metric/unit pairs: `SOL Price`/`USD`, `Fees`/`SOL`, `Fee Payers`/`Count`, and `DEX Volume`/`USD`. The provider allowlist is Allium, Dune, DeFiLlama, Artemis, Birdeye, Blockworks, DexPaprika, Solscan, and Token Terminal.
+The Solana Foundation Data response also contains contributor-labelled daily rows. Deskyrin retains completed-UTC-day comparisons for exactly four metric/unit pairs: `SOL Price`/`USD`, `Fees`/`SOL`, `Fee Payers`/`Count`, and `DEX Volume`/`USD`. The provider allowlist is Allium, Dune, DeFiLlama, Artemis, Birdeye, Blockworks, DexPaprika, Solscan, Token Terminal, Top Ledger, and Uniblock.
 
 - Each provider history is independently sorted, deduplicated by metric/provider/date, capped at 90 points, and carries its own `dataThrough` date. Missing dates remain missing.
-- These names identify contributing methodologies inside one Solana Foundation Data payload. They are not nine separate Deskyrin HTTP requests and do not receive fabricated source-health records.
+- These names identify contributing methodologies inside one Solana Foundation Data payload. They are not eleven separate Deskyrin HTTP requests and do not receive fabricated source-health records.
 - Cross-provider values can diverge because of venue coverage, address definitions, pricing, filtering, and revision policies. Comparison rows are never averaged into a headline merely to produce a consensus.
 - Existing canonical definitions do not change: REV transaction fees still require the Allium/Dune median, daily active addresses still use the documented Allium/Dune `Fee Payers` median, and the primary DEX history remains DefiLlama's direct-DEX series.
 
@@ -86,12 +86,13 @@ The listing-defined growth metrics are limited to the following.
 
 ### Tokenized assets, especially equities
 
-RWA.xyz's public Solana page embeds the current network dataset. The pipeline sums the source-defined asset-class `trailing_30_day_transfer_volume.val` values except `stablecoins`, and separately reads the `Stocks` class from the same payload.
+Tokens.xyz's public curated Solana lists (`rwas`, `stocks`, `etfs`, and `metals`) provide the active tokenized-market universe. Assets are deduplicated by stable asset ID with deterministic list precedence. The equity subset is defined by Tokens.xyz category `equity`.
 
-- Both values are USD trailing-30-day on-chain transfer volume.
-- Transfers exclude mint and burn events under the provider methodology.
-- “Tokenized equities” is the provider's Stocks subset, not DEX trading volume.
-- One point per provider update timestamp is stored locally, capped at 365.
+- The published values are USD trailing-30-day **spot trading volume**, not transfer volume. Total volume sums covered assets across the four curated lists; equity volume sums the covered equity subset.
+- Only assets whose selected primary variant reports `birdeye` or `clickhouse_trades` volume provenance are included. RWA.xyz-derived provenance, unrecognized provenance, and accepted sources without a 30-day value are excluded in separate counts and never converted to zero.
+- Indexed and covered asset/equity counts are published with every observation so changes in coverage remain visible.
+- The public endpoint is keyless and checked every six hours. One observation is appended per successful collection and active history is capped at 365 points.
+- The retired RWA.xyz trailing-30-day transfer-volume history is retained under `legacyTransferVolume` through its last genuine observation. It is a different methodology and is never joined, interpolated, or compared as if it were Tokens.xyz spot volume.
 
 ### Daily active addresses
 
@@ -130,7 +131,7 @@ A stale input makes its check `unavailable`; it does not keep or create an activ
 - A required bootstrap domain with no last-known-good value is critical and stops publication.
 - Intentionally not-due data stays fresh only inside its budget; a stale value cannot heal without a successful fetch.
 - Due checks include a five-minute scheduler-jitter allowance, preventing a fixed hourly cron from slipping to every other hour because the previous run completed a few seconds after `:17`.
-- Provider histories are trimmed to 90 daily points. Project hourly histories are capped at 720; RWA history is capped at 365; validator commission tracking is capped at 1,000 sparse events.
+- Provider histories are trimmed to 90 daily points. Project hourly histories are capped at 720; active tokenized-market and retired RWA histories are each capped at 365; validator commission tracking is capped at 1,000 sparse events.
 - A persistent `coverageIncidents` record discloses the collection gap beginning at the first missed due observation, `2026-08-26T17:57:44.334Z`. The affected project-owned observations are TPS, non-vote TPS, slot time, validator snapshots/commission tracking, and sampled median transaction fee. The incident closes only at the first run where all three corresponding live collectors succeed.
 - Scheduled collection did not publish during part of this interval, and the first subsequent candidate was rejected by canonical commission-history ordering validation. This records the known publication sequence without claiming that Solana itself was unavailable. No missing live observations are interpolated, carried forward under false timestamps, or reconstructed. Provider-dated daily histories may reappear only when their original public providers return those historical dates; the report keeps that distinction explicit.
 - The final snapshot and exact deterministic Markdown rendering are validated before each temporary file is atomically renamed into place. The updater's Git commit is the pair-level publication boundary; `data.json` must remain below 2 MB.
@@ -143,7 +144,9 @@ A stale input makes its check `unavailable`; it does not keep or create an activ
 - [Coinbase Exchange SOL-USD candles](https://docs.cdp.coinbase.com/api-reference/exchange-api/rest-api/products/get-product-candles)
 - [Solana Foundation data aggregator](https://github.com/solana-foundation/solana-data-aggregator)
 - [Jito daily MEV rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards)
-- [RWA.xyz methodology](https://docs.rwa.xyz/methodology/data-coverage)
+- [Tokens.xyz application](https://www.tokens.xyz/)
+- [Solana Foundation Tokens source](https://github.com/solana-foundation/tokens)
+- [RWA.xyz methodology (retired historical series only)](https://docs.rwa.xyz/methodology/data-coverage)
 - [Solana News](https://solana.com/news)
 - [Solana Upgrades](https://solana.com/upgrades)
 - [Solana Status](https://status.solana.com/)

@@ -126,22 +126,39 @@ export const jitoDailySchema = z.array(z.object({
   validator_tips: nonNegative
 })).min(1);
 
-const comparisonSchema = z.object({ val: nonNegative });
-export const rwaNextDataSchema = z.object({
-  buildId: z.string().min(1),
-  props: z.object({
-    pageProps: z.object({
-      network: z.object({
-        id: z.number().int().positive(),
-        name: z.literal("Solana"),
-        slug: z.literal("solana"),
-        _updated_at: z.string().min(10),
-        asset_class_stats: z.array(z.object({
-          name: z.string().min(1),
-          slug: z.string().min(1),
-          trailing_30_day_transfer_volume: comparisonSchema
-        })).min(1)
-      })
-    })
-  })
+const tokensMetricsSourceSchema = z.string().min(1).max(100);
+const nullableNonNegative = nonNegative.nullable();
+const tokensMarketSchema = z.object({
+  source: tokensMetricsSourceSchema.optional(),
+  metricsSource: tokensMetricsSourceSchema.optional(),
+  volume24hUSD: nullableNonNegative,
+  marketCap: nullableNonNegative,
+  asOf: safeNonNegativeInteger.nullable().optional(),
+  lastFetchedAt: safeNonNegativeInteger.nullable()
 });
+
+export const tokensCuratedAssetsSchema = z.object({
+  listId: z.enum(["rwas", "stocks", "etfs", "metals"]),
+  primaryVariantStrategy: z.enum(["liquidity", "execution_quality", "stock_redeemability"]),
+  stale: z.boolean().nullable().optional(),
+  pagination: z.object({
+    offset: safeNonNegativeInteger,
+    limit: z.number().int().min(1).max(500),
+    total: safeNonNegativeInteger,
+    hasMore: z.boolean(),
+    nextOffset: safeNonNegativeInteger.nullable()
+  }).strict(),
+  assets: z.array(z.object({
+    assetId: z.string().min(1).max(200),
+    category: z.string().min(1).max(100),
+    stats: z.object({
+      volume24hUSD: nullableNonNegative,
+      volume30dUSD: nullableNonNegative,
+      marketCap: nullableNonNegative
+    }).nullable(),
+    primaryVariant: z.object({
+      mint: publicKey,
+      market: tokensMarketSchema.nullable()
+    }).nullable()
+  })).max(500)
+}).strict();

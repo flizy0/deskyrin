@@ -76,6 +76,39 @@ test("provider comparisons reject conflicting rows for the same provider metric 
   );
 });
 
+test("approved Top Ledger and Uniblock series retain their own completed-day boundaries", () => {
+  const rows = [
+    row("2026-08-26", "SOL Price", "USD", "Top Ledger", 101),
+    row("2026-08-27", "SOL Price", "USD", "Top Ledger", 103),
+    row("2026-08-27", "SOL Price", "USD", "Uniblock", 102.5),
+    row("2026-08-28", "SOL Price", "USD", "Uniblock", 104),
+    row("2026-08-29", "SOL Price", "USD", "Top Ledger", 105),
+    row("2026-08-29", "SOL Price", "USD", "Uniblock", 105.1)
+  ];
+
+  const result = calculateProviderComparisons(rows, generatedAt, now, DEFAULT_CONFIG);
+  const price = result.metrics.find((metric) => metric.id === "sol-price");
+
+  assert.deepEqual(price.series.filter((series) => ["Top Ledger", "Uniblock"].includes(series.providerName)), [
+    {
+      providerName: "Top Ledger",
+      dataThrough: "2026-08-27",
+      history: [
+        { date: "2026-08-26", value: 101 },
+        { date: "2026-08-27", value: 103 }
+      ]
+    },
+    {
+      providerName: "Uniblock",
+      dataThrough: "2026-08-28",
+      history: [
+        { date: "2026-08-27", value: 102.5 },
+        { date: "2026-08-28", value: 104 }
+      ]
+    }
+  ]);
+});
+
 test("provider comparisons expose all metric definitions when a provider has no rows", () => {
   const result = calculateProviderComparisons([], generatedAt, now, DEFAULT_CONFIG);
 

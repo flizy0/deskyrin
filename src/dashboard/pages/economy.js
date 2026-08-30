@@ -1,4 +1,4 @@
-import { DATA_COLORS } from "../charts.js";
+import { DATA_COLORS, LIVE_OBSERVATION_GAP_MS } from "../charts.js";
 import { coverageGapCallout } from "../coverage-callout.js";
 import { fmt } from "../format.js";
 import { providerComparisonPanel } from "../provider-selector.js";
@@ -12,8 +12,6 @@ import {
   panel
 } from "../view-utils.js";
 
-const LIVE_GAP_MS = 3 * 60 * 60 * 1_000;
-
 function dailyReference(history, dateOf, valueOf) {
   const values = new Map();
   for (const point of history || []) {
@@ -26,25 +24,33 @@ function dailyReference(history, dateOf, valueOf) {
     .sort((left, right) => left.date < right.date ? -1 : left.date > right.date ? 1 : 0);
 }
 
-function sourcePriceReferences(data) {
+export function sourcePriceReferences(data, updatedAt) {
   const references = [];
+  const currentUtcDate = new Date(updatedAt).toISOString().slice(0, 10);
 
   if (data.coinbaseMarket?.history?.length) {
-    references.push({
-      label: "Coinbase",
-      providerName: "Coinbase",
-      dataThrough: data.coinbaseMarket.dataThrough,
-      history: dailyReference(data.coinbaseMarket.history, (point) => point.date, (point) => point.closeUsd)
-    });
+    const history = dailyReference(data.coinbaseMarket.history, (point) => point.date, (point) => point.closeUsd)
+      .filter((point) => point.date < currentUtcDate);
+    if (history.length) {
+      references.push({
+        label: "Coinbase",
+        providerName: "Coinbase",
+        dataThrough: history.at(-1).date,
+        history
+      });
+    }
   }
   if (data.coinGeckoPrice?.history?.length) {
-    const history = dailyReference(data.coinGeckoPrice.history, (point) => point.observedAt.slice(0, 10), (point) => point.priceUsd);
-    references.push({
-      label: "CoinGecko",
-      providerName: "CoinGecko",
-      dataThrough: history.at(-1)?.date,
-      history
-    });
+    const history = dailyReference(data.coinGeckoPrice.history, (point) => point.observedAt.slice(0, 10), (point) => point.priceUsd)
+      .filter((point) => point.date < currentUtcDate);
+    if (history.length) {
+      references.push({
+        label: "CoinGecko",
+        providerName: "CoinGecko",
+        dataThrough: history.at(-1).date,
+        history
+      });
+    }
   }
   return references;
 }
@@ -148,7 +154,7 @@ export function renderEconomy(snapshot, root) {
       domain: data.medianTransactionFee,
       tone: "network-secondary",
       series: data.medianTransactionFee.history.map((point) => ({ observedAt: point.observedAt, value: point.medianLamports })),
-      seriesGapMs: LIVE_GAP_MS
+      seriesGapMs: LIVE_OBSERVATION_GAP_MS
     })
   ], "metric-grid-five"));
 
@@ -209,7 +215,7 @@ export function renderEconomy(snapshot, root) {
     domain: data.medianTransactionFee,
     history: data.medianTransactionFee.history,
     time: (point) => point.observedAt,
-    series: [{ label: "Median transaction fee", field: "medianLamports", color: DATA_COLORS.networkSecondary, fill: true, spanGaps: LIVE_GAP_MS }],
+    series: [{ label: "Median transaction fee", field: "medianLamports", color: DATA_COLORS.networkSecondary, fill: true, spanGaps: LIVE_OBSERVATION_GAP_MS }],
     formatter: (value) => `${fmt.decimal(value)} lamports`
   });
 
@@ -217,7 +223,7 @@ export function renderEconomy(snapshot, root) {
     title: "SOL price · source comparison",
     note: "Independent daily source observations; each line retains its provider methodology.",
     formatter: fmt.usd,
-    references: sourcePriceReferences(data),
+    references: sourcePriceReferences(data, snapshot.updatedAt),
     className: "span-7 chart-primary cut-corner",
     meta: ["Provider lines are independently selectable", "Missing dates remain visible gaps"]
   }) || chartPanel(solSpec, { className: "span-7 chart-primary cut-corner" });

@@ -8,9 +8,9 @@ import { collectTvl } from "../../src/pipeline/collectors/defi-tvl.js";
 import { collectJito } from "../../src/pipeline/collectors/jito.js";
 import { collectMedianFee } from "../../src/pipeline/collectors/median-fee.js";
 import { collectNews } from "../../src/pipeline/collectors/news.js";
-import { collectRwa } from "../../src/pipeline/collectors/rwa.js";
 import { collectSolanaCore } from "../../src/pipeline/collectors/solana-core.js";
 import { collectSolanaData } from "../../src/pipeline/collectors/solana-data.js";
+import { collectTokenizedMarkets } from "../../src/pipeline/collectors/tokens.js";
 import { collectUpgrades } from "../../src/pipeline/collectors/upgrades.js";
 
 const now = new Date("2026-08-20T12:00:00.000Z");
@@ -91,25 +91,63 @@ test("Solana Data transport does not freeze independent metrics when one consens
   assert.deepEqual(result.rows, rows);
 });
 
-test("RWA and RSS collectors parse their public page contracts", async () => {
-  const rwaPayload = {
-    buildId: "fixture-build",
-    props: { pageProps: { network: {
-      id: 1, name: "Solana", slug: "solana", _updated_at: "2026-08-20T11:00:00.000Z",
-      asset_class_stats: [
-        { name: "Stablecoins", slug: "stablecoins", trailing_30_day_transfer_volume: { val: 1_000 } },
-        { name: "Stocks", slug: "stocks", trailing_30_day_transfer_volume: { val: 200 } },
-        { name: "Treasuries", slug: "treasuries", trailing_30_day_transfer_volume: { val: 50 } }
-      ]
-    } } }
+test("Tokens.xyz and RSS collectors preserve provenance and legacy boundaries", async () => {
+  const asset = (assetId, category, volume30dUSD, metricsSource, mint) => ({
+    assetId,
+    category,
+    stats: { volume24hUSD: 1, volume30dUSD, marketCap: 10 },
+    primaryVariant: {
+      mint,
+      market: { source: "birdeye", metricsSource, volume24hUSD: 1, marketCap: 10, lastFetchedAt: 1_788_088_681_865 }
+    }
+  });
+  const byList = {
+    rwas: [
+      asset("tbill", "rwa", 100, "birdeye", "11111111111111111111111111111111"),
+      asset("excluded-rwa", "rwa", 900, "rwa_xyz", "22222222222222222222222222222222")
+    ],
+    stocks: [
+      asset("equity", "equity", 200, "clickhouse_trades", "33333333333333333333333333333333"),
+      asset("tbill", "rwa", 999, "birdeye", "11111111111111111111111111111111")
+    ],
+    etfs: [asset("etf", "etf", 50, "birdeye", "44444444444444444444444444444444")],
+    metals: [asset("gold", "commodity", 60, "future_provider", "55555555555555555555555555555555")]
   };
   const rss = `<?xml version="1.0"?><rss><channel><lastBuildDate>Thu, 20 Aug 2026 11:00:00 GMT</lastBuildDate><item><guid>one</guid><title>Official update</title><link>https://solana.com/news/update</link><pubDate>Wed, 19 Aug 2026 10:00:00 GMT</pubDate><description><![CDATA[<p>Source-authored text.</p>]]></description></item></channel></rss>`;
-  const context = httpContext(async (url) => url === DEFAULT_CONFIG.endpoints.rwaPage
-    ? `<html><body><script id="__NEXT_DATA__" type="application/json">${JSON.stringify(rwaPayload)}</script></body></html>`
-    : rss);
-  const [rwa, news] = await Promise.all([collectRwa(context, []), collectNews(context)]);
-  assert.equal(rwa.totalTransferVolumeUsd, 250);
-  assert.equal(rwa.equityTransferVolumeUsd, 200);
+  const context = httpContext(async (url) => {
+    if (url.startsWith("https://www.tokens.xyz/")) {
+      const listId = new URL(url).searchParams.get("list");
+      const assets = byList[listId];
+      return {
+        listId,
+        primaryVariantStrategy: "liquidity",
+        pagination: { offset: 0, limit: 500, total: assets.length, hasMore: false, nextOffset: null },
+        assets
+      };
+    }
+    return rss;
+  });
+  const previous = {
+    status: "fresh",
+    observedAt: "2026-08-19T00:00:00.000Z",
+    sourceIds: ["rwa"],
+    currency: "USD",
+    windowDays: 30,
+    totalTransferVolumeUsd: 300,
+    equityTransferVolumeUsd: 200,
+    history: [{ observedAt: "2026-08-19T00:00:00.000Z", totalTransferVolumeUsd: 300, equityTransferVolumeUsd: 200 }]
+  };
+  const [tokenized, news] = await Promise.all([collectTokenizedMarkets(context, previous), collectNews(context)]);
+  assert.equal(tokenized.totalSpotVolume30dUsd, 350);
+  assert.equal(tokenized.equitySpotVolume30dUsd, 200);
+  assert.equal(tokenized.indexedAssetCount, 5);
+  assert.equal(tokenized.coveredAssetCount, 3);
+  assert.deepEqual(tokenized.provenanceCoverage, {
+    rwaXyzExcludedCount: 1,
+    unknownSourceExcludedCount: 1,
+    missingVolumeExcludedCount: 0
+  });
+  assert.equal(tokenized.legacyTransferVolume.endedAt, previous.observedAt);
   assert.equal(news.items[0].title, "Official update");
   assert.equal(news.items[0].description, "Source-authored text.");
 });

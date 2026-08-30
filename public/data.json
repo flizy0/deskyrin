@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "1.2.0",
-  "methodologyVersion": "1.2.0",
-  "updatedAt": "2026-08-30T17:19:30.335Z",
-  "updateStatus": "partial",
+  "schemaVersion": "1.3.0",
+  "methodologyVersion": "1.3.0",
+  "updatedAt": "2026-08-30T18:03:47.858Z",
+  "updateStatus": "complete",
   "sources": {
     "solanaRpc": {
       "name": "Solana JSON-RPC",
@@ -85,18 +85,14 @@
       "nextDueAt": "2026-08-30T21:19:28.424Z",
       "dataThrough": "2026-08-29"
     },
-    "rwa": {
-      "name": "RWA.xyz Solana Network",
-      "url": "https://app.rwa.xyz/networks/solana",
-      "status": "stale",
-      "lastAttemptAt": "2026-08-30T17:19:26.240Z",
-      "lastSuccessAt": "2026-08-26T14:06:46.554Z",
-      "nextDueAt": "2026-08-30T18:19:26.240Z",
-      "dataThrough": "2026-08-26T06:02:39.551Z",
-      "error": {
-        "code": "HTTP_403",
-        "message": "Source returned HTTP 403"
-      }
+    "tokensXyz": {
+      "name": "Tokens.xyz Curated Markets",
+      "url": "https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity",
+      "status": "fresh",
+      "lastAttemptAt": "2026-08-30T18:03:43.954Z",
+      "lastSuccessAt": "2026-08-30T18:03:43.954Z",
+      "nextDueAt": "2026-08-31T00:03:43.954Z",
+      "dataThrough": "2026-08-30T18:03:43.954Z"
     },
     "solanaNews": {
       "name": "Solana News RSS",
@@ -12252,63 +12248,107 @@
   },
   "ecosystem": {
     "tokenizedAssets": {
-      "status": "stale",
-      "observedAt": "2026-08-26T06:02:39.551Z",
+      "status": "fresh",
+      "observedAt": "2026-08-30T18:03:43.954Z",
       "sourceIds": [
-        "rwa"
+        "tokensXyz"
       ],
-      "staleSince": "2026-08-29T15:10:55.812Z",
+      "methodology": "tokens_xyz_spot_volume_v1",
       "currency": "USD",
       "windowDays": 30,
-      "totalTransferVolumeUsd": 3205531496.759804,
-      "equityTransferVolumeUsd": 2139145270.3650212,
+      "curatedLists": [
+        "rwas",
+        "stocks",
+        "etfs",
+        "metals"
+      ],
+      "acceptedMetricsSources": [
+        "birdeye",
+        "clickhouse_trades"
+      ],
+      "totalSpotVolume30dUsd": 1279884867.7043962,
+      "equitySpotVolume30dUsd": 973496746.764295,
+      "indexedAssetCount": 438,
+      "indexedEquityCount": 393,
+      "coveredAssetCount": 357,
+      "coveredEquityCount": 333,
+      "provenanceCoverage": {
+        "rwaXyzExcludedCount": 10,
+        "unknownSourceExcludedCount": 12,
+        "missingVolumeExcludedCount": 59
+      },
+      "listCoverage": {
+        "rwas": 15,
+        "stocks": 398,
+        "etfs": 24,
+        "metals": 4
+      },
       "history": [
         {
-          "observedAt": "2026-08-19T17:16:42.126Z",
-          "totalTransferVolumeUsd": 2922475106.9783683,
-          "equityTransferVolumeUsd": 1952081467.6777048
-        },
-        {
-          "observedAt": "2026-08-20T06:58:37.123Z",
-          "totalTransferVolumeUsd": 3093577750.254709,
-          "equityTransferVolumeUsd": 2104952677.6356783
-        },
-        {
-          "observedAt": "2026-08-21T06:17:55.241Z",
-          "totalTransferVolumeUsd": 3128900477.867628,
-          "equityTransferVolumeUsd": 2133377241.3609176
-        },
-        {
-          "observedAt": "2026-08-22T06:25:29.671Z",
-          "totalTransferVolumeUsd": 3023053300.9060507,
-          "equityTransferVolumeUsd": 2036507392.0501063
-        },
-        {
-          "observedAt": "2026-08-23T06:04:56.194Z",
-          "totalTransferVolumeUsd": 2936530066.799291,
-          "equityTransferVolumeUsd": 2023737168.9169168
-        },
-        {
-          "observedAt": "2026-08-23T22:45:41.987Z",
-          "totalTransferVolumeUsd": 2936530066.79929,
-          "equityTransferVolumeUsd": 2023737168.9169164
-        },
-        {
-          "observedAt": "2026-08-24T06:13:37.834Z",
-          "totalTransferVolumeUsd": 2838737968.18919,
-          "equityTransferVolumeUsd": 1934291471.0393987
-        },
-        {
-          "observedAt": "2026-08-25T06:01:56.711Z",
-          "totalTransferVolumeUsd": 3050364636.7482047,
-          "equityTransferVolumeUsd": 2046248126.2206488
-        },
-        {
-          "observedAt": "2026-08-26T06:02:39.551Z",
-          "totalTransferVolumeUsd": 3205531496.759804,
-          "equityTransferVolumeUsd": 2139145270.3650212
+          "observedAt": "2026-08-30T18:03:43.954Z",
+          "totalSpotVolume30dUsd": 1279884867.7043962,
+          "equitySpotVolume30dUsd": 973496746.764295,
+          "indexedAssetCount": 438,
+          "indexedEquityCount": 393,
+          "coveredAssetCount": 357,
+          "coveredEquityCount": 333
         }
-      ]
+      ],
+      "legacyTransferVolume": {
+        "sourceName": "RWA.xyz Solana Network",
+        "sourceUrl": "https://app.rwa.xyz/networks/solana",
+        "methodology": "rwa_xyz_trailing_30d_transfer_volume",
+        "currency": "USD",
+        "windowDays": 30,
+        "endedAt": "2026-08-26T06:02:39.551Z",
+        "history": [
+          {
+            "observedAt": "2026-08-19T17:16:42.126Z",
+            "totalTransferVolumeUsd": 2922475106.9783683,
+            "equityTransferVolumeUsd": 1952081467.6777048
+          },
+          {
+            "observedAt": "2026-08-20T06:58:37.123Z",
+            "totalTransferVolumeUsd": 3093577750.254709,
+            "equityTransferVolumeUsd": 2104952677.6356783
+          },
+          {
+            "observedAt": "2026-08-21T06:17:55.241Z",
+            "totalTransferVolumeUsd": 3128900477.867628,
+            "equityTransferVolumeUsd": 2133377241.3609176
+          },
+          {
+            "observedAt": "2026-08-22T06:25:29.671Z",
+            "totalTransferVolumeUsd": 3023053300.9060507,
+            "equityTransferVolumeUsd": 2036507392.0501063
+          },
+          {
+            "observedAt": "2026-08-23T06:04:56.194Z",
+            "totalTransferVolumeUsd": 2936530066.799291,
+            "equityTransferVolumeUsd": 2023737168.9169168
+          },
+          {
+            "observedAt": "2026-08-23T22:45:41.987Z",
+            "totalTransferVolumeUsd": 2936530066.79929,
+            "equityTransferVolumeUsd": 2023737168.9169164
+          },
+          {
+            "observedAt": "2026-08-24T06:13:37.834Z",
+            "totalTransferVolumeUsd": 2838737968.18919,
+            "equityTransferVolumeUsd": 1934291471.0393987
+          },
+          {
+            "observedAt": "2026-08-25T06:01:56.711Z",
+            "totalTransferVolumeUsd": 3050364636.7482047,
+            "equityTransferVolumeUsd": 2046248126.2206488
+          },
+          {
+            "observedAt": "2026-08-26T06:02:39.551Z",
+            "totalTransferVolumeUsd": 3205531496.759804,
+            "equityTransferVolumeUsd": 2139145270.3650212
+          }
+        ]
+      }
     },
     "dailyActiveAddresses": {
       "status": "fresh",

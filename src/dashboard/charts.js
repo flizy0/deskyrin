@@ -19,6 +19,10 @@ export const DATA_COLORS = Object.freeze({
   ])
 });
 
+// Scheduled hourly observations can arrive several hours apart when a run is delayed.
+// Six hours joins retained successful samples while leaving multi-day collection gaps visible.
+export const LIVE_OBSERVATION_GAP_MS = 6 * 60 * 60 * 1_000;
+
 const CHART_SURFACES = Object.freeze({
   text: "#929a96",
   tooltip: "#121615",

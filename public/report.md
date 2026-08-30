@@ -1,8 +1,8 @@
 # Deskyrin
 
-Updated: **2026-08-30T17:19:30.335Z**
+Updated: **2026-08-30T18:03:47.858Z**
 
-Update status: **partial**
+Update status: **complete**
 
 All values are generated deterministically from the cited public sources; this report contains no AI-generated analysis.
 
@@ -146,9 +146,17 @@ Provider definitions can differ materially. The values are shown side by side, n
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| Tokenized-asset transfer volume (trailing 30d) | $3.21B | 2026-08-26T06:02:39.551Z | Stale since 2026-08-29T15:10:55.812Z |
-| Tokenized-equity transfer volume (trailing 30d) | $2.14B | 2026-08-26T06:02:39.551Z | Stale since 2026-08-29T15:10:55.812Z |
+| Tokenized-market spot volume (trailing 30d) | $1.28B | 2026-08-30T18:03:43.954Z | Fresh |
+| Tokenized-equity spot volume (trailing 30d) | $973.5M | 2026-08-30T18:03:43.954Z | Fresh |
 | Daily active addresses (initiating signers/fee payers) | 2,460,115 | 2026-08-28 | Fresh |
+
+Tokens.xyz coverage: 357 of 438 indexed tokenized-market assets and 333 of 393 equities have accepted 30-day volume provenance. Excluded assets: 10 RWA.xyz-derived, 12 unrecognized provenance, and 59 without a 30-day value.
+
+### Retired RWA.xyz transfer-volume evidence
+
+The legacy trailing-30-day transfer-volume series ended at 2026-08-26T06:02:39.551Z. It remains available as historical evidence and is not joined to Tokens.xyz spot-volume history.
+
+Final retained values: $3.21B across tokenized assets and $2.14B across tokenized equities.
 
 ### Upcoming upgrades and developments
 
@@ -233,7 +241,7 @@ No active warning met its full threshold and freshness requirements.
 | [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-30T15:19:28.424Z | 2026-08-29 |
 | [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-08-30T15:19:28.424Z | 2026-08-30T04:36:21.136Z |
 | [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-08-30T15:19:28.424Z | 2026-08-29 |
-| [RWA.xyz Solana Network](https://app.rwa.xyz/networks/solana) | stale | 2026-08-26T14:06:46.554Z | 2026-08-26T06:02:39.551Z |
+| [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-08-30T18:03:43.954Z | 2026-08-30T18:03:43.954Z |
 | [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-08-30T15:19:28.424Z | 2026-08-27T04:15:00.000Z |
 | [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-08-30T15:19:28.424Z | 2026-08-30T15:19:28.424Z |
 | [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-08-30T17:19:26.240Z | 2026-08-30T17:19:26.240Z |

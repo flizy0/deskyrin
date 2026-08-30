@@ -266,7 +266,7 @@ const tokenizedHistoryPointSchema = z.object({
   equityTransferVolumeUsd: positive
 }).strict();
 
-const tokenizedAssetsSchema = z.object({
+const legacyTokenizedAssetsSchema = z.object({
   ...domainFields,
   currency: z.literal("USD"),
   windowDays: z.literal(30),
@@ -274,6 +274,56 @@ const tokenizedAssetsSchema = z.object({
   equityTransferVolumeUsd: positive,
   history: z.array(tokenizedHistoryPointSchema).min(1)
 }).strict();
+
+const legacyTransferVolumeSchema = z.object({
+  sourceName: z.literal("RWA.xyz Solana Network"),
+  sourceUrl: httpsUrl,
+  methodology: z.literal("rwa_xyz_trailing_30d_transfer_volume"),
+  currency: z.literal("USD"),
+  windowDays: z.literal(30),
+  endedAt: isoTime,
+  history: z.array(tokenizedHistoryPointSchema).min(1)
+}).strict();
+
+const tokenizedMarketHistoryPointSchema = z.object({
+  observedAt: isoTime,
+  totalSpotVolume30dUsd: nonNegative,
+  equitySpotVolume30dUsd: nonNegative,
+  indexedAssetCount: positiveInteger,
+  indexedEquityCount: positiveInteger,
+  coveredAssetCount: positiveInteger,
+  coveredEquityCount: positiveInteger
+}).strict();
+
+const tokenizedMarketsSchema = z.object({
+  ...domainFields,
+  methodology: z.literal("tokens_xyz_spot_volume_v1"),
+  currency: z.literal("USD"),
+  windowDays: z.literal(30),
+  curatedLists: z.tuple([z.literal("rwas"), z.literal("stocks"), z.literal("etfs"), z.literal("metals")]),
+  acceptedMetricsSources: z.tuple([z.literal("birdeye"), z.literal("clickhouse_trades")]),
+  totalSpotVolume30dUsd: nonNegative,
+  equitySpotVolume30dUsd: nonNegative,
+  indexedAssetCount: positiveInteger,
+  indexedEquityCount: positiveInteger,
+  coveredAssetCount: positiveInteger,
+  coveredEquityCount: positiveInteger,
+  provenanceCoverage: z.object({
+    rwaXyzExcludedCount: nonNegativeInteger,
+    unknownSourceExcludedCount: nonNegativeInteger,
+    missingVolumeExcludedCount: nonNegativeInteger
+  }).strict(),
+  listCoverage: z.object({
+    rwas: positiveInteger,
+    stocks: positiveInteger,
+    etfs: positiveInteger,
+    metals: positiveInteger
+  }).strict(),
+  history: z.array(tokenizedMarketHistoryPointSchema).min(1),
+  legacyTransferVolume: legacyTransferVolumeSchema.optional()
+}).strict();
+
+const tokenizedAssetsSchema = tokenizedMarketsSchema;
 
 const activeAddressHistoryPointSchema = z.object({
   date: utcDate,
@@ -337,7 +387,9 @@ const providerNameSchema = z.enum([
   "Blockworks",
   "DexPaprika",
   "Solscan",
-  "Token Terminal"
+  "Token Terminal",
+  "Top Ledger",
+  "Uniblock"
 ]);
 
 const providerComparisonSchema = z.object({
@@ -354,7 +406,7 @@ const providerComparisonSchema = z.object({
         date: utcDate,
         value: nonNegative
       }).strict()).min(1)
-    }).strict()).max(9)
+    }).strict()).max(11)
   }).strict()).length(4)
 }).strict();
 
@@ -491,6 +543,22 @@ export const canonicalSnapshotSchema = z.object({
   alerts: z.array(alertSchema).max(5)
 }).strict();
 
+const legacyVersionSchema = z.enum(["1.0.0", "1.1.0", "1.2.0"]);
+const legacyCanonicalSnapshotSchema = canonicalSnapshotSchema.extend({
+  schemaVersion: legacyVersionSchema,
+  methodologyVersion: legacyVersionSchema,
+  ecosystem: z.object({
+    tokenizedAssets: legacyTokenizedAssetsSchema,
+    dailyActiveAddresses: activeAddressesSchema,
+    news: newsSchema,
+    upgrades: upgradesSchema
+  }).strict()
+}).superRefine((snapshot, context) => {
+  if (snapshot.schemaVersion !== snapshot.methodologyVersion) {
+    context.addIssue({ code: "custom", message: "Legacy schema and methodology versions must match", path: ["methodologyVersion"] });
+  }
+});
+
 const EXPECTED_ALERT_IDS = [
   "tps-change",
   "slow-slot-time",
@@ -547,7 +615,7 @@ function domains(snapshot) {
 export function validateCanonicalInvariants(snapshot, limits = {}) {
   const hourlyLimit = limits.hourlyPoints ?? 720;
   const dailyLimit = limits.dailyPoints ?? 90;
-  const rwaLimit = limits.rwaPoints ?? 365;
+  const tokenizedLimit = limits.tokenizedPoints ?? limits.rwaPoints ?? 365;
 
   for (const domain of domains(snapshot)) {
     assert(domain.sourceIds.every((id) => Object.hasOwn(snapshot.sources, id)), "UNKNOWN_SOURCE_ID", "Domain references an unknown source");
@@ -560,7 +628,10 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
     }
   }
 
-  const knownSourceIds = new Set(Object.values(SOURCE_IDS));
+  const knownSourceIds = new Set([
+    ...Object.values(SOURCE_IDS),
+    ...(snapshot.schemaVersion === SCHEMA_VERSION ? [] : ["rwa"])
+  ]);
   const snapshotTime = Date.parse(snapshot.updatedAt);
   for (const [sourceId, source] of Object.entries(snapshot.sources)) {
     assert(knownSourceIds.has(sourceId), "UNKNOWN_SOURCE", `Snapshot contains unknown source ${sourceId}`);
@@ -598,7 +669,7 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
   assertSortedUnique(snapshot.economics.stablecoinSupply.history, (point) => point.date, dailyLimit, "stablecoin history");
   assertSortedUnique(snapshot.economics.dexVolume.history, (point) => point.date, dailyLimit, "DEX history");
   assertSortedUnique(snapshot.economics.rev.history, (point) => point.date, dailyLimit, "REV history");
-  assertSortedUnique(snapshot.ecosystem.tokenizedAssets.history, (point) => point.observedAt, rwaLimit, "RWA history");
+  assertSortedUnique(snapshot.ecosystem.tokenizedAssets.history, (point) => point.observedAt, tokenizedLimit, "tokenized-market history");
   assertSortedUnique(snapshot.ecosystem.dailyActiveAddresses.history, (point) => point.date, dailyLimit, "active-address history");
   if (snapshot.economics.coinGeckoPrice) {
     assertSortedUnique(snapshot.economics.coinGeckoPrice.history, (point) => point.observedAt, dailyLimit + 1, "CoinGecko price history");
@@ -728,10 +799,37 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
   assert(feeWindowSlots > 0n && BigInt(fee.sample.producedSlotCount) <= feeWindowSlots, "INVALID_FEE_SAMPLE", "Median-fee produced-slot population exceeds its window");
   assert(fee.sample.selectedBlockCount <= fee.sample.producedSlotCount && fee.sample.transactionCount >= fee.sample.selectedBlockCount, "INVALID_FEE_SAMPLE", "Median-fee sample counts are incoherent");
 
-  const rwa = snapshot.ecosystem.tokenizedAssets;
-  assert(rwa.equityTransferVolumeUsd <= rwa.totalTransferVolumeUsd, "RWA_SUBSET_MISMATCH", "Tokenized-equity volume exceeds total tokenized-asset volume");
-  const rwaPoint = rwa.history.find((point) => point.observedAt === rwa.observedAt);
-  assert(Boolean(rwaPoint) && nearlyEqual(rwa.totalTransferVolumeUsd, rwaPoint.totalTransferVolumeUsd) && nearlyEqual(rwa.equityTransferVolumeUsd, rwaPoint.equityTransferVolumeUsd), "RWA_HISTORY_MISMATCH", "Tokenized-asset headline does not match history");
+  const tokenized = snapshot.ecosystem.tokenizedAssets;
+  if (snapshot.schemaVersion === SCHEMA_VERSION) {
+    assert(tokenized.sourceIds.length === 1 && tokenized.sourceIds[0] === "tokensXyz", "TOKENIZED_SOURCE_MISMATCH", "Active tokenized-market metrics must come from Tokens.xyz");
+    assert(tokenized.equitySpotVolume30dUsd <= tokenized.totalSpotVolume30dUsd, "TOKENIZED_SUBSET_MISMATCH", "Equity spot volume exceeds total tokenized-market spot volume");
+    assert(tokenized.indexedEquityCount <= tokenized.indexedAssetCount, "TOKENIZED_COVERAGE_MISMATCH", "Indexed equity count exceeds the tokenized-market universe");
+    assert(tokenized.coveredAssetCount <= tokenized.indexedAssetCount && tokenized.coveredEquityCount <= tokenized.indexedEquityCount && tokenized.coveredEquityCount <= tokenized.coveredAssetCount, "TOKENIZED_COVERAGE_MISMATCH", "Tokenized-market coverage counts are inconsistent");
+    assert(tokenized.indexedAssetCount <= Object.values(tokenized.listCoverage).reduce((sum, count) => sum + count, 0), "TOKENIZED_COVERAGE_MISMATCH", "Tokenized-market union exceeds its curated-list population");
+    const excludedAssetCount = tokenized.provenanceCoverage.rwaXyzExcludedCount
+      + tokenized.provenanceCoverage.unknownSourceExcludedCount
+      + tokenized.provenanceCoverage.missingVolumeExcludedCount;
+    assert(excludedAssetCount === tokenized.indexedAssetCount - tokenized.coveredAssetCount, "TOKENIZED_COVERAGE_MISMATCH", "Tokenized-market exclusion counts do not explain uncovered assets");
+    const point = tokenized.history.find((item) => item.observedAt === tokenized.observedAt);
+    assert(Boolean(point) && nearlyEqual(tokenized.totalSpotVolume30dUsd, point.totalSpotVolume30dUsd) && nearlyEqual(tokenized.equitySpotVolume30dUsd, point.equitySpotVolume30dUsd), "TOKENIZED_HISTORY_MISMATCH", "Tokenized-market headline does not match history");
+    assert(point.indexedAssetCount === tokenized.indexedAssetCount && point.indexedEquityCount === tokenized.indexedEquityCount && point.coveredAssetCount === tokenized.coveredAssetCount && point.coveredEquityCount === tokenized.coveredEquityCount, "TOKENIZED_HISTORY_MISMATCH", "Tokenized-market coverage does not match history");
+    assert(tokenized.history.every((item) =>
+      item.equitySpotVolume30dUsd <= item.totalSpotVolume30dUsd
+      && item.indexedEquityCount <= item.indexedAssetCount
+      && item.coveredAssetCount <= item.indexedAssetCount
+      && item.coveredEquityCount <= item.indexedEquityCount
+      && item.coveredEquityCount <= item.coveredAssetCount
+    ), "TOKENIZED_HISTORY_MISMATCH", "Tokenized-market history contains incoherent volume or coverage subsets");
+    if (tokenized.legacyTransferVolume) {
+      assertSortedUnique(tokenized.legacyTransferVolume.history, (item) => item.observedAt, tokenizedLimit, "legacy RWA transfer-volume history");
+      assert(tokenized.legacyTransferVolume.endedAt === tokenized.legacyTransferVolume.history.at(-1).observedAt, "LEGACY_RWA_HISTORY_MISMATCH", "Retired RWA history end does not match its final observation");
+      assert(tokenized.legacyTransferVolume.history.every((item) => item.equityTransferVolumeUsd <= item.totalTransferVolumeUsd), "LEGACY_RWA_SUBSET_MISMATCH", "Retired equity transfer volume exceeds total transfer volume");
+    }
+  } else {
+    assert(tokenized.equityTransferVolumeUsd <= tokenized.totalTransferVolumeUsd, "RWA_SUBSET_MISMATCH", "Tokenized-equity volume exceeds total tokenized-asset volume");
+    const point = tokenized.history.find((item) => item.observedAt === tokenized.observedAt);
+    assert(Boolean(point) && nearlyEqual(tokenized.totalTransferVolumeUsd, point.totalTransferVolumeUsd) && nearlyEqual(tokenized.equityTransferVolumeUsd, point.equityTransferVolumeUsd), "RWA_HISTORY_MISMATCH", "Tokenized-asset headline does not match history");
+  }
 
   const addresses = snapshot.ecosystem.dailyActiveAddresses;
   assert(new Set(addresses.providers.map((provider) => provider.name)).size === 2, "ADDRESS_CONSENSUS_MISMATCH", "Active-address providers must be unique");
@@ -835,20 +933,26 @@ function migrateLegacyCommissionChanges(validators) {
 
 export function migrateCanonicalSnapshot(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return value;
-  const isLegacyVersionPair = ["1.0.0", "1.1.0"].some((version) =>
+  const isLegacyVersionPair = ["1.0.0", "1.1.0", "1.2.0"].some((version) =>
     value.schemaVersion === version && value.methodologyVersion === version
   );
   if (!isLegacyVersionPair) return value;
   return {
     ...value,
-    schemaVersion: SCHEMA_VERSION,
-    methodologyVersion: METHODOLOGY_VERSION,
     validators: migrateLegacyCommissionChanges(value.validators)
   };
 }
 
 export function parseCanonicalSnapshot(value, limits) {
-  const parsed = canonicalSnapshotSchema.parse(migrateCanonicalSnapshot(value));
+  const parsed = canonicalSnapshotSchema.parse(value);
+  return validateCanonicalInvariants(parsed, limits);
+}
+
+export function parsePreviousCanonicalSnapshot(value, limits) {
+  if (value?.schemaVersion === SCHEMA_VERSION && value?.methodologyVersion === METHODOLOGY_VERSION) {
+    return parseCanonicalSnapshot(value, limits);
+  }
+  const parsed = legacyCanonicalSnapshotSchema.parse(migrateCanonicalSnapshot(value));
   return validateCanonicalInvariants(parsed, limits);
 }
 

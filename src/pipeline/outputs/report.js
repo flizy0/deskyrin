@@ -203,13 +203,30 @@ export function renderReport(snapshot) {
 
   section(lines, "Ecosystem Growth");
   const ecosystem = snapshot.ecosystem;
+  const tokenized = ecosystem.tokenizedAssets;
   lines.push(
     "| Metric | Value | Observation | Status |",
     "|---|---:|---|---|",
-    `| Tokenized-asset transfer volume (trailing 30d) | ${usd.format(ecosystem.tokenizedAssets.totalTransferVolumeUsd)} | ${ecosystem.tokenizedAssets.observedAt} | ${status(ecosystem.tokenizedAssets)} |`,
-    `| Tokenized-equity transfer volume (trailing 30d) | ${usd.format(ecosystem.tokenizedAssets.equityTransferVolumeUsd)} | ${ecosystem.tokenizedAssets.observedAt} | ${status(ecosystem.tokenizedAssets)} |`,
+    `| Tokenized-market spot volume (trailing 30d) | ${usd.format(tokenized.totalSpotVolume30dUsd)} | ${tokenized.observedAt} | ${status(tokenized)} |`,
+    `| Tokenized-equity spot volume (trailing 30d) | ${usd.format(tokenized.equitySpotVolume30dUsd)} | ${tokenized.observedAt} | ${status(tokenized)} |`,
     `| Daily active addresses (initiating signers/fee payers) | ${number.format(ecosystem.dailyActiveAddresses.value)} | ${ecosystem.dailyActiveAddresses.date} | ${status(ecosystem.dailyActiveAddresses)} |`,
     "",
+    `Tokens.xyz coverage: ${integer.format(tokenized.coveredAssetCount)} of ${integer.format(tokenized.indexedAssetCount)} indexed tokenized-market assets and ${integer.format(tokenized.coveredEquityCount)} of ${integer.format(tokenized.indexedEquityCount)} equities have accepted 30-day volume provenance. Excluded assets: ${integer.format(tokenized.provenanceCoverage.rwaXyzExcludedCount)} RWA.xyz-derived, ${integer.format(tokenized.provenanceCoverage.unknownSourceExcludedCount)} unrecognized provenance, and ${integer.format(tokenized.provenanceCoverage.missingVolumeExcludedCount)} without a 30-day value.`,
+    ""
+  );
+  if (tokenized.legacyTransferVolume) {
+    const legacy = tokenized.legacyTransferVolume;
+    const latest = legacy.history.at(-1);
+    lines.push(
+      "### Retired RWA.xyz transfer-volume evidence",
+      "",
+      `The legacy trailing-${legacy.windowDays}-day transfer-volume series ended at ${legacy.endedAt}. It remains available as historical evidence and is not joined to Tokens.xyz spot-volume history.`,
+      "",
+      `Final retained values: ${usd.format(latest.totalTransferVolumeUsd)} across tokenized assets and ${usd.format(latest.equityTransferVolumeUsd)} across tokenized equities.`,
+      ""
+    );
+  }
+  lines.push(
     "### Upcoming upgrades and developments",
     ""
   );

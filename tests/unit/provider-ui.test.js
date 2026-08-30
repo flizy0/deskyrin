@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { selectCoverageIncidents } from "../../src/dashboard/coverage-callout.js";
+import { sourcePriceReferences } from "../../src/dashboard/pages/economy.js";
 import {
   buildProviderComparisonSpec,
   findProviderMetric,
-  PROVIDER_COLORS
+  PROVIDER_COLORS,
+  PROVIDER_ORDER
 } from "../../src/dashboard/provider-comparison.js";
 
 function providerSnapshot() {
@@ -85,6 +87,12 @@ test("provider comparison aligns real source series with explicit gaps and stabl
   assert.equal(spec.legend, false);
 });
 
+test("new provider series have stable colors and deterministic ordering", () => {
+  assert.equal(PROVIDER_COLORS["Top Ledger"], "#4f9fa8");
+  assert.equal(PROVIDER_COLORS.Uniblock, "#bd7047");
+  assert.ok(PROVIDER_ORDER.indexOf("Top Ledger") < PROVIDER_ORDER.indexOf("Uniblock"));
+});
+
 test("provider comparison ignores providerless references and preserves provider selection", () => {
   const spec = buildProviderComparisonSpec(providerSnapshot(), "dex-volume", {
     formatter: String,
@@ -101,6 +109,32 @@ test("provider comparison ignores providerless references and preserves provider
   assert.equal(spec.datasets.find((series) => series.providerName === "Dune").hidden, true);
   assert.equal(findProviderMetric({}, "dex-volume"), null);
   assert.equal(buildProviderComparisonSpec({}, "dex-volume", { formatter: String }), null);
+});
+
+test("daily SOL comparison excludes incomplete current-day market observations", () => {
+  const references = sourcePriceReferences({
+    coinbaseMarket: {
+      history: [
+        { date: "2026-08-28", closeUsd: 199 },
+        { date: "2026-08-29", closeUsd: 200 }
+      ]
+    },
+    coinGeckoPrice: {
+      history: [
+        { observedAt: "2026-08-28T23:00:00.000Z", priceUsd: 198 },
+        { observedAt: "2026-08-29T10:00:00.000Z", priceUsd: 201 }
+      ]
+    }
+  }, "2026-08-29T12:00:00.000Z");
+
+  assert.deepEqual(references.map((reference) => ({
+    providerName: reference.providerName,
+    dataThrough: reference.dataThrough,
+    dates: reference.history.map((point) => point.date)
+  })), [
+    { providerName: "Coinbase", dataThrough: "2026-08-28", dates: ["2026-08-28"] },
+    { providerName: "CoinGecko", dataThrough: "2026-08-28", dates: ["2026-08-28"] }
+  ]);
 });
 
 test("coverage incident selection is scoped to the affected dashboard domain", () => {
