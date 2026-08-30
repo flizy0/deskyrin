@@ -4,8 +4,8 @@ import test from "node:test";
 import { DEFAULT_CONFIG } from "../../src/pipeline/config.js";
 import { parseCanonicalSnapshot } from "../../src/pipeline/contracts/canonical.js";
 import { PipelineError } from "../../src/pipeline/lib/errors.js";
-import { runUpdate } from "../../src/pipeline/update.js";
-import { legacyCanonicalFixture } from "../helpers/canonical-fixture.js";
+import { needsTokenizedSnapshotMigration, runUpdate } from "../../src/pipeline/update.js";
+import { canonicalFixture, legacyCanonicalFixture, previousTokensCanonicalFixture } from "../helpers/canonical-fixture.js";
 
 const unavailable = new PipelineError("FIXTURE_DOWN", "fixture source unavailable", { retryable: false });
 const failingHttp = { request: async () => { throw unavailable; } };
@@ -25,6 +25,12 @@ function beforeAnySourceIsDue(previous) {
   assert.ok(candidate < earliestDue - DEFAULT_CONFIG.intervals.schedulerGrace, "checked-in fixture must leave a not-due window");
   return new Date(candidate);
 }
+
+test("schema migration forces a Tokens.xyz refresh even before its next due time", () => {
+  assert.equal(needsTokenizedSnapshotMigration(previousTokensCanonicalFixture()), true);
+  assert.equal(needsTokenizedSnapshotMigration(canonicalFixture()), false);
+  assert.equal(needsTokenizedSnapshotMigration(legacyCanonicalFixture()), false);
+});
 
 test("full updater preserves LKG domains and publishes a partial dry-run candidate", async () => {
   const previous = parseCanonicalSnapshot(JSON.parse(await readFile("public/data.json", "utf8")), DEFAULT_CONFIG.history);

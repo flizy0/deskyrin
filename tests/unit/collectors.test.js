@@ -94,6 +94,8 @@ test("Solana Data transport does not freeze independent metrics when one consens
 test("Tokens.xyz and RSS collectors preserve provenance and legacy boundaries", async () => {
   const asset = (assetId, category, volume30dUSD, metricsSource, mint) => ({
     assetId,
+    name: `${assetId} name`,
+    symbol: assetId.toUpperCase(),
     category,
     stats: { volume24hUSD: 1, volume30dUSD, marketCap: 10 },
     primaryVariant: {
@@ -147,6 +149,17 @@ test("Tokens.xyz and RSS collectors preserve provenance and legacy boundaries", 
     unknownSourceExcludedCount: 1,
     missingVolumeExcludedCount: 0
   });
+  assert.deepEqual(tokenized.categoryBreakdown, [
+    { id: "equities", indexedAssetCount: 1, coveredAssetCount: 1, spotVolume30dUsd: 200 },
+    { id: "funds", indexedAssetCount: 1, coveredAssetCount: 1, spotVolume30dUsd: 50 },
+    { id: "commodities", indexedAssetCount: 1, coveredAssetCount: 0, spotVolume30dUsd: 0 },
+    { id: "other-rwa", indexedAssetCount: 2, coveredAssetCount: 1, spotVolume30dUsd: 100 }
+  ]);
+  assert.deepEqual(tokenized.topAssets, [
+    { rank: 1, assetId: "equity", name: "equity name", symbol: "EQUITY", categoryGroup: "equities", spotVolume30dUsd: 200, metricsSource: "clickhouse_trades" },
+    { rank: 2, assetId: "tbill", name: "tbill name", symbol: "TBILL", categoryGroup: "other-rwa", spotVolume30dUsd: 100, metricsSource: "birdeye" },
+    { rank: 3, assetId: "etf", name: "etf name", symbol: "ETF", categoryGroup: "funds", spotVolume30dUsd: 50, metricsSource: "birdeye" }
+  ]);
   assert.equal(tokenized.legacyTransferVolume.endedAt, previous.observedAt);
   assert.equal(news.items[0].title, "Official update");
   assert.equal(news.items[0].description, "Source-authored text.");

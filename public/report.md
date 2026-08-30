@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-08-30T18:19:32.059Z**
+Updated: **2026-08-30T18:42:06.202Z**
 
 Update status: **complete**
 
@@ -146,11 +146,39 @@ Provider definitions can differ materially. The values are shown side by side, n
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| Tokenized-market spot volume (trailing 30d) | $1.28B | 2026-08-30T18:03:43.954Z | Fresh |
-| Tokenized-equity spot volume (trailing 30d) | $973.5M | 2026-08-30T18:03:43.954Z | Fresh |
+| Tokenized-market spot volume (trailing 30d) | $1.28B | 2026-08-30T18:42:03.288Z | Fresh |
+| Tokenized-equity spot volume (trailing 30d) | $973.5M | 2026-08-30T18:42:03.288Z | Fresh |
 | Daily active addresses (initiating signers/fee payers) | 2,460,115 | 2026-08-28 | Fresh |
 
 Tokens.xyz coverage: 357 of 438 indexed tokenized-market assets and 333 of 393 equities have accepted 30-day volume provenance. Excluded assets: 10 RWA.xyz-derived, 12 unrecognized provenance, and 59 without a 30-day value.
+
+### Tokenized market category breakdown
+
+This is a current cross-sectional breakdown of the same provenance-filtered trailing-30-day spot-volume total.
+
+| Category | Indexed assets | Covered assets | Trailing 30d spot volume |
+|---|---:|---:|---:|
+| Equities | 393 | 333 | $973.5M |
+| ETFs | 25 | 17 | $200.89M |
+| Commodities | 5 | 4 | $105.5M |
+| Other RWA | 15 | 3 | $1.91K |
+
+### Leading covered tokenized assets
+
+Ranked by accepted trailing-30-day spot volume; excluded provenance never enters this table.
+
+| Rank | Asset | Category | Volume source | Trailing 30d spot volume |
+|---:|---|---|---|---:|
+| 1 | SPCX — SpaceX | Equities | birdeye | $187.17M |
+| 2 | SPY — SP500 | ETFs | birdeye | $157.47M |
+| 3 | SKHY — SK Hynix | Equities | clickhouse_trades | $150.28M |
+| 4 | CRCL — Circle | Equities | birdeye | $145.21M |
+| 5 | MU — Micron Technology | Equities | clickhouse_trades | $103.69M |
+| 6 | GLD — Gold | Commodities | birdeye | $82.8M |
+| 7 | SNDK — SanDisk | Equities | clickhouse_trades | $51.14M |
+| 8 | NVDA — NVIDIA | Equities | birdeye | $47.05M |
+| 9 | OPENAI — OpenAI | Equities | birdeye | $42.01M |
+| 10 | MSTR — MicroStrategy | Equities | birdeye | $37.93M |
 
 ### Retired RWA.xyz transfer-volume evidence
 
@@ -241,7 +269,7 @@ No active warning met its full threshold and freshness requirements.
 | [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-30T15:19:28.424Z | 2026-08-29 |
 | [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-08-30T15:19:28.424Z | 2026-08-30T04:36:21.136Z |
 | [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-08-30T15:19:28.424Z | 2026-08-29 |
-| [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-08-30T18:03:43.954Z | 2026-08-30T18:03:43.954Z |
+| [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-08-30T18:42:03.288Z | 2026-08-30T18:42:03.288Z |
 | [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-08-30T15:19:28.424Z | 2026-08-27T04:15:00.000Z |
 | [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-08-30T15:19:28.424Z | 2026-08-30T15:19:28.424Z |
 | [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-08-30T18:19:26.154Z | 2026-08-30T18:19:26.154Z |

@@ -8,6 +8,7 @@ export const TOKENIZED_MARKETS_METHODOLOGY = "tokens_xyz_spot_volume_v1";
 const CURATED_LISTS = Object.freeze(["rwas", "stocks", "etfs", "metals"]);
 const ACCEPTED_METRICS_SOURCES = Object.freeze(["birdeye", "clickhouse_trades"]);
 const ACCEPTED_SOURCE_SET = new Set(ACCEPTED_METRICS_SOURCES);
+const CATEGORY_GROUPS = Object.freeze(["equities", "funds", "commodities", "other-rwa"]);
 const PAGE_LIMIT = 500;
 const MAX_PAGES_PER_LIST = 10;
 const LEGACY_SOURCE_URL = "https://app.rwa.xyz/networks/solana";
@@ -82,6 +83,48 @@ function hasThirtyDayVolume(asset) {
 
 function sumVolume(rows) {
   return rows.reduce((sum, asset) => sum + asset.stats.volume30dUSD, 0);
+}
+
+function categoryGroup(asset) {
+  if (asset.category === "equity") return "equities";
+  if (asset.category === "etf") return "funds";
+  if (asset.category === "commodity") return "commodities";
+  return "other-rwa";
+}
+
+function buildCategoryBreakdown(assets) {
+  return CATEGORY_GROUPS.map((id) => {
+    const indexed = assets.filter((asset) => categoryGroup(asset) === id);
+    const covered = indexed.filter(hasThirtyDayVolume);
+    return {
+      id,
+      indexedAssetCount: indexed.length,
+      coveredAssetCount: covered.length,
+      spotVolume30dUsd: sumVolume(covered)
+    };
+  });
+}
+
+function compareTopAssets(left, right) {
+  const volumeDifference = right.stats.volume30dUSD - left.stats.volume30dUSD;
+  if (volumeDifference !== 0) return volumeDifference;
+  if (left.assetId === right.assetId) return 0;
+  return left.assetId < right.assetId ? -1 : 1;
+}
+
+function buildTopAssets(coveredAssets) {
+  return [...coveredAssets]
+    .sort(compareTopAssets)
+    .slice(0, 10)
+    .map((asset, index) => ({
+      rank: index + 1,
+      assetId: asset.assetId,
+      name: asset.name,
+      symbol: asset.symbol,
+      categoryGroup: categoryGroup(asset),
+      spotVolume30dUsd: asset.stats.volume30dUSD,
+      metricsSource: metricsSource(asset)
+    }));
 }
 
 function unionByAssetId(lists) {
@@ -165,6 +208,8 @@ export async function collectTokenizedMarkets(context, previous) {
       ).length
     },
     listCoverage: Object.fromEntries(CURATED_LISTS.map((listId) => [listId, byList[listId].length])),
+    categoryBreakdown: buildCategoryBreakdown(assets),
+    topAssets: buildTopAssets(coveredAssets),
     history: appendHistory(previousHistory, point, {
       key: (item) => item.observedAt,
       limit: context.config.history.tokenizedPoints

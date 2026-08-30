@@ -1,6 +1,7 @@
 import { DATA_COLORS } from "../charts.js";
 import { fmt } from "../format.js";
 import { providerComparisonPanel } from "../provider-selector.js";
+import { appendTableRow, createTable } from "../table.js";
 import { el, emptyStatePanel, safeLink } from "../ui.js";
 import {
   chartPanel,
@@ -10,6 +11,146 @@ import {
   pageHeader,
   panel
 } from "../view-utils.js";
+
+export const MIN_TOKENIZED_HISTORY_POINTS = 8;
+
+const TOKENIZED_CATEGORY_META = {
+  equities: { label: "Equities", className: "equities" },
+  funds: { label: "ETFs", className: "funds" },
+  commodities: { label: "Commodities", className: "commodities" },
+  "other-rwa": { label: "Other RWA", className: "other-rwa" }
+};
+
+function tokenizedHistoryReady(assets) {
+  return Array.isArray(assets.history) && assets.history.length >= MIN_TOKENIZED_HISTORY_POINTS;
+}
+
+function percentOf(value, total) {
+  if (!Number.isFinite(value) || !Number.isFinite(total) || total <= 0) return 0;
+  return (value / total) * 100;
+}
+
+function categoryMeta(id) {
+  return TOKENIZED_CATEGORY_META[id] || {
+    label: String(id).replaceAll("-", " "),
+    className: "other-rwa"
+  };
+}
+
+function metricsSourceLabel(source) {
+  if (source === "birdeye") return "Birdeye";
+  if (source === "clickhouse_trades") return "On-chain trades";
+  return String(source).replaceAll("_", " ");
+}
+
+function tokenizedSnapshotPanel(assets) {
+  const card = panel({
+    title: "Tokenized market snapshot",
+    note: `Current trailing ${assets.windowDays}-day spot activity from assets with accepted provenance.`,
+    className: "span-5 tokenized-snapshot-panel cut-corner",
+    domain: assets
+  });
+
+  const coverage = percentOf(assets.coveredAssetCount, assets.indexedAssetCount);
+  const summary = el("div", "tokenized-summary");
+  const volume = el("div", "tokenized-summary-item");
+  volume.append(
+    el("span", "tokenized-summary-label", `${assets.windowDays}D spot volume`),
+    el("strong", "tokenized-summary-value", fmt.usd(assets.totalSpotVolume30dUsd))
+  );
+  const coverageItem = el("div", "tokenized-summary-item");
+  coverageItem.append(
+    el("span", "tokenized-summary-label", "Provenance coverage"),
+    el("strong", "tokenized-summary-value", fmt.pct(coverage)),
+    el("span", "tokenized-summary-meta", `${fmt.integer(assets.coveredAssetCount)} of ${fmt.integer(assets.indexedAssetCount)} indexed assets`)
+  );
+  summary.append(volume, coverageItem);
+  card.append(summary);
+
+  const breakdown = el("div", "tokenized-breakdown-list");
+  for (const category of assets.categoryBreakdown) {
+    const meta = categoryMeta(category.id);
+    const share = percentOf(category.spotVolume30dUsd, assets.totalSpotVolume30dUsd);
+    const row = el("div", `tokenized-breakdown-row category-${meta.className}`);
+    const head = el("div", "tokenized-breakdown-head");
+    const label = el("span", "tokenized-category-label", meta.label);
+    label.prepend(el("span", "tokenized-category-marker"));
+    head.append(label, el("strong", "tokenized-category-value", fmt.usd(category.spotVolume30dUsd)));
+    const detail = el("div", "tokenized-breakdown-detail");
+    detail.append(
+      el("span", undefined, `${fmt.integer(category.coveredAssetCount)}/${fmt.integer(category.indexedAssetCount)} assets`),
+      el("span", undefined, fmt.pct(share))
+    );
+    const track = el("div", "tokenized-breakdown-track");
+    const fill = el("span", "tokenized-breakdown-fill");
+    fill.style.width = `${Math.min(100, Math.max(0, share))}%`;
+    track.append(fill);
+    row.append(head, detail, track);
+    breakdown.append(row);
+  }
+  card.append(breakdown);
+
+  const excludedCount = Object.values(assets.provenanceCoverage).reduce((total, value) => total + value, 0);
+  const provenance = el("div", "tokenized-provenance-note");
+  provenance.append(
+    el("span", undefined, `Accepted · ${assets.acceptedMetricsSources.map(metricsSourceLabel).join(" + ")}`),
+    el("span", undefined, `${fmt.integer(excludedCount)} assets excluded by provenance checks`)
+  );
+  card.append(provenance);
+
+  if (!tokenizedHistoryReady(assets)) {
+    const count = assets.history?.length || 0;
+    card.append(el(
+      "p",
+      "tokenized-history-state",
+      `History collecting · ${Math.min(count, MIN_TOKENIZED_HISTORY_POINTS)}/${MIN_TOKENIZED_HISTORY_POINTS} genuine observations`
+    ));
+  }
+  return card;
+}
+
+function tokenizedAssetsPanel(assets) {
+  const card = panel({
+    title: "Most active tokenized assets",
+    note: `Top assets by accepted trailing ${assets.windowDays}-day spot volume.`,
+    className: "span-7 tokenized-assets-panel",
+    domain: assets
+  });
+  if (!assets.topAssets.length) {
+    card.append(emptyStatePanel("No asset-level spot-volume observations passed provenance checks.", { title: "No covered assets" }));
+    return card;
+  }
+
+  const columns = [
+    { label: "#", key: "rank", align: "right", width: "38px" },
+    { label: "Asset", key: "asset" },
+    { label: "Category", key: "category", width: "94px" },
+    { label: "30D volume", key: "volume", align: "right", width: "112px" },
+    { label: "Share", key: "share", align: "right", width: "68px" }
+  ];
+  const table = createTable(columns, "Most active tokenized assets by trailing 30-day spot volume");
+  for (const asset of assets.topAssets) {
+    const identity = el("div", "tokenized-asset-identity");
+    const name = el("div", "tokenized-asset-name");
+    name.append(
+      el("strong", "tokenized-asset-symbol", asset.symbol),
+      el("span", undefined, asset.name)
+    );
+    identity.append(name, el("span", "tokenized-asset-source", metricsSourceLabel(asset.metricsSource)));
+    const category = categoryMeta(asset.categoryGroup);
+    const categoryLabel = el("span", `tokenized-table-category category-${category.className}`, category.label);
+    categoryLabel.prepend(el("span", "tokenized-category-marker"));
+    appendTableRow(table.body, columns, [
+      asset.rank,
+      identity,
+      categoryLabel,
+      fmt.usd(asset.spotVolume30dUsd),
+      fmt.pct(percentOf(asset.spotVolume30dUsd, assets.totalSpotVolume30dUsd))
+    ]);
+  }
+  card.append(table.wrap);
+  return card;
+}
 
 function providerEvidence(data) {
   const card = panel({
@@ -107,11 +248,16 @@ export function renderEcosystem(snapshot, root) {
   const data = snapshot.ecosystem;
   const addresses = data.dailyActiveAddresses;
   const assets = data.tokenizedAssets;
+  const showTokenizedHistory = tokenizedHistoryReady(assets);
   root.append(pageHeader({
     eyebrow: "Adoption and protocol development",
     title: "Ecosystem",
     copy: "Address activity, tokenized-market trading, and official protocol developments from the canonical snapshot.",
-    meta: [`Address data through ${fmt.date(addresses.date)}`, `Official feed observed ${fmt.utc(data.news.observedAt)}`]
+    meta: [
+      `Address data through ${fmt.date(addresses.date)}`,
+      `Tokenized market observed ${fmt.utc(assets.observedAt)}`,
+      `Official feed observed ${fmt.utc(data.news.observedAt)}`
+    ]
   }));
 
   root.append(metricGrid([
@@ -129,7 +275,7 @@ export function renderEcosystem(snapshot, root) {
       note: `${assets.windowDays}d · ${assets.coveredAssetCount}/${assets.indexedAssetCount} assets covered`,
       domain: assets,
       tone: "network",
-      series: assets.history.map((point) => point.totalSpotVolume30dUsd)
+      series: showTokenizedHistory ? assets.history.map((point) => point.totalSpotVolume30dUsd) : undefined
     }),
     metricCard({
       label: "Tokenized-equity spot volume",
@@ -137,7 +283,7 @@ export function renderEcosystem(snapshot, root) {
       note: `${assets.windowDays}d · ${assets.coveredEquityCount}/${assets.indexedEquityCount} equities covered`,
       domain: assets,
       tone: "sage",
-      series: assets.history.map((point) => point.equitySpotVolume30dUsd)
+      series: showTokenizedHistory ? assets.history.map((point) => point.equitySpotVolume30dUsd) : undefined
     }),
     metricCard({
       label: "Upcoming upgrades",
@@ -168,7 +314,7 @@ export function renderEcosystem(snapshot, root) {
     formatter: fmt.integer,
     beginAtZero: true
   });
-  const assetSpec = historySpec(snapshot, {
+  const assetSpec = showTokenizedHistory ? historySpec(snapshot, {
     title: "Tokenized-market spot volume",
     note: `Tokens.xyz ${assets.windowDays}-day spot activity; only Birdeye and on-chain trade provenance is included`,
     domain: assets,
@@ -180,7 +326,7 @@ export function renderEcosystem(snapshot, root) {
     ],
     formatter: fmt.usd,
     beginAtZero: true
-  });
+  }) : null;
 
   const addressesChart = providerComparisonPanel(snapshot, "fee-payers", {
     title: "Daily active addresses · provider comparison",
@@ -195,39 +341,22 @@ export function renderEcosystem(snapshot, root) {
   });
   const addressGrid = el("div", "analytics-grid");
   addressGrid.append(addressesChart.card, providerEvidence(addresses));
-  const assetsChart = chartPanel(assetSpec, {
+  const tokenizedGrid = el("div", "analytics-grid tokenized-market-grid");
+  tokenizedGrid.append(tokenizedSnapshotPanel(assets), tokenizedAssetsPanel(assets));
+  const assetsChart = showTokenizedHistory ? chartPanel(assetSpec, {
     className: "chart-wide",
     meta: [
       `${assets.history.length} retained observations`,
       `${assets.coveredAssetCount}/${assets.indexedAssetCount} indexed assets with accepted volume provenance`
     ]
-  });
-  const legacy = assets.legacyTransferVolume;
-  const legacySpec = legacy ? historySpec(snapshot, {
-    title: "Retired RWA.xyz transfer-volume evidence",
-    note: `Historical ${legacy.windowDays}-day transfer volume retained without joining it to Tokens.xyz spot volume`,
-    domain: { observedAt: legacy.endedAt },
-    history: legacy.history,
-    time: (point) => point.observedAt,
-    series: [
-      { label: "All tokenized assets", field: "totalTransferVolumeUsd", color: DATA_COLORS.network, fill: true },
-      { label: "Tokenized equities", field: "equityTransferVolumeUsd", color: DATA_COLORS.categorical[5] }
-    ],
-    formatter: fmt.usd,
-    beginAtZero: true
-  }) : null;
-  const legacyChart = legacy ? chartPanel(legacySpec, {
-    className: "chart-wide",
-    meta: [`Ended ${fmt.utc(legacy.endedAt)}`, "Different methodology · intentionally separate"]
   }) : null;
   root.append(
+    tokenizedGrid,
+    ...(assetsChart ? [assetsChart.card] : []),
     addressGrid,
-    assetsChart.card,
-    ...(legacyChart ? [legacyChart.card] : []),
     upgradesPanel(data.upgrades),
     newsPanel(data.news)
   );
   addressesChart.draw();
-  assetsChart.draw();
-  legacyChart?.draw();
+  assetsChart?.draw();
 }

@@ -13,7 +13,7 @@ Automated commands: `npm test`, `npm run validate`, `npm run build`, `npm run ve
 | DEX volume | Completed direct-DEX buckets | DefiLlama dimensions | Card/chart/report | Provider schema and bounded history |
 | REV | Same-date fees/tips join | Solana Data Allium+Dune + Jito | Total/components/chart/report | Pure metric test + sum invariant |
 | Median transaction fee | 16-block stratified sample | Finalized RPC blocks | Card/chart/sample provenance/report | Complete-sample enforcement + tests |
-| Tokenized assets/equities | Provenance-filtered 30d spot-volume sum + equity subset | Tokens.xyz curated RWA/stocks/ETF/metals lists | Cards/chart/report; retired RWA evidence separate | Coverage/provenance + subset invariants |
+| Tokenized assets/equities | Provenance-filtered 30d spot-volume sum, disjoint category snapshot, and top covered assets | Tokens.xyz curated RWA/stocks/ETF/metals lists | Snapshot cards/category breakdown/top-assets table; timeline after 8 genuine observations; retired RWA evidence report-only | Coverage/provenance, category reconciliation, ranking, and subset invariants |
 | Daily active addresses | Two-provider median | Solana Data Fee Payers | Card/chart/report | Pure metric test |
 | News / upgrades | Official RSS and upgrades pages | Solana Foundation content | Bounded lists; SIMD links | Non-empty contracts; 0326/0525 assertions |
 | Required alerts | Five fixed checks | Underlying fresh metrics | Active warnings and all check states | Pure alert tests + fixed-order canonical invariant |

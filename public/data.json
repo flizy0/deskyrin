@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "1.3.0",
-  "methodologyVersion": "1.3.0",
-  "updatedAt": "2026-08-30T18:19:32.059Z",
+  "schemaVersion": "1.4.0",
+  "methodologyVersion": "1.4.0",
+  "updatedAt": "2026-08-30T18:42:06.202Z",
   "updateStatus": "complete",
   "sources": {
     "solanaRpc": {
@@ -89,10 +89,10 @@
       "name": "Tokens.xyz Curated Markets",
       "url": "https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity",
       "status": "fresh",
-      "lastAttemptAt": "2026-08-30T18:03:43.954Z",
-      "lastSuccessAt": "2026-08-30T18:03:43.954Z",
-      "nextDueAt": "2026-08-31T00:03:43.954Z",
-      "dataThrough": "2026-08-30T18:03:43.954Z"
+      "lastAttemptAt": "2026-08-30T18:42:03.288Z",
+      "lastSuccessAt": "2026-08-30T18:42:03.288Z",
+      "nextDueAt": "2026-08-31T00:42:03.288Z",
+      "dataThrough": "2026-08-30T18:42:03.288Z"
     },
     "solanaNews": {
       "name": "Solana News RSS",
@@ -12269,7 +12269,7 @@
   "ecosystem": {
     "tokenizedAssets": {
       "status": "fresh",
-      "observedAt": "2026-08-30T18:03:43.954Z",
+      "observedAt": "2026-08-30T18:42:03.288Z",
       "sourceIds": [
         "tokensXyz"
       ],
@@ -12287,7 +12287,7 @@
         "clickhouse_trades"
       ],
       "totalSpotVolume30dUsd": 1279884867.7043962,
-      "equitySpotVolume30dUsd": 973496746.764295,
+      "equitySpotVolume30dUsd": 973496746.7642947,
       "indexedAssetCount": 438,
       "indexedEquityCount": 393,
       "coveredAssetCount": 357,
@@ -12308,6 +12308,15 @@
           "observedAt": "2026-08-30T18:03:43.954Z",
           "totalSpotVolume30dUsd": 1279884867.7043962,
           "equitySpotVolume30dUsd": 973496746.764295,
+          "indexedAssetCount": 438,
+          "indexedEquityCount": 393,
+          "coveredAssetCount": 357,
+          "coveredEquityCount": 333
+        },
+        {
+          "observedAt": "2026-08-30T18:42:03.288Z",
+          "totalSpotVolume30dUsd": 1279884867.7043962,
+          "equitySpotVolume30dUsd": 973496746.7642947,
           "indexedAssetCount": 438,
           "indexedEquityCount": 393,
           "coveredAssetCount": 357,
@@ -12368,7 +12377,125 @@
             "equityTransferVolumeUsd": 2139145270.3650212
           }
         ]
-      }
+      },
+      "categoryBreakdown": [
+        {
+          "id": "equities",
+          "indexedAssetCount": 393,
+          "coveredAssetCount": 333,
+          "spotVolume30dUsd": 973496746.7642947
+        },
+        {
+          "id": "funds",
+          "indexedAssetCount": 25,
+          "coveredAssetCount": 17,
+          "spotVolume30dUsd": 200885407.825115
+        },
+        {
+          "id": "commodities",
+          "indexedAssetCount": 5,
+          "coveredAssetCount": 4,
+          "spotVolume30dUsd": 105500800.95338242
+        },
+        {
+          "id": "other-rwa",
+          "indexedAssetCount": 15,
+          "coveredAssetCount": 3,
+          "spotVolume30dUsd": 1912.1616043372806
+        }
+      ],
+      "topAssets": [
+        {
+          "rank": 1,
+          "assetId": "spacex",
+          "name": "SpaceX",
+          "symbol": "SPCX",
+          "categoryGroup": "equities",
+          "spotVolume30dUsd": 187173626.21600077,
+          "metricsSource": "birdeye"
+        },
+        {
+          "rank": 2,
+          "assetId": "sp500",
+          "name": "SP500",
+          "symbol": "SPY",
+          "categoryGroup": "funds",
+          "spotVolume30dUsd": 157474440.9722966,
+          "metricsSource": "birdeye"
+        },
+        {
+          "rank": 3,
+          "assetId": "sk-hynix",
+          "name": "SK Hynix",
+          "symbol": "SKHY",
+          "categoryGroup": "equities",
+          "spotVolume30dUsd": 150279073.11941913,
+          "metricsSource": "clickhouse_trades"
+        },
+        {
+          "rank": 4,
+          "assetId": "circle",
+          "name": "Circle",
+          "symbol": "CRCL",
+          "categoryGroup": "equities",
+          "spotVolume30dUsd": 145207769.69213408,
+          "metricsSource": "birdeye"
+        },
+        {
+          "rank": 5,
+          "assetId": "micron",
+          "name": "Micron Technology",
+          "symbol": "MU",
+          "categoryGroup": "equities",
+          "spotVolume30dUsd": 103692996.70105956,
+          "metricsSource": "clickhouse_trades"
+        },
+        {
+          "rank": 6,
+          "assetId": "gold",
+          "name": "Gold",
+          "symbol": "GLD",
+          "categoryGroup": "commodities",
+          "spotVolume30dUsd": 82799863.88331299,
+          "metricsSource": "birdeye"
+        },
+        {
+          "rank": 7,
+          "assetId": "sandisk",
+          "name": "SanDisk",
+          "symbol": "SNDK",
+          "categoryGroup": "equities",
+          "spotVolume30dUsd": 51135853.31596893,
+          "metricsSource": "clickhouse_trades"
+        },
+        {
+          "rank": 8,
+          "assetId": "nvidia",
+          "name": "NVIDIA",
+          "symbol": "NVDA",
+          "categoryGroup": "equities",
+          "spotVolume30dUsd": 47045036.77373042,
+          "metricsSource": "birdeye"
+        },
+        {
+          "rank": 9,
+          "assetId": "openai",
+          "name": "OpenAI",
+          "symbol": "OPENAI",
+          "categoryGroup": "equities",
+          "spotVolume30dUsd": 42009765.82216582,
+          "metricsSource": "birdeye"
+        },
+        {
+          "rank": 10,
+          "assetId": "microstrategy",
+          "name": "MicroStrategy",
+          "symbol": "MSTR",
+          "categoryGroup": "equities",
+          "spotVolume30dUsd": 37933143.18315277,
+          "metricsSource": "birdeye"
+        }
+      ]
     },
     "dailyActiveAddresses": {
       "status": "fresh",

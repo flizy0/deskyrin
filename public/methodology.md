@@ -1,8 +1,8 @@
 # Methodology
 
-Version: `1.3.0`
+Version: `1.4.0`
 
-Canonical schema: `1.3.0`
+Canonical schema: `1.4.0`
 
 This document defines every published value. Changing a definition, population, comparison window, or threshold requires a `methodologyVersion` change. `updatedAt` is captured immediately before candidate validation/publication; every domain also keeps its own `observedAt`, and every source records attempts, successes, data coverage, and next due time.
 
@@ -91,8 +91,11 @@ Tokens.xyz's public curated Solana lists (`rwas`, `stocks`, `etfs`, and `metals`
 - The published values are USD trailing-30-day **spot trading volume**, not transfer volume. Total volume sums covered assets across the four curated lists; equity volume sums the covered equity subset.
 - Only assets whose selected primary variant reports `birdeye` or `clickhouse_trades` volume provenance are included. RWA.xyz-derived provenance, unrecognized provenance, and accepted sources without a 30-day value are excluded in separate counts and never converted to zero.
 - Indexed and covered asset/equity counts are published with every observation so changes in coverage remain visible.
+- The current category snapshot partitions the deduplicated universe into four disjoint groups: `equity` → Equities, `etf` → ETFs, `commodity` → Commodities, and every remaining category → Other RWA. Indexed count, covered count, and accepted 30-day volume are published for each group; their totals must reconcile with the headline market totals.
+- The leading-assets snapshot contains at most ten covered assets, ordered by accepted trailing-30-day spot volume descending and then stable asset ID. Each row retains the asset identity, category group, value, and its accepted volume source. It is a current cross-section, not historical backfill.
 - The public endpoint is keyless and checked every six hours. One observation is appended per successful collection and active history is capped at 365 points.
-- The retired RWA.xyz trailing-30-day transfer-volume history is retained under `legacyTransferVolume` through its last genuine observation. It is a different methodology and is never joined, interpolated, or compared as if it were Tokens.xyz spot volume.
+- The dashboard presents the current snapshot immediately, but it does not render the temporal spot-volume chart until the active history contains at least eight genuine observations. Before that threshold it shows collection progress instead. No synthetic points, interpolation, or timestamp reuse are used to manufacture a fuller chart; genuine missing collection periods remain gaps.
+- The retired RWA.xyz trailing-30-day transfer-volume history is retained under `legacyTransferVolume` through its last genuine observation and remains available in canonical JSON and the generated report as clearly labelled legacy evidence. It is excluded from the active dashboard and is never joined, interpolated, or compared as if it were Tokens.xyz spot volume.
 
 ### Daily active addresses
 

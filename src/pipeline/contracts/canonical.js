@@ -295,7 +295,7 @@ const tokenizedMarketHistoryPointSchema = z.object({
   coveredEquityCount: positiveInteger
 }).strict();
 
-const tokenizedMarketsSchema = z.object({
+const tokenizedMarketsV13Schema = z.object({
   ...domainFields,
   methodology: z.literal("tokens_xyz_spot_volume_v1"),
   currency: z.literal("USD"),
@@ -322,6 +322,48 @@ const tokenizedMarketsSchema = z.object({
   history: z.array(tokenizedMarketHistoryPointSchema).min(1),
   legacyTransferVolume: legacyTransferVolumeSchema.optional()
 }).strict();
+
+const tokenizedCategoryBreakdownSchema = z.tuple([
+  z.object({
+    id: z.literal("equities"),
+    indexedAssetCount: nonNegativeInteger,
+    coveredAssetCount: nonNegativeInteger,
+    spotVolume30dUsd: nonNegative
+  }).strict(),
+  z.object({
+    id: z.literal("funds"),
+    indexedAssetCount: nonNegativeInteger,
+    coveredAssetCount: nonNegativeInteger,
+    spotVolume30dUsd: nonNegative
+  }).strict(),
+  z.object({
+    id: z.literal("commodities"),
+    indexedAssetCount: nonNegativeInteger,
+    coveredAssetCount: nonNegativeInteger,
+    spotVolume30dUsd: nonNegative
+  }).strict(),
+  z.object({
+    id: z.literal("other-rwa"),
+    indexedAssetCount: nonNegativeInteger,
+    coveredAssetCount: nonNegativeInteger,
+    spotVolume30dUsd: nonNegative
+  }).strict()
+]);
+
+const tokenizedTopAssetSchema = z.object({
+  rank: positiveInteger.max(10),
+  assetId: z.string().min(1).max(200),
+  name: z.string().min(1).max(300),
+  symbol: z.string().min(1).max(100),
+  categoryGroup: z.enum(["equities", "funds", "commodities", "other-rwa"]),
+  spotVolume30dUsd: nonNegative,
+  metricsSource: z.enum(["birdeye", "clickhouse_trades"])
+}).strict();
+
+const tokenizedMarketsSchema = tokenizedMarketsV13Schema.extend({
+  categoryBreakdown: tokenizedCategoryBreakdownSchema,
+  topAssets: z.array(tokenizedTopAssetSchema).min(1).max(10)
+});
 
 const tokenizedAssetsSchema = tokenizedMarketsSchema;
 
@@ -543,6 +585,17 @@ export const canonicalSnapshotSchema = z.object({
   alerts: z.array(alertSchema).max(5)
 }).strict();
 
+const canonicalSnapshotV13Schema = canonicalSnapshotSchema.extend({
+  schemaVersion: z.literal("1.3.0"),
+  methodologyVersion: z.literal("1.3.0"),
+  ecosystem: z.object({
+    tokenizedAssets: tokenizedMarketsV13Schema,
+    dailyActiveAddresses: activeAddressesSchema,
+    news: newsSchema,
+    upgrades: upgradesSchema
+  }).strict()
+});
+
 const legacyVersionSchema = z.enum(["1.0.0", "1.1.0", "1.2.0"]);
 const legacyCanonicalSnapshotSchema = canonicalSnapshotSchema.extend({
   schemaVersion: legacyVersionSchema,
@@ -630,7 +683,7 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
 
   const knownSourceIds = new Set([
     ...Object.values(SOURCE_IDS),
-    ...(snapshot.schemaVersion === SCHEMA_VERSION ? [] : ["rwa"])
+    ...(snapshot.ecosystem.tokenizedAssets.methodology === "tokens_xyz_spot_volume_v1" ? [] : ["rwa"])
   ]);
   const snapshotTime = Date.parse(snapshot.updatedAt);
   for (const [sourceId, source] of Object.entries(snapshot.sources)) {
@@ -800,7 +853,7 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
   assert(fee.sample.selectedBlockCount <= fee.sample.producedSlotCount && fee.sample.transactionCount >= fee.sample.selectedBlockCount, "INVALID_FEE_SAMPLE", "Median-fee sample counts are incoherent");
 
   const tokenized = snapshot.ecosystem.tokenizedAssets;
-  if (snapshot.schemaVersion === SCHEMA_VERSION) {
+  if (tokenized.methodology === "tokens_xyz_spot_volume_v1") {
     assert(tokenized.sourceIds.length === 1 && tokenized.sourceIds[0] === "tokensXyz", "TOKENIZED_SOURCE_MISMATCH", "Active tokenized-market metrics must come from Tokens.xyz");
     assert(tokenized.equitySpotVolume30dUsd <= tokenized.totalSpotVolume30dUsd, "TOKENIZED_SUBSET_MISMATCH", "Equity spot volume exceeds total tokenized-market spot volume");
     assert(tokenized.indexedEquityCount <= tokenized.indexedAssetCount, "TOKENIZED_COVERAGE_MISMATCH", "Indexed equity count exceeds the tokenized-market universe");
@@ -820,6 +873,33 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
       && item.coveredEquityCount <= item.indexedEquityCount
       && item.coveredEquityCount <= item.coveredAssetCount
     ), "TOKENIZED_HISTORY_MISMATCH", "Tokenized-market history contains incoherent volume or coverage subsets");
+    if (snapshot.schemaVersion === SCHEMA_VERSION) {
+      const categoryIndexedCount = tokenized.categoryBreakdown.reduce((sum, item) => sum + item.indexedAssetCount, 0);
+      const categoryCoveredCount = tokenized.categoryBreakdown.reduce((sum, item) => sum + item.coveredAssetCount, 0);
+      const categoryVolume = tokenized.categoryBreakdown.reduce((sum, item) => sum + item.spotVolume30dUsd, 0);
+      const equityCategory = tokenized.categoryBreakdown[0];
+      assert(categoryIndexedCount === tokenized.indexedAssetCount, "TOKENIZED_CATEGORY_MISMATCH", "Tokenized-market categories do not cover the indexed universe");
+      assert(categoryCoveredCount === tokenized.coveredAssetCount, "TOKENIZED_CATEGORY_MISMATCH", "Tokenized-market categories do not cover the provenance-qualified universe");
+      assert(nearlyEqual(categoryVolume, tokenized.totalSpotVolume30dUsd), "TOKENIZED_CATEGORY_MISMATCH", "Tokenized-market category volumes do not equal total spot volume");
+      assert(
+        equityCategory.indexedAssetCount === tokenized.indexedEquityCount
+          && equityCategory.coveredAssetCount === tokenized.coveredEquityCount
+          && nearlyEqual(equityCategory.spotVolume30dUsd, tokenized.equitySpotVolume30dUsd),
+        "TOKENIZED_CATEGORY_MISMATCH",
+        "Tokenized-market equity category disagrees with the equity headline"
+      );
+      assert(tokenized.categoryBreakdown.every((item) => item.coveredAssetCount <= item.indexedAssetCount), "TOKENIZED_CATEGORY_MISMATCH", "A tokenized-market category covers more assets than it indexes");
+      assert(tokenized.topAssets.length === Math.min(10, tokenized.coveredAssetCount), "TOKENIZED_TOP_ASSET_MISMATCH", "Tokenized-market top assets must cover the bounded ranked prefix");
+      assertUnique(tokenized.topAssets, (item) => item.assetId, "TOKENIZED_TOP_ASSET_MISMATCH", "Tokenized-market top assets must be unique");
+      assert(tokenized.topAssets.every((item, index) => item.rank === index + 1), "TOKENIZED_TOP_ASSET_MISMATCH", "Tokenized-market top-asset ranks must be contiguous");
+      assert(tokenized.topAssets.every((item, index, items) => {
+        if (index === 0) return true;
+        const previous = items[index - 1];
+        return previous.spotVolume30dUsd > item.spotVolume30dUsd
+          || previous.spotVolume30dUsd === item.spotVolume30dUsd && previous.assetId < item.assetId;
+      }), "TOKENIZED_TOP_ASSET_MISMATCH", "Tokenized-market top assets must be volume-descending with deterministic ties");
+      assert(tokenized.topAssets.every((item) => item.spotVolume30dUsd <= tokenized.totalSpotVolume30dUsd), "TOKENIZED_TOP_ASSET_MISMATCH", "A tokenized-market top asset exceeds total spot volume");
+    }
     if (tokenized.legacyTransferVolume) {
       assertSortedUnique(tokenized.legacyTransferVolume.history, (item) => item.observedAt, tokenizedLimit, "legacy RWA transfer-volume history");
       assert(tokenized.legacyTransferVolume.endedAt === tokenized.legacyTransferVolume.history.at(-1).observedAt, "LEGACY_RWA_HISTORY_MISMATCH", "Retired RWA history end does not match its final observation");
@@ -951,6 +1031,10 @@ export function parseCanonicalSnapshot(value, limits) {
 export function parsePreviousCanonicalSnapshot(value, limits) {
   if (value?.schemaVersion === SCHEMA_VERSION && value?.methodologyVersion === METHODOLOGY_VERSION) {
     return parseCanonicalSnapshot(value, limits);
+  }
+  if (value?.schemaVersion === "1.3.0" && value?.methodologyVersion === "1.3.0") {
+    const parsed = canonicalSnapshotV13Schema.parse(value);
+    return validateCanonicalInvariants(parsed, limits);
   }
   const parsed = legacyCanonicalSnapshotSchema.parse(migrateCanonicalSnapshot(value));
   return validateCanonicalInvariants(parsed, limits);

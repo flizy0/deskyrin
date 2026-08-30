@@ -7,7 +7,7 @@ import {
   serializeCanonicalSnapshot
 } from "../../src/pipeline/contracts/canonical.js";
 import { blockSlotsSchema, performanceSamplesSchema, voteAccountsSchema } from "../../src/pipeline/contracts/providers.js";
-import { canonicalFixture, legacyCanonicalFixture } from "../helpers/canonical-fixture.js";
+import { canonicalFixture, legacyCanonicalFixture, previousTokensCanonicalFixture } from "../helpers/canonical-fixture.js";
 
 test("provider contracts accept real RPC shape and BigInt stake", () => {
   assert.equal(performanceSamplesSchema.parse([{ numNonVoteTransactions: 10, numSlots: 150, numTransactions: 20, samplePeriodSecs: 60, slot: 50 }]).length, 1);
@@ -28,8 +28,16 @@ test("provider contracts reject incoherent performance and block ordering", () =
 
 test("canonical snapshot validates and serializes deterministically", () => {
   const fixture = canonicalFixture();
-  assert.equal(parseCanonicalSnapshot(fixture).updatedAt, fixture.updatedAt);
-  assert.equal(serializeCanonicalSnapshot(fixture), `${JSON.stringify(fixture, null, 2)}\n`);
+  const parsed = parseCanonicalSnapshot(fixture);
+  assert.equal(parsed.updatedAt, fixture.updatedAt);
+  assert.equal(serializeCanonicalSnapshot(fixture), `${JSON.stringify(parsed, null, 2)}\n`);
+});
+
+test("previous canonical parser accepts the active Tokens.xyz 1.3 snapshot during migration", () => {
+  const previous = previousTokensCanonicalFixture();
+
+  assert.equal(parsePreviousCanonicalSnapshot(previous).schemaVersion, "1.3.0");
+  assert.throws(() => parseCanonicalSnapshot(previous));
 });
 
 test("canonical snapshot migrates version 1.0.0 without mutating its input", () => {
@@ -270,4 +278,19 @@ test("canonical invariants reject contradictory histories and source timelines",
   const addresses = canonicalFixture();
   addresses.ecosystem.dailyActiveAddresses.history.unshift({ date: "2026-08-17", value: 1, allium: 1, dune: 3 });
   assert.throws(() => parseCanonicalSnapshot(addresses), (error) => error.code === "ADDRESS_HISTORY_MISMATCH");
+});
+
+test("canonical invariants reject incoherent tokenized-market snapshots", () => {
+  const categories = canonicalFixture();
+  categories.ecosystem.tokenizedAssets.categoryBreakdown[3].spotVolume30dUsd += 1;
+  assert.throws(() => parseCanonicalSnapshot(categories), (error) => error.code === "TOKENIZED_CATEGORY_MISMATCH");
+
+  const topAssets = canonicalFixture();
+  [topAssets.ecosystem.tokenizedAssets.topAssets[0], topAssets.ecosystem.tokenizedAssets.topAssets[1]] = [
+    topAssets.ecosystem.tokenizedAssets.topAssets[1],
+    topAssets.ecosystem.tokenizedAssets.topAssets[0]
+  ];
+  topAssets.ecosystem.tokenizedAssets.topAssets[0].rank = 1;
+  topAssets.ecosystem.tokenizedAssets.topAssets[1].rank = 2;
+  assert.throws(() => parseCanonicalSnapshot(topAssets), (error) => error.code === "TOKENIZED_TOP_ASSET_MISMATCH");
 });

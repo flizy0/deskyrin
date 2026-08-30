@@ -4,6 +4,13 @@ const number = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 const integer = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 2 });
 
+const TOKENIZED_CATEGORY_LABELS = {
+  equities: "Equities",
+  funds: "ETFs",
+  commodities: "Commodities",
+  "other-rwa": "Other RWA"
+};
+
 function md(value) {
   return String(value).replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 }
@@ -214,6 +221,35 @@ export function renderReport(snapshot) {
     `Tokens.xyz coverage: ${integer.format(tokenized.coveredAssetCount)} of ${integer.format(tokenized.indexedAssetCount)} indexed tokenized-market assets and ${integer.format(tokenized.coveredEquityCount)} of ${integer.format(tokenized.indexedEquityCount)} equities have accepted 30-day volume provenance. Excluded assets: ${integer.format(tokenized.provenanceCoverage.rwaXyzExcludedCount)} RWA.xyz-derived, ${integer.format(tokenized.provenanceCoverage.unknownSourceExcludedCount)} unrecognized provenance, and ${integer.format(tokenized.provenanceCoverage.missingVolumeExcludedCount)} without a 30-day value.`,
     ""
   );
+  if (Array.isArray(tokenized.categoryBreakdown)) {
+    lines.push(
+      "### Tokenized market category breakdown",
+      "",
+      "This is a current cross-sectional breakdown of the same provenance-filtered trailing-30-day spot-volume total.",
+      "",
+      "| Category | Indexed assets | Covered assets | Trailing 30d spot volume |",
+      "|---|---:|---:|---:|"
+    );
+    for (const category of tokenized.categoryBreakdown) {
+      lines.push(`| ${TOKENIZED_CATEGORY_LABELS[category.id] || md(category.id)} | ${integer.format(category.indexedAssetCount)} | ${integer.format(category.coveredAssetCount)} | ${usd.format(category.spotVolume30dUsd)} |`);
+    }
+    lines.push("");
+  }
+  if (Array.isArray(tokenized.topAssets)) {
+    lines.push(
+      "### Leading covered tokenized assets",
+      "",
+      "Ranked by accepted trailing-30-day spot volume; excluded provenance never enters this table.",
+      "",
+      "| Rank | Asset | Category | Volume source | Trailing 30d spot volume |",
+      "|---:|---|---|---|---:|"
+    );
+    for (const asset of tokenized.topAssets) {
+      const identity = asset.symbol ? `${md(asset.symbol)} — ${md(asset.name)}` : md(asset.name);
+      lines.push(`| ${asset.rank} | ${identity} | ${TOKENIZED_CATEGORY_LABELS[asset.categoryGroup] || md(asset.categoryGroup)} | ${md(asset.metricsSource)} | ${usd.format(asset.spotVolume30dUsd)} |`);
+    }
+    lines.push("");
+  }
   if (tokenized.legacyTransferVolume) {
     const legacy = tokenized.legacyTransferVolume;
     const latest = legacy.history.at(-1);

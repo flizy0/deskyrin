@@ -12,7 +12,7 @@ Deskyrin is an auto-updating Solana network and ecosystem report with a dark ana
 - Network Performance: TPS, non-vote TPS provenance, slot time, block height, and epoch progress.
 - Validator Status: active/delinquent counts, activated-stake distribution, top validators, current commission, bounded commission-change tracking, and row status.
 - Economic Indicators: SOL price movement, stablecoin supply, completed-day DEX volume, Real Economic Value, and sampled median transaction fee.
-- Ecosystem Growth: provenance-filtered tokenized-market and tokenized-equity trailing-30-day spot volumes, plus daily active addresses.
+- Ecosystem Growth: provenance-filtered tokenized-market and tokenized-equity trailing-30-day spot volumes, a current category breakdown, leading covered assets, and daily active addresses.
 - Official ecosystem/community news and upcoming developments, including Alpenglow and Reduced Slot Times/SIMD-0525 while officially upcoming.
 - Five fixed notable-change checks: TPS drop/spike, slow slots, validator delinquency, TVL movement, and SOL price movement.
 
@@ -150,8 +150,9 @@ Vercel serves only static build output. `/data.json` and `/report.md` are explic
 - Median fee is a documented 16-block temporal sample, not a full scan of every block in the hour.
 - TVL, stablecoin, DEX, REV, and active-address series can lag by a completed UTC day and inherit provider classification/revision choices.
 - “Daily active addresses” means initiating signers/fee payers, not unique people.
-- Tokens.xyz values are rolling 30-day spot volumes for curated tokenized-market lists. Assets without Birdeye or on-chain trade volume provenance are disclosed in coverage counts and excluded rather than treated as zero.
-- Retired RWA.xyz transfer-volume history is preserved separately through its final successful observation and is never spliced into the Tokens.xyz spot-volume series.
+- Tokens.xyz values are rolling 30-day spot volumes for curated tokenized-market lists. Assets without Birdeye or on-chain trade volume provenance are disclosed in coverage counts and excluded rather than treated as zero. The category breakdown and leading-assets table are current cross-sections of that accepted universe.
+- The Tokens.xyz timeline appears only after eight genuine observations exist. Until then the current snapshot and collection progress remain visible; no point is invented, interpolated, or retimestamped to improve chart density.
+- Retired RWA.xyz transfer-volume history is preserved in canonical JSON and the generated report, clearly separated through its final successful observation, and is never spliced into the Tokens.xyz spot-volume series or shown as an active dashboard chart.
 - Official news is intentionally not an exhaustive independent-community feed.
 - Static Git/Vercel delivery means a successful data commit is followed by normal deployment latency.
 - Chart exploration changes only the visible range of the checked-in snapshot; it does not interpolate points, poll providers, or make daily/hourly data real-time.

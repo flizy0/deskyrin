@@ -31,6 +31,8 @@ function requiredArrays(data) {
     data.economics?.medianTransactionFee?.history,
     data.economics?.tvlAlertInput?.history,
     data.ecosystem?.tokenizedAssets?.history,
+    data.ecosystem?.tokenizedAssets?.categoryBreakdown,
+    data.ecosystem?.tokenizedAssets?.topAssets,
     data.ecosystem?.dailyActiveAddresses?.history,
     data.ecosystem?.upgrades?.items,
     data.ecosystem?.news?.items
@@ -55,7 +57,7 @@ function hasInvalidOptionalArrays(data) {
 
 function validateSnapshot(data) {
   if (
-    data?.schemaVersion !== "1.3.0"
+    data?.schemaVersion !== "1.4.0"
     || !data.network?.chain
     || !data.sources
     || Array.isArray(data.sources)

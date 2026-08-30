@@ -150,6 +150,8 @@ export const tokensCuratedAssetsSchema = z.object({
   }).strict(),
   assets: z.array(z.object({
     assetId: z.string().min(1).max(200),
+    name: z.string().trim().min(1).max(300),
+    symbol: z.string().trim().min(1).max(100),
     category: z.string().min(1).max(100),
     stats: z.object({
       volume24hUSD: nullableNonNegative,

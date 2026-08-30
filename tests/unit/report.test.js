@@ -94,6 +94,33 @@ test("baseline report omits unavailable supplemental sections", () => {
   assert.doesNotMatch(report, /## Network Observability/);
 });
 
+test("report presents the current tokenized snapshot and keeps retired RWA evidence separate", () => {
+  const snapshot = canonicalFixture();
+  snapshot.ecosystem.tokenizedAssets.categoryBreakdown = [
+    { id: "equities", indexedAssetCount: 4, coveredAssetCount: 3, spotVolume30dUsd: 2_000 },
+    { id: "funds", indexedAssetCount: 2, coveredAssetCount: 2, spotVolume30dUsd: 500 },
+    { id: "commodities", indexedAssetCount: 2, coveredAssetCount: 2, spotVolume30dUsd: 300 },
+    { id: "other-rwa", indexedAssetCount: 2, coveredAssetCount: 1, spotVolume30dUsd: 200 }
+  ];
+  snapshot.ecosystem.tokenizedAssets.topAssets = [{
+    rank: 1,
+    assetId: "test-asset",
+    name: "Test Equity",
+    symbol: "TEST",
+    categoryGroup: "equities",
+    spotVolume30dUsd: 1_500,
+    metricsSource: "birdeye"
+  }];
+
+  const report = renderReport(snapshot);
+  assert.match(report, /### Tokenized market category breakdown/);
+  assert.match(report, /\| ETFs \| 2 \| 2 \| \$500 \|/);
+  assert.match(report, /### Leading covered tokenized assets/);
+  assert.match(report, /TEST — Test Equity/);
+  assert.match(report, /### Retired RWA\.xyz transfer-volume evidence/);
+  assert.match(report, /not joined to Tokens\.xyz spot-volume history/);
+});
+
 test("published methodology matches its source and documents evidence boundaries", async () => {
   const [source, published] = await Promise.all([
     readFile("docs/methodology.md", "utf8"),
@@ -112,4 +139,6 @@ test("published methodology matches its source and documents evidence boundaries
   assert.match(source, /never claims the exact on-chain change time/);
   assert.match(source, /Tokens\.xyz's public curated Solana lists/);
   assert.match(source, /retired RWA\.xyz trailing-30-day transfer-volume history/);
+  assert.match(source, /eight genuine observations/);
+  assert.match(source, /No synthetic points, interpolation, or timestamp reuse/);
 });
