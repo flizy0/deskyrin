@@ -23,8 +23,8 @@ export function canonicalFixture() {
   const domain = { status: "fresh", observedAt, sourceIds: ["solanaRpc"] };
 
   return {
-    schemaVersion: "1.3.0",
-    methodologyVersion: "1.3.0",
+    schemaVersion: "1.4.0",
+    methodologyVersion: "1.4.0",
     updatedAt: observedAt,
     updateStatus: "complete",
     sources: {
@@ -166,6 +166,22 @@ export function canonicalFixture() {
         coveredEquityCount: 3,
         provenanceCoverage: { rwaXyzExcludedCount: 1, unknownSourceExcludedCount: 1, missingVolumeExcludedCount: 0 },
         listCoverage: { rwas: 2, stocks: 4, etfs: 2, metals: 2 },
+        categoryBreakdown: [
+          { id: "equities", indexedAssetCount: 4, coveredAssetCount: 3, spotVolume30dUsd: 2_000 },
+          { id: "funds", indexedAssetCount: 2, coveredAssetCount: 2, spotVolume30dUsd: 500 },
+          { id: "commodities", indexedAssetCount: 2, coveredAssetCount: 1, spotVolume30dUsd: 300 },
+          { id: "other-rwa", indexedAssetCount: 2, coveredAssetCount: 2, spotVolume30dUsd: 200 }
+        ],
+        topAssets: [
+          { rank: 1, assetId: "equity-1", name: "Equity One", symbol: "EQ1", categoryGroup: "equities", spotVolume30dUsd: 900, metricsSource: "birdeye" },
+          { rank: 2, assetId: "equity-2", name: "Equity Two", symbol: "EQ2", categoryGroup: "equities", spotVolume30dUsd: 700, metricsSource: "clickhouse_trades" },
+          { rank: 3, assetId: "equity-3", name: "Equity Three", symbol: "EQ3", categoryGroup: "equities", spotVolume30dUsd: 400, metricsSource: "birdeye" },
+          { rank: 4, assetId: "commodity-1", name: "Commodity One", symbol: "CMD1", categoryGroup: "commodities", spotVolume30dUsd: 300, metricsSource: "birdeye" },
+          { rank: 5, assetId: "fund-1", name: "Fund One", symbol: "FND1", categoryGroup: "funds", spotVolume30dUsd: 300, metricsSource: "clickhouse_trades" },
+          { rank: 6, assetId: "fund-2", name: "Fund Two", symbol: "FND2", categoryGroup: "funds", spotVolume30dUsd: 200, metricsSource: "birdeye" },
+          { rank: 7, assetId: "other-1", name: "Other One", symbol: "OTH1", categoryGroup: "other-rwa", spotVolume30dUsd: 150, metricsSource: "birdeye" },
+          { rank: 8, assetId: "other-2", name: "Other Two", symbol: "OTH2", categoryGroup: "other-rwa", spotVolume30dUsd: 50, metricsSource: "clickhouse_trades" }
+        ],
         history: [{
           observedAt,
           totalSpotVolume30dUsd: 3_000,
@@ -223,6 +239,15 @@ export function canonicalFixture() {
     ],
     alerts: []
   };
+}
+
+export function previousTokensCanonicalFixture() {
+  const fixture = canonicalFixture();
+  fixture.schemaVersion = "1.3.0";
+  fixture.methodologyVersion = "1.3.0";
+  delete fixture.ecosystem.tokenizedAssets.categoryBreakdown;
+  delete fixture.ecosystem.tokenizedAssets.topAssets;
+  return fixture;
 }
 
 export function legacyCanonicalFixture(version = "1.2.0") {

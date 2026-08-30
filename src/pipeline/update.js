@@ -70,6 +70,12 @@ function metricAttempt(input, operation) {
   }
 }
 
+export function needsTokenizedSnapshotMigration(previous) {
+  const active = previous?.ecosystem?.tokenizedAssets;
+  return active?.methodology === TOKENIZED_MARKETS_METHODOLOGY
+    && (!Array.isArray(active.categoryBreakdown) || !Array.isArray(active.topAssets));
+}
+
 function subResult(group, key) {
   if (group.state !== "fresh") return group;
   const item = group.value[key];
@@ -114,6 +120,10 @@ export async function runUpdate(options = {}) {
   const context = { now, config, previous, http, rpc };
 
   const due = (id) => !previous || sourceIsDue(id, previous, now, config);
+  const previousTokenizedMarkets = previous?.ecosystem.tokenizedAssets?.methodology === TOKENIZED_MARKETS_METHODOLOGY
+    ? previous.ecosystem.tokenizedAssets
+    : undefined;
+  const tokenizedNeedsMigration = needsTokenizedSnapshotMigration(previous);
   const rpcDue = due("solanaRpc");
   const revDue = due("solanaData") || due("jitoMev");
   const coreResult = rpcDue ? await attempt(() => collectSolanaCore(context)) : notDue();
@@ -132,8 +142,8 @@ export async function runUpdate(options = {}) {
     dex: due("defiLlamaDex") ? attempt(() => collectDexVolume(context)) : Promise.resolve(notDue()),
     solanaData: revDue ? attempt(() => collectSolanaData(context)) : Promise.resolve(notDue()),
     jito: revDue ? attempt(() => collectJito(context)) : Promise.resolve(notDue()),
-    tokenized: due("tokensXyz")
-      ? attempt(() => collectTokenizedMarkets(context, previous?.ecosystem.tokenizedAssets))
+    tokenized: due("tokensXyz") || tokenizedNeedsMigration
+      ? attempt(() => collectTokenizedMarkets(context, previousTokenizedMarkets))
       : Promise.resolve(notDue()),
     news: due("solanaNews") ? attempt(() => collectNews(context)) : Promise.resolve(notDue()),
     upgrades: due("solanaUpgrades") ? attempt(() => collectUpgrades(context)) : Promise.resolve(notDue()),
@@ -217,9 +227,6 @@ export async function runUpdate(options = {}) {
     ...(coinGeckoPrice ? { coinGeckoPrice } : {}),
     ...(coinbaseMarket ? { coinbaseMarket } : {})
   };
-  const previousTokenizedMarkets = previous?.ecosystem.tokenizedAssets?.methodology === TOKENIZED_MARKETS_METHODOLOGY
-    ? previous.ecosystem.tokenizedAssets
-    : undefined;
   const ecosystem = {
     tokenizedAssets: mergeDomain(previousTokenizedMarkets, collected.tokenized, now, config.freshness.daily, "tokenized markets"),
     dailyActiveAddresses: mergeDomain(previous?.ecosystem.dailyActiveAddresses, addressesResult, now, config.freshness.daily, "daily active addresses"),

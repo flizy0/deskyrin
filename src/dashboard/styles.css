@@ -1568,6 +1568,211 @@ th[aria-sort="descending"] .sort-button::after {
   font-variant-numeric: tabular-nums;
 }
 
+.tokenized-summary {
+  margin-top: 9px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-control);
+  background: var(--surface-inset);
+}
+
+.tokenized-summary-item {
+  min-width: 0;
+  padding: 9px 10px;
+  display: grid;
+  align-content: start;
+  gap: 2px;
+}
+
+.tokenized-summary-item + .tokenized-summary-item {
+  border-left: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.tokenized-summary-label,
+.tokenized-summary-meta {
+  color: var(--muted);
+  font-size: 0.58rem;
+}
+
+.tokenized-summary-value {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 1.08rem;
+  font-weight: 560;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tokenized-breakdown-list {
+  margin-top: 8px;
+  display: grid;
+  gap: 5px;
+}
+
+.tokenized-breakdown-row {
+  --category-color: var(--validator);
+  padding: 7px 8px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: var(--radius-control);
+  background: #0d100f;
+}
+
+.category-equities {
+  --category-color: var(--sage);
+}
+
+.category-funds {
+  --category-color: var(--network-secondary);
+}
+
+.category-commodities {
+  --category-color: var(--sol);
+}
+
+.category-other-rwa {
+  --category-color: var(--validator);
+}
+
+.tokenized-breakdown-head,
+.tokenized-breakdown-detail {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tokenized-category-label,
+.tokenized-table-category {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  font-weight: 590;
+}
+
+.tokenized-category-marker {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 1px;
+  background: var(--category-color);
+}
+
+.tokenized-category-value {
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 570;
+  font-variant-numeric: tabular-nums;
+}
+
+.tokenized-breakdown-detail {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.56rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tokenized-breakdown-track {
+  height: 2px;
+  margin-top: 5px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.tokenized-breakdown-fill {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  background: var(--category-color);
+}
+
+.tokenized-provenance-note {
+  margin-top: 8px;
+  padding-top: 7px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 3px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font-size: 0.56rem;
+}
+
+.tokenized-history-state {
+  margin: 7px 0 0;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.018);
+  color: #8d9691;
+  font-size: 0.59rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tokenized-assets-panel .table-wrap {
+  max-height: 390px;
+}
+
+.tokenized-assets-panel table {
+  min-width: 590px;
+}
+
+.tokenized-assets-panel th {
+  height: 31px;
+}
+
+.tokenized-assets-panel td {
+  height: 34px;
+  padding-block: 4px;
+}
+
+.tokenized-asset-identity {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.tokenized-asset-name {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.tokenized-asset-symbol {
+  flex: none;
+  color: var(--text);
+  font-size: 0.66rem;
+  font-weight: 650;
+}
+
+.tokenized-asset-name > span,
+.tokenized-asset-source {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.55rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tokenized-asset-source {
+  color: #69716d;
+  text-transform: capitalize;
+}
+
+.tokenized-table-category {
+  --category-color: var(--validator);
+  color: #919995;
+  font-size: 0.59rem;
+  font-weight: 540;
+  white-space: nowrap;
+}
+
 .upgrade-grid {
   margin-top: 9px;
   display: grid;
