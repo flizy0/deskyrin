@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { migrateCanonicalSnapshot, parseCanonicalSnapshot, serializeCanonicalSnapshot } from "../../src/pipeline/contracts/canonical.js";
+import {
+  migrateCanonicalSnapshot,
+  parseCanonicalSnapshot,
+  parsePreviousCanonicalSnapshot,
+  serializeCanonicalSnapshot
+} from "../../src/pipeline/contracts/canonical.js";
 import { blockSlotsSchema, performanceSamplesSchema, voteAccountsSchema } from "../../src/pipeline/contracts/providers.js";
-import { canonicalFixture } from "../helpers/canonical-fixture.js";
+import { canonicalFixture, legacyCanonicalFixture } from "../helpers/canonical-fixture.js";
 
 test("provider contracts accept real RPC shape and BigInt stake", () => {
   assert.equal(performanceSamplesSchema.parse([{ numNonVoteTransactions: 10, numSlots: 150, numTransactions: 20, samplePeriodSecs: 60, slot: 50 }]).length, 1);
@@ -28,22 +33,22 @@ test("canonical snapshot validates and serializes deterministically", () => {
 });
 
 test("canonical snapshot migrates version 1.0.0 without mutating its input", () => {
-  const legacy = canonicalFixture();
-  legacy.schemaVersion = "1.0.0";
-  legacy.methodologyVersion = "1.0.0";
+  const legacy = legacyCanonicalFixture("1.0.0");
   const original = structuredClone(legacy);
 
   const migrated = migrateCanonicalSnapshot(legacy);
-  assert.equal(migrated.schemaVersion, "1.2.0");
-  assert.equal(migrated.methodologyVersion, "1.2.0");
+  assert.equal(migrated.schemaVersion, "1.0.0");
+  assert.equal(migrated.methodologyVersion, "1.0.0");
   assert.deepEqual(legacy, original);
-  assert.equal(parseCanonicalSnapshot(legacy).schemaVersion, "1.2.0");
+  assert.equal(parsePreviousCanonicalSnapshot(legacy).schemaVersion, "1.0.0");
+  assert.throws(() => parseCanonicalSnapshot(legacy));
+  legacy.schemaVersion = "1.3.0";
+  legacy.methodologyVersion = "1.3.0";
+  assert.throws(() => parseCanonicalSnapshot(legacy));
 });
 
 test("canonical migration turns legacy commission detections into truthful intervals", () => {
-  const legacy = canonicalFixture();
-  legacy.schemaVersion = "1.1.0";
-  legacy.methodologyVersion = "1.1.0";
+  const legacy = legacyCanonicalFixture("1.1.0");
   legacy.updatedAt = "2026-08-29T11:13:49.269Z";
   legacy.validators.observedAt = legacy.updatedAt;
   legacy.validators.history.push({
@@ -85,7 +90,7 @@ test("canonical migration turns legacy commission detections into truthful inter
     }
   ]);
   assert.deepEqual(legacy, original);
-  assert.deepEqual(parseCanonicalSnapshot(legacy).validators.commissionChanges, migrated.validators.commissionChanges);
+  assert.deepEqual(parsePreviousCanonicalSnapshot(legacy).validators.commissionChanges, migrated.validators.commissionChanges);
 });
 
 test("canonical invariants reject impossible commission intervals", () => {

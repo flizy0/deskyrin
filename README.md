@@ -12,7 +12,7 @@ Deskyrin is an auto-updating Solana network and ecosystem report with a dark ana
 - Network Performance: TPS, non-vote TPS provenance, slot time, block height, and epoch progress.
 - Validator Status: active/delinquent counts, activated-stake distribution, top validators, current commission, bounded commission-change tracking, and row status.
 - Economic Indicators: SOL price movement, stablecoin supply, completed-day DEX volume, Real Economic Value, and sampled median transaction fee.
-- Ecosystem Growth: tokenized-asset and tokenized-equity trailing-30-day transfer volumes, plus daily active addresses.
+- Ecosystem Growth: provenance-filtered tokenized-market and tokenized-equity trailing-30-day spot volumes, plus daily active addresses.
 - Official ecosystem/community news and upcoming developments, including Alpenglow and Reduced Slot Times/SIMD-0525 while officially upcoming.
 - Five fixed notable-change checks: TPS drop/spike, slow slots, validator delinquency, TVL movement, and SOL price movement.
 
@@ -50,7 +50,7 @@ GitHub Actions (hourly at :17 UTC)
        Vercel Git deployment
 ```
 
-There are no Vercel Functions, Cron Functions, API routes, Blob/KV stores, SQL databases, or always-on processes. Git is the small persistent state required for project-originated hourly/RWA histories and last-known-good values. A successful updater commit triggers the normal Vercel Git redeploy.
+There are no Vercel Functions, Cron Functions, API routes, Blob/KV stores, SQL databases, or always-on processes. Git is the small persistent state required for project-originated histories and last-known-good values. A successful updater commit triggers the normal Vercel Git redeploy.
 
 ## Data sources
 
@@ -63,7 +63,7 @@ There are no Vercel Functions, Cron Functions, API routes, Blob/KV stores, SQL d
 | DEX volume | DefiLlama Dimensions | None | Every 6 hours |
 | Fees, active addresses, and provider comparisons | Solana Foundation public data aggregator | None | Every 6 hours |
 | Jito tips | Jito daily MEV rewards | None | Every 6 hours |
-| Tokenized assets/equities | RWA.xyz public Solana page data | None | Every 6 hours |
+| Tokenized markets/equities | Tokens.xyz curated Solana market data | None | Every 6 hours |
 | News | Official Solana RSS | None | Every 6 hours |
 | Upgrades | Official Solana upgrades hub/detail pages | None | Every 6 hours |
 | Operational status | Official Solana Statuspage | None | Hourly |
@@ -93,7 +93,7 @@ npm run update:dry
 npm run check:freshness
 ```
 
-`npm run e2e` runs the reproducible Chromium suite after `npx playwright install chromium`. Installing the browser locally is optional because GitHub Actions installs and runs it on every push and pull request; a successful browser job is still required before submission. The browser binary is not required to update, build, or deploy the dashboard.
+`npm run e2e` runs the reproducible Chromium suite after `npx playwright install chromium`. The browser job is available through manual GitHub Actions dispatch and is intentionally reserved for final UI verification. The browser binary is not required to update, build, or deploy the dashboard.
 
 ## Auto-update behavior
 
@@ -150,7 +150,8 @@ Vercel serves only static build output. `/data.json` and `/report.md` are explic
 - Median fee is a documented 16-block temporal sample, not a full scan of every block in the hour.
 - TVL, stablecoin, DEX, REV, and active-address series can lag by a completed UTC day and inherit provider classification/revision choices.
 - “Daily active addresses” means initiating signers/fee payers, not unique people.
-- RWA values are rolling 30-day transfer volumes from a public website data representation; classification or page-contract changes can make the domain stale.
+- Tokens.xyz values are rolling 30-day spot volumes for curated tokenized-market lists. Assets without Birdeye or on-chain trade volume provenance are disclosed in coverage counts and excluded rather than treated as zero.
+- Retired RWA.xyz transfer-volume history is preserved separately through its final successful observation and is never spliced into the Tokens.xyz spot-volume series.
 - Official news is intentionally not an exhaustive independent-community feed.
 - Static Git/Vercel delivery means a successful data commit is followed by normal deployment latency.
 - Chart exploration changes only the visible range of the checked-in snapshot; it does not interpolate points, poll providers, or make daily/hourly data real-time.

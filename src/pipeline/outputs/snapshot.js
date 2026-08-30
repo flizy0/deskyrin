@@ -11,7 +11,7 @@ export const SOURCE_DEFINITIONS = Object.freeze({
   defiLlamaDex: { name: "DefiLlama DEX Dimensions", endpoint: "defiLlamaDex", interval: "dailySourceCheck" },
   solanaData: { name: "Solana Foundation Data", endpoint: "solanaData", interval: "dailySourceCheck" },
   jitoMev: { name: "Jito Daily MEV Rewards", endpoint: "jitoMev", interval: "dailySourceCheck" },
-  rwa: { name: "RWA.xyz Solana Network", endpoint: "rwaPage", interval: "dailySourceCheck" },
+  tokensXyz: { name: "Tokens.xyz Curated Markets", endpoint: "tokensAssets", interval: "dailySourceCheck" },
   solanaNews: { name: "Solana News RSS", endpoint: "solanaNews", interval: "dailySourceCheck" },
   solanaUpgrades: { name: "Solana Upgrades Hub", endpoint: "solanaUpgrades", interval: "dailySourceCheck" },
   solanaStatus: { name: "Solana Status", endpoint: "solanaStatusSummary", interval: "hourly" },

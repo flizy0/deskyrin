@@ -10,7 +10,9 @@ const ALLOWED_PROVIDERS = Object.freeze([
   "Blockworks",
   "DexPaprika",
   "Solscan",
-  "Token Terminal"
+  "Token Terminal",
+  "Top Ledger",
+  "Uniblock"
 ]);
 
 const METRICS = Object.freeze([

@@ -10,6 +10,8 @@ export const PROVIDER_COLORS = Object.freeze({
   Dune: "#c8766f",
   Solscan: "#b38a4d",
   "Token Terminal": "#7f9d86",
+  "Top Ledger": "#4f9fa8",
+  Uniblock: "#bd7047",
   Coinbase: "#6d91c7",
   CoinGecko: "#9bab62"
 });
@@ -24,6 +26,8 @@ export const PROVIDER_ORDER = Object.freeze([
   "Dune",
   "Solscan",
   "Token Terminal",
+  "Top Ledger",
+  "Uniblock",
   "Coinbase",
   "CoinGecko"
 ]);

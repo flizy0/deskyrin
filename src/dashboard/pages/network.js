@@ -1,4 +1,4 @@
-import { DATA_COLORS } from "../charts.js";
+import { DATA_COLORS, LIVE_OBSERVATION_GAP_MS } from "../charts.js";
 import { coverageGapCallout } from "../coverage-callout.js";
 import { fmt } from "../format.js";
 import { el } from "../ui.js";
@@ -14,8 +14,6 @@ import {
   panel,
   progressBar
 } from "../view-utils.js";
-
-const LIVE_GAP_MS = 3 * 60 * 60 * 1_000;
 
 function chainStatePanel(chain, performance) {
   const card = panel({
@@ -82,7 +80,7 @@ export function renderNetwork(snapshot, root) {
       domain: performance,
       tone: "network",
       series: performance.history.map((point) => ({ observedAt: point.observedAt, value: point.totalTps })),
-      seriesGapMs: LIVE_GAP_MS
+      seriesGapMs: LIVE_OBSERVATION_GAP_MS
     }),
     metricCard({
       label: "Non-vote TPS",
@@ -91,7 +89,7 @@ export function renderNetwork(snapshot, root) {
       domain: performance,
       tone: "network-secondary",
       series: performance.history.map((point) => ({ observedAt: point.observedAt, value: point.nonVoteTps })),
-      seriesGapMs: LIVE_GAP_MS
+      seriesGapMs: LIVE_OBSERVATION_GAP_MS
     }),
     metricCard({
       label: "Slot time",
@@ -100,7 +98,7 @@ export function renderNetwork(snapshot, root) {
       domain: performance,
       tone: "network-secondary",
       series: performance.history.map((point) => ({ observedAt: point.observedAt, value: point.slotTimeMs })),
-      seriesGapMs: LIVE_GAP_MS
+      seriesGapMs: LIVE_OBSERVATION_GAP_MS
     }),
     metricCard({
       label: "Block height",
@@ -125,8 +123,8 @@ export function renderNetwork(snapshot, root) {
     history: performance.history,
     time: (point) => point.observedAt,
     series: [
-      { label: "Total TPS", field: "totalTps", color: DATA_COLORS.network, fill: true, spanGaps: LIVE_GAP_MS },
-      { label: "Non-vote TPS", field: "nonVoteTps", color: DATA_COLORS.networkSecondary, spanGaps: LIVE_GAP_MS }
+      { label: "Total TPS", field: "totalTps", color: DATA_COLORS.network, fill: true, spanGaps: LIVE_OBSERVATION_GAP_MS },
+      { label: "Non-vote TPS", field: "nonVoteTps", color: DATA_COLORS.networkSecondary, spanGaps: LIVE_OBSERVATION_GAP_MS }
     ],
     formatter: fmt.integer
   });
@@ -136,7 +134,7 @@ export function renderNetwork(snapshot, root) {
     domain: performance,
     history: performance.history,
     time: (point) => point.observedAt,
-    series: [{ label: "Slot time", field: "slotTimeMs", color: DATA_COLORS.networkSecondary, fill: true, spanGaps: LIVE_GAP_MS }],
+    series: [{ label: "Slot time", field: "slotTimeMs", color: DATA_COLORS.networkSecondary, fill: true, spanGaps: LIVE_OBSERVATION_GAP_MS }],
     formatter: (value) => `${fmt.decimal(value)} ms`
   });
 

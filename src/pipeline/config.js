@@ -2,8 +2,8 @@ const MINUTE_MS = 60_000;
 const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;
 
-export const SCHEMA_VERSION = "1.2.0";
-export const METHODOLOGY_VERSION = "1.2.0";
+export const SCHEMA_VERSION = "1.3.0";
+export const METHODOLOGY_VERSION = "1.3.0";
 
 export const SOURCE_IDS = Object.freeze({
   solanaRpc: "solanaRpc",
@@ -15,7 +15,7 @@ export const SOURCE_IDS = Object.freeze({
   defiLlamaDex: "defiLlamaDex",
   solanaData: "solanaData",
   jitoMev: "jitoMev",
-  rwa: "rwa",
+  tokensXyz: "tokensXyz",
   solanaNews: "solanaNews",
   solanaUpgrades: "solanaUpgrades",
   solanaStatus: "solanaStatus",
@@ -81,7 +81,7 @@ export function createConfig(env = process.env) {
       defiLlamaDex: "https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true",
       solanaData: "https://solana.com/api/databricks/data?days=120",
       jitoMev: "https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards",
-      rwaPage: "https://app.rwa.xyz/networks/solana",
+      tokensAssets: "https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity",
       solanaNews: "https://solana.com/news/rss.xml",
       solanaUpgrades: "https://solana.com/upgrades",
       solanaStatusSummary: "https://status.solana.com/api/v2/summary.json",
@@ -99,7 +99,7 @@ export function createConfig(env = process.env) {
       "solana.com",
       "status.solana.com",
       "kobe.mainnet.jito.network",
-      "app.rwa.xyz",
+      "www.tokens.xyz",
       "github.com",
       "api.github.com"
     ])]),
@@ -118,7 +118,7 @@ export function createConfig(env = process.env) {
     history: Object.freeze({
       hourlyPoints: 720,
       dailyPoints: 90,
-      rwaPoints: 365,
+      tokenizedPoints: 365,
       commissionEvents: 1_000
     }),
     display: Object.freeze({
@@ -140,11 +140,12 @@ export function createConfig(env = process.env) {
       maxRetryAfterMs: 10_000,
       ordinaryTimeoutMs: 15_000,
       largeTimeoutMs: 30_000,
+      tokensTimeoutMs: 90_000,
       blockTimeoutMs: 45_000,
       maxBytes: Object.freeze({
         ordinary: 10 * 1024 * 1024,
         solanaData: 30 * 1024 * 1024,
-        rwa: 8 * 1024 * 1024,
+        tokensAssets: 8 * 1024 * 1024,
         rpcBlockBatch: 100 * 1024 * 1024
       })
     }),

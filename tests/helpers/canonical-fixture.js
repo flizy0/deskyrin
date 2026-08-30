@@ -23,8 +23,8 @@ export function canonicalFixture() {
   const domain = { status: "fresh", observedAt, sourceIds: ["solanaRpc"] };
 
   return {
-    schemaVersion: "1.2.0",
-    methodologyVersion: "1.2.0",
+    schemaVersion: "1.3.0",
+    methodologyVersion: "1.3.0",
     updatedAt: observedAt,
     updateStatus: "complete",
     sources: {
@@ -35,6 +35,15 @@ export function canonicalFixture() {
         lastAttemptAt: observedAt,
         lastSuccessAt: observedAt,
         nextDueAt: "2026-08-20T01:00:00.000Z",
+        dataThrough: observedAt
+      },
+      tokensXyz: {
+        name: "Tokens.xyz Curated Markets",
+        url: "https://www.tokens.xyz/api/v1/assets/curated",
+        status: "fresh",
+        lastAttemptAt: observedAt,
+        lastSuccessAt: observedAt,
+        nextDueAt: "2026-08-20T06:00:00.000Z",
         dataThrough: observedAt
       }
     },
@@ -143,11 +152,38 @@ export function canonicalFixture() {
     ecosystem: {
       tokenizedAssets: {
         ...domain,
+        sourceIds: ["tokensXyz"],
+        methodology: "tokens_xyz_spot_volume_v1",
         currency: "USD",
         windowDays: 30,
-        totalTransferVolumeUsd: 3_000,
-        equityTransferVolumeUsd: 2_000,
-        history: [{ observedAt, totalTransferVolumeUsd: 3_000, equityTransferVolumeUsd: 2_000 }]
+        curatedLists: ["rwas", "stocks", "etfs", "metals"],
+        acceptedMetricsSources: ["birdeye", "clickhouse_trades"],
+        totalSpotVolume30dUsd: 3_000,
+        equitySpotVolume30dUsd: 2_000,
+        indexedAssetCount: 10,
+        indexedEquityCount: 4,
+        coveredAssetCount: 8,
+        coveredEquityCount: 3,
+        provenanceCoverage: { rwaXyzExcludedCount: 1, unknownSourceExcludedCount: 1, missingVolumeExcludedCount: 0 },
+        listCoverage: { rwas: 2, stocks: 4, etfs: 2, metals: 2 },
+        history: [{
+          observedAt,
+          totalSpotVolume30dUsd: 3_000,
+          equitySpotVolume30dUsd: 2_000,
+          indexedAssetCount: 10,
+          indexedEquityCount: 4,
+          coveredAssetCount: 8,
+          coveredEquityCount: 3
+        }],
+        legacyTransferVolume: {
+          sourceName: "RWA.xyz Solana Network",
+          sourceUrl: "https://app.rwa.xyz/networks/solana",
+          methodology: "rwa_xyz_trailing_30d_transfer_volume",
+          currency: "USD",
+          windowDays: 30,
+          endedAt: "2026-08-19T00:00:00.000Z",
+          history: [{ observedAt: "2026-08-19T00:00:00.000Z", totalTransferVolumeUsd: 2_900, equityTransferVolumeUsd: 1_900 }]
+        }
       },
       dailyActiveAddresses: {
         ...domain,
@@ -187,4 +223,31 @@ export function canonicalFixture() {
     ],
     alerts: []
   };
+}
+
+export function legacyCanonicalFixture(version = "1.2.0") {
+  const fixture = canonicalFixture();
+  const active = fixture.ecosystem.tokenizedAssets;
+  const legacy = active.legacyTransferVolume;
+  fixture.schemaVersion = version;
+  fixture.methodologyVersion = version;
+  fixture.ecosystem.tokenizedAssets = {
+    status: "fresh",
+    observedAt: legacy.endedAt,
+    sourceIds: ["rwa"],
+    currency: "USD",
+    windowDays: 30,
+    totalTransferVolumeUsd: legacy.history.at(-1).totalTransferVolumeUsd,
+    equityTransferVolumeUsd: legacy.history.at(-1).equityTransferVolumeUsd,
+    history: legacy.history
+  };
+  const tokensSource = fixture.sources.tokensXyz;
+  delete fixture.sources.tokensXyz;
+  fixture.sources.rwa = {
+    ...tokensSource,
+    name: "RWA.xyz Solana Network",
+    url: "https://app.rwa.xyz/networks/solana",
+    dataThrough: legacy.endedAt
+  };
+  return fixture;
 }

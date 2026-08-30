@@ -110,4 +110,6 @@ test("published methodology matches its source and documents evidence boundaries
   assert.match(source, /without claiming that Solana itself was unavailable/);
   assert.match(source, /previousObservedAt/);
   assert.match(source, /never claims the exact on-chain change time/);
+  assert.match(source, /Tokens\.xyz's public curated Solana lists/);
+  assert.match(source, /retired RWA\.xyz trailing-30-day transfer-volume history/);
 });

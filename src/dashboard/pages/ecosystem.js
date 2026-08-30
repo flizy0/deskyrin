@@ -110,7 +110,7 @@ export function renderEcosystem(snapshot, root) {
   root.append(pageHeader({
     eyebrow: "Adoption and protocol development",
     title: "Ecosystem",
-    copy: "Address activity, tokenized-asset movement, and official protocol developments from the canonical snapshot.",
+    copy: "Address activity, tokenized-market trading, and official protocol developments from the canonical snapshot.",
     meta: [`Address data through ${fmt.date(addresses.date)}`, `Official feed observed ${fmt.utc(data.news.observedAt)}`]
   }));
 
@@ -124,20 +124,20 @@ export function renderEcosystem(snapshot, root) {
       series: addresses.history.map((point) => point.value)
     }),
     metricCard({
-      label: "Tokenized-asset transfers",
-      value: fmt.usd(assets.totalTransferVolumeUsd),
-      note: `Trailing ${assets.windowDays}-day transfer volume`,
+      label: "Tokenized-market spot volume",
+      value: fmt.usd(assets.totalSpotVolume30dUsd),
+      note: `${assets.windowDays}d · ${assets.coveredAssetCount}/${assets.indexedAssetCount} assets covered`,
       domain: assets,
       tone: "network",
-      series: assets.history.map((point) => point.totalTransferVolumeUsd)
+      series: assets.history.map((point) => point.totalSpotVolume30dUsd)
     }),
     metricCard({
-      label: "Tokenized-equity transfers",
-      value: fmt.usd(assets.equityTransferVolumeUsd),
-      note: `Trailing ${assets.windowDays}-day equity subset`,
+      label: "Tokenized-equity spot volume",
+      value: fmt.usd(assets.equitySpotVolume30dUsd),
+      note: `${assets.windowDays}d · ${assets.coveredEquityCount}/${assets.indexedEquityCount} equities covered`,
       domain: assets,
       tone: "sage",
-      series: assets.history.map((point) => point.equityTransferVolumeUsd)
+      series: assets.history.map((point) => point.equitySpotVolume30dUsd)
     }),
     metricCard({
       label: "Upcoming upgrades",
@@ -169,14 +169,14 @@ export function renderEcosystem(snapshot, root) {
     beginAtZero: true
   });
   const assetSpec = historySpec(snapshot, {
-    title: "Tokenized-asset transfer volume",
-    note: `Trailing ${assets.windowDays}-day values at exact observations`,
+    title: "Tokenized-market spot volume",
+    note: `Tokens.xyz ${assets.windowDays}-day spot activity; only Birdeye and on-chain trade provenance is included`,
     domain: assets,
     history: assets.history,
     time: (point) => point.observedAt,
     series: [
-      { label: "All tokenized assets", field: "totalTransferVolumeUsd", color: DATA_COLORS.network, fill: true },
-      { label: "Tokenized equities", field: "equityTransferVolumeUsd", color: DATA_COLORS.categorical[5] }
+      { label: "Covered tokenized assets", field: "totalSpotVolume30dUsd", color: DATA_COLORS.network, fill: true },
+      { label: "Covered tokenized equities", field: "equitySpotVolume30dUsd", color: DATA_COLORS.categorical[5] }
     ],
     formatter: fmt.usd,
     beginAtZero: true
@@ -197,9 +197,37 @@ export function renderEcosystem(snapshot, root) {
   addressGrid.append(addressesChart.card, providerEvidence(addresses));
   const assetsChart = chartPanel(assetSpec, {
     className: "chart-wide",
-    meta: [`${assets.history.length} retained observations`, "Rolling-window values"]
+    meta: [
+      `${assets.history.length} retained observations`,
+      `${assets.coveredAssetCount}/${assets.indexedAssetCount} indexed assets with accepted volume provenance`
+    ]
   });
-  root.append(addressGrid, assetsChart.card, upgradesPanel(data.upgrades), newsPanel(data.news));
+  const legacy = assets.legacyTransferVolume;
+  const legacySpec = legacy ? historySpec(snapshot, {
+    title: "Retired RWA.xyz transfer-volume evidence",
+    note: `Historical ${legacy.windowDays}-day transfer volume retained without joining it to Tokens.xyz spot volume`,
+    domain: { observedAt: legacy.endedAt },
+    history: legacy.history,
+    time: (point) => point.observedAt,
+    series: [
+      { label: "All tokenized assets", field: "totalTransferVolumeUsd", color: DATA_COLORS.network, fill: true },
+      { label: "Tokenized equities", field: "equityTransferVolumeUsd", color: DATA_COLORS.categorical[5] }
+    ],
+    formatter: fmt.usd,
+    beginAtZero: true
+  }) : null;
+  const legacyChart = legacy ? chartPanel(legacySpec, {
+    className: "chart-wide",
+    meta: [`Ended ${fmt.utc(legacy.endedAt)}`, "Different methodology · intentionally separate"]
+  }) : null;
+  root.append(
+    addressGrid,
+    assetsChart.card,
+    ...(legacyChart ? [legacyChart.card] : []),
+    upgradesPanel(data.upgrades),
+    newsPanel(data.news)
+  );
   addressesChart.draw();
   assetsChart.draw();
+  legacyChart?.draw();
 }

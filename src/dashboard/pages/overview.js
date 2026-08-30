@@ -1,4 +1,4 @@
-import { DATA_COLORS } from "../charts.js";
+import { DATA_COLORS, LIVE_OBSERVATION_GAP_MS } from "../charts.js";
 import { fmt } from "../format.js";
 import { el } from "../ui.js";
 import {
@@ -14,8 +14,6 @@ import {
   panel,
   routeLink
 } from "../view-utils.js";
-
-const LIVE_GAP_MS = 3 * 60 * 60 * 1_000;
 
 const CHECK_LABELS = {
   "tps-change": "TPS change",
@@ -131,7 +129,7 @@ export function renderOverview(snapshot, root) {
       tone: "network",
       change: checks.get("tps-change")?.changePct === undefined ? undefined : { value: checks.get("tps-change").changePct, tone: "neutral", label: `${fmt.pct(checks.get("tps-change").changePct, true)} vs baseline` },
       series: network.history.map((point) => ({ observedAt: point.observedAt, value: point.totalTps })),
-      seriesGapMs: LIVE_GAP_MS,
+      seriesGapMs: LIVE_OBSERVATION_GAP_MS,
       href: "#network"
     }),
     metricCard({
@@ -142,7 +140,7 @@ export function renderOverview(snapshot, root) {
       tone: "network-secondary",
       change: checks.get("slow-slot-time")?.changePct === undefined ? undefined : { value: checks.get("slow-slot-time").changePct, tone: "neutral", label: `${fmt.pct(checks.get("slow-slot-time").changePct, true)} vs baseline` },
       series: network.history.map((point) => ({ observedAt: point.observedAt, value: point.slotTimeMs })),
-      seriesGapMs: LIVE_GAP_MS,
+      seriesGapMs: LIVE_OBSERVATION_GAP_MS,
       href: "#network"
     }),
     metricCard({
@@ -182,8 +180,8 @@ export function renderOverview(snapshot, root) {
     history: network.history,
     time: (point) => point.observedAt,
     series: [
-      { label: "Total TPS", field: "totalTps", color: DATA_COLORS.network, fill: true, spanGaps: LIVE_GAP_MS },
-      { label: "Non-vote TPS", field: "nonVoteTps", color: DATA_COLORS.networkSecondary, spanGaps: LIVE_GAP_MS }
+      { label: "Total TPS", field: "totalTps", color: DATA_COLORS.network, fill: true, spanGaps: LIVE_OBSERVATION_GAP_MS },
+      { label: "Non-vote TPS", field: "nonVoteTps", color: DATA_COLORS.networkSecondary, spanGaps: LIVE_OBSERVATION_GAP_MS }
     ],
     formatter: fmt.integer
   });

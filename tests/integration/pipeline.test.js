@@ -5,6 +5,7 @@ import { DEFAULT_CONFIG } from "../../src/pipeline/config.js";
 import { parseCanonicalSnapshot } from "../../src/pipeline/contracts/canonical.js";
 import { PipelineError } from "../../src/pipeline/lib/errors.js";
 import { runUpdate } from "../../src/pipeline/update.js";
+import { legacyCanonicalFixture } from "../helpers/canonical-fixture.js";
 
 const unavailable = new PipelineError("FIXTURE_DOWN", "fixture source unavailable", { retryable: false });
 const failingHttp = { request: async () => { throw unavailable; } };
@@ -70,5 +71,19 @@ test("full updater stops a bootstrap when required sources are unavailable", asy
       dryRun: true
     }),
     (error) => error.code === "BOOTSTRAP_DOMAIN_FAILED"
+  );
+});
+
+test("legacy RWA history cannot substitute for a failed first Tokens.xyz collection", async () => {
+  await assert.rejects(
+    runUpdate({
+      previous: legacyCanonicalFixture(),
+      now: new Date("2026-08-21T12:00:00.000Z"),
+      config: DEFAULT_CONFIG,
+      http: failingHttp,
+      rpc: failingRpc,
+      dryRun: true
+    }),
+    (error) => error.code === "BOOTSTRAP_DOMAIN_FAILED" && /tokenized markets/.test(error.message)
   );
 });

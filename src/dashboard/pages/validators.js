@@ -1,4 +1,4 @@
-import { DATA_COLORS } from "../charts.js";
+import { DATA_COLORS, LIVE_OBSERVATION_GAP_MS } from "../charts.js";
 import { coverageGapCallout } from "../coverage-callout.js";
 import { fmt } from "../format.js";
 import { appendTableRow, createTable, makeSortable } from "../table.js";
@@ -15,7 +15,6 @@ import {
   shortKey
 } from "../view-utils.js";
 
-const LIVE_GAP_MS = 3 * 60 * 60 * 1_000;
 const VALIDATOR_CHART_START = "2026-08-21T00:00:00.000Z";
 
 const VALIDATOR_COLUMNS = [
@@ -217,7 +216,7 @@ export function renderValidators(snapshot, root) {
       domain: data,
       tone: data.stake.delinquentPct >= 5 ? "negative" : "neutral",
       series: chartHistory.map((point) => ({ observedAt: point.observedAt, value: point.delinquentStakePct })),
-      seriesGapMs: LIVE_GAP_MS
+      seriesGapMs: LIVE_OBSERVATION_GAP_MS
     }),
     metricCard({
       label: "Top 10 stake",
@@ -240,7 +239,7 @@ export function renderValidators(snapshot, root) {
     domain: data,
     history: chartHistory,
     time: (point) => point.observedAt,
-    series: [{ label: "Delinquent stake", field: "delinquentStakePct", color: DATA_COLORS.negative, fill: true, spanGaps: LIVE_GAP_MS }],
+    series: [{ label: "Delinquent stake", field: "delinquentStakePct", color: DATA_COLORS.negative, fill: true, spanGaps: LIVE_OBSERVATION_GAP_MS }],
     formatter: fmt.pct,
     beginAtZero: true
   });
