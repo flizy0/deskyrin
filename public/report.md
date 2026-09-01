@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-09-01T11:24:38.984Z**
+Updated: **2026-09-01T12:31:17.959Z**
 
 Update status: **complete**
 
@@ -25,11 +25,11 @@ Disclosure: **No values were interpolated. Provider-dated histories may be retri
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| TPS (all transactions) | 3,369.08 | 2026-09-01T11:24:36.294Z | Fresh |
-| Non-vote TPS | 1,261.31 | 2026-09-01T11:24:36.294Z | Fresh |
-| Slot time | 321.2 ms | 2026-09-01T11:24:36.294Z | Fresh |
-| Block height | 421,459,005 | 2026-09-01T11:24:36.294Z | Fresh |
-| Epoch progress | 41.53% (epoch 1026) | 2026-09-01T11:24:36.294Z | Fresh |
+| TPS (all transactions) | 3,595.71 | 2026-09-01T12:31:14.922Z | Fresh |
+| Non-vote TPS | 1,477.07 | 2026-09-01T12:31:14.922Z | Fresh |
+| Slot time | 319.15 ms | 2026-09-01T12:31:14.922Z | Fresh |
+| Block height | 421,471,592 | 2026-09-01T12:31:14.922Z | Fresh |
+| Epoch progress | 44.45% (epoch 1026) | 2026-09-01T12:31:14.922Z | Fresh |
 
 ## Validator Status
 
@@ -88,11 +88,11 @@ A row means the commission differed between two successful validator snapshots. 
 
 | Indicator | Value | Data through | Status |
 |---|---:|---|---|
-| SOL price | $102.3 (-1.69% / 24h) | 2026-09-01T11:20:50.000Z | Fresh |
+| SOL price | $102.28 (-0.88% / 24h) | 2026-09-01T12:29:50.000Z | Fresh |
 | Stablecoin supply (USD-equivalent circulating) | $16.12B | 2026-08-31 | Fresh |
 | DEX volume (completed UTC day) | $2.25B | 2026-08-31 | Fresh |
 | Real Economic Value (REV) | 7,968.32 SOL | 2026-08-30 | Fresh |
-| Median transaction fee | 5,000 lamports | 2026-09-01T11:24:36.294Z | Fresh |
+| Median transaction fee | 5,000 lamports | 2026-09-01T12:31:14.922Z | Fresh |
 | TVL alert input | $5.79B (-2.09% day/day) | 2026-08-31 | Fresh |
 
 REV components for 2026-08-30: transaction fees 6,613.97 SOL (median of Allium and Dune) + gross Jito tips 1,354.34 SOL.
@@ -103,7 +103,7 @@ These comparison observations are retained separately and are not averaged into 
 
 | Series | Value | Data through | Status |
 |---|---:|---|---|
-| CoinGecko keyless comparison | $102.18 | 2026-09-01T11:23:00.000Z | Fresh |
+| CoinGecko keyless comparison | $102.29 | 2026-09-01T12:29:50.000Z | Fresh |
 | Coinbase Exchange SOL-USD daily close | $103.04 | 2026-08-31 | Fresh |
 
 ## Provider Comparison Evidence
@@ -226,7 +226,7 @@ Status: **Fresh**. Published releases and prereleases are kept separate from upc
 
 ## Network Observability
 
-Official Solana Status: **All Systems Operational** (none). Observed 2026-09-01T11:24:36.294Z; provider page updated 2026-09-01T10:59:31.091Z.
+Official Solana Status: **All Systems Operational** (none). Observed 2026-09-01T12:31:14.922Z; provider page updated 2026-09-01T12:01:42.904Z.
 
 8 of 8 retained components report operational.
 
@@ -254,19 +254,19 @@ No active warning met its full threshold and freshness requirements.
 
 | Check | State | Current / reason |
 |---|---|---|
-| tps-change | normal | -1.69% |
-| slow-slot-time | normal | +1.34% |
+| tps-change | normal | +4.87% |
+| slow-slot-time | normal | +0.32% |
 | high-validator-delinquency | normal | 0.01% |
 | large-tvl-change | normal | -2.09% |
-| large-sol-price-move | normal | -1.69% |
+| large-sol-price-move | normal | -0.88% |
 
 ## Data Sources and Freshness
 
 | Source | State | Last success | Data through |
 |---|---|---|---|
-| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-09-01T11:24:36.294Z | 2026-09-01T11:24:36.294Z |
-| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-09-01T11:24:36.294Z | 2026-09-01T11:20:50.000Z |
-| [CoinGecko Keyless API](https://api.coingecko.com/api/v3/simple/price) | fresh | 2026-09-01T11:24:36.294Z | 2026-09-01T11:23:00.000Z |
+| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-09-01T12:31:14.922Z | 2026-09-01T12:31:14.922Z |
+| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-09-01T12:31:14.922Z | 2026-09-01T12:29:50.000Z |
+| [CoinGecko Keyless API](https://api.coingecko.com/api/v3/simple/price) | fresh | 2026-09-01T12:31:14.922Z | 2026-09-01T12:29:50.000Z |
 | [Coinbase Exchange SOL-USD](https://api.exchange.coinbase.com/products/SOL-USD/candles) | fresh | 2026-09-01T09:26:11.660Z | 2026-08-31 |
 | [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-09-01T09:26:11.660Z | 2026-08-31 |
 | [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-09-01T09:26:11.660Z | 2026-08-31 |
@@ -276,7 +276,7 @@ No active warning met its full threshold and freshness requirements.
 | [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-09-01T07:25:41.877Z | 2026-09-01T07:25:41.877Z |
 | [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-09-01T09:26:11.660Z | 2026-08-27T04:15:00.000Z |
 | [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-09-01T09:26:11.660Z | 2026-09-01T09:26:11.660Z |
-| [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-01T11:24:36.294Z | 2026-09-01T11:24:36.294Z |
+| [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-01T12:31:14.922Z | 2026-09-01T12:31:14.922Z |
 | [Agave Releases](https://api.github.com/repos/anza-xyz/agave/releases) | fresh | 2026-09-01T10:28:49.264Z | 2026-08-28T18:53:56.000Z |
 
 Detailed definitions, windows, aggregation rules, and limitations are documented in [`methodology.md`](./methodology.md).
