@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-09-01T00:36:13.228Z**
+Updated: **2026-09-01T01:23:20.085Z**
 
 Update status: **complete**
 
@@ -150,11 +150,11 @@ Provider definitions can differ materially. The values are shown side by side, n
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| Tokenized-market spot volume (trailing 30d) | $1.31B | 2026-08-31T19:19:20.813Z | Fresh |
-| Tokenized-equity spot volume (trailing 30d) | $980.28M | 2026-08-31T19:19:20.813Z | Fresh |
+| Tokenized-market spot volume (trailing 30d) | $1.32B | 2026-09-01T01:23:18.555Z | Fresh |
+| Tokenized-equity spot volume (trailing 30d) | $996.98M | 2026-09-01T01:23:18.555Z | Fresh |
 | Daily active addresses (initiating signers/fee payers) | 2,056,714.5 | 2026-08-30 | Fresh |
 
-Tokens.xyz coverage: 363 of 438 indexed tokenized-market assets and 333 of 393 equities have accepted 30-day volume provenance. Excluded assets: 10 RWA.xyz-derived, 6 unrecognized provenance, and 59 without a 30-day value.
+Tokens.xyz coverage: 362 of 438 indexed tokenized-market assets and 333 of 393 equities have accepted 30-day volume provenance. Excluded assets: 10 RWA.xyz-derived, 7 unrecognized provenance, and 59 without a 30-day value.
 
 ### Tokenized market category breakdown
 
@@ -162,10 +162,10 @@ This is a current cross-sectional breakdown of the same provenance-filtered trai
 
 | Category | Indexed assets | Covered assets | Trailing 30d spot volume |
 |---|---:|---:|---:|
-| Equities | 393 | 333 | $980.28M |
-| ETFs | 25 | 20 | $219.92M |
-| Commodities | 5 | 5 | $105.47M |
-| Other RWA | 15 | 5 | $4.92K |
+| Equities | 393 | 333 | $996.98M |
+| ETFs | 25 | 20 | $216.66M |
+| Commodities | 5 | 5 | $106.91M |
+| Other RWA | 15 | 4 | $4.81K |
 
 ### Leading covered tokenized assets
 
@@ -173,16 +173,16 @@ Ranked by accepted trailing-30-day spot volume; excluded provenance never enters
 
 | Rank | Asset | Category | Volume source | Trailing 30d spot volume |
 |---:|---|---|---|---:|
-| 1 | SPCX — SpaceX | Equities | birdeye | $185.8M |
-| 2 | SPY — SP500 | ETFs | birdeye | $165.6M |
-| 3 | CRCL — Circle | Equities | birdeye | $153.61M |
-| 4 | SKHY — SK Hynix | Equities | clickhouse_trades | $148.78M |
-| 5 | MU — Micron Technology | Equities | clickhouse_trades | $103.07M |
-| 6 | GLD — Gold | Commodities | birdeye | $82.74M |
-| 7 | SNDK — SanDisk | Equities | clickhouse_trades | $50.76M |
-| 8 | NVDA — NVIDIA | Equities | birdeye | $46.87M |
-| 9 | OPENAI — OpenAI | Equities | clickhouse_trades | $41.66M |
-| 10 | MSTR — MicroStrategy | Equities | birdeye | $37.74M |
+| 1 | SPCX — SpaceX | Equities | birdeye | $190M |
+| 2 | SPY — SP500 | ETFs | birdeye | $162.37M |
+| 3 | CRCL — Circle | Equities | birdeye | $153.17M |
+| 4 | SKHY — SK Hynix | Equities | birdeye | $150.07M |
+| 5 | MU — Micron Technology | Equities | birdeye | $103.75M |
+| 6 | GLD — Gold | Commodities | birdeye | $84.03M |
+| 7 | SNDK — SanDisk | Equities | birdeye | $51.42M |
+| 8 | NVDA — NVIDIA | Equities | birdeye | $49.29M |
+| 9 | OPENAI — OpenAI | Equities | clickhouse_trades | $43.94M |
+| 10 | MSTR — MicroStrategy | Equities | birdeye | $39.23M |
 
 ### Retired RWA.xyz transfer-volume evidence
 
@@ -273,7 +273,7 @@ No active warning met its full threshold and freshness requirements.
 | [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-08-31T21:19:34.753Z | 2026-08-30 |
 | [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-08-31T21:19:34.753Z | 2026-08-31T19:04:56.274Z |
 | [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-08-31T21:19:34.753Z | 2026-08-30 |
-| [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-08-31T19:19:20.813Z | 2026-08-31T19:19:20.813Z |
+| [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-09-01T01:23:18.555Z | 2026-09-01T01:23:18.555Z |
 | [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-08-31T21:19:34.753Z | 2026-08-27T04:15:00.000Z |
 | [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-08-31T21:19:34.753Z | 2026-08-31T21:19:34.753Z |
 | [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-01T00:36:06.181Z | 2026-09-01T00:36:06.181Z |
