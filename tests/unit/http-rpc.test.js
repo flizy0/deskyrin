@@ -67,3 +67,37 @@ test("RPC batch maps reordered items and reports missing items", async () => {
   assert.equal(result.one.ok, false);
   assert.equal(result.one.error.code, "MISSING_RPC_BATCH_ITEM");
 });
+
+test("RPC batch retries JSON-RPC 429 responses without repeating successful items", async () => {
+  const payloads = [];
+  const http = {
+    request: async (_url, options) => {
+      const requests = JSON.parse(options.body);
+      payloads.push(requests);
+      if (payloads.length === 1) {
+        return [
+          { jsonrpc: "2.0", id: requests[0].id, result: "first" },
+          { jsonrpc: "2.0", id: requests[1].id, error: { code: 429, message: "Too many requests for a specific RPC call" } }
+        ];
+      }
+      return [{ jsonrpc: "2.0", id: requests[0].id, result: "second" }];
+    }
+  };
+  const rpc = createRpcClient({
+    url: "https://example.com",
+    http,
+    retryDelaysMs: [0],
+    rateLimitRetryDelayMs: 0
+  });
+  const result = await rpc.batch([
+    { key: "one", method: "getBlock" },
+    { key: "two", method: "getBlock" }
+  ], { attempts: 2 });
+
+  assert.equal(payloads.length, 2);
+  assert.equal(payloads[0].length, 2);
+  assert.equal(payloads[1].length, 1);
+  assert.match(payloads[1][0].id, /^two-/);
+  assert.deepEqual(result.one, { ok: true, value: "first" });
+  assert.deepEqual(result.two, { ok: true, value: "second" });
+});
