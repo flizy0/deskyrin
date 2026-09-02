@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-09-02T06:35:05.633Z**
+Updated: **2026-09-02T07:25:30.901Z**
 
 Update status: **partial**
 
@@ -150,8 +150,8 @@ Provider definitions can differ materially. The values are shown side by side, n
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| Tokenized-market spot volume (trailing 30d) | $1.27B | 2026-09-02T01:22:43.042Z | Fresh |
-| Tokenized-equity spot volume (trailing 30d) | $960.94M | 2026-09-02T01:22:43.042Z | Fresh |
+| Tokenized-market spot volume (trailing 30d) | $1.27B | 2026-09-02T07:25:29.100Z | Fresh |
+| Tokenized-equity spot volume (trailing 30d) | $960.94M | 2026-09-02T07:25:29.100Z | Fresh |
 | Daily active addresses (initiating signers/fee payers) | 2,270,793 | 2026-08-31 | Fresh |
 
 Tokens.xyz coverage: 361 of 439 indexed tokenized-market assets and 334 of 394 equities have accepted 30-day volume provenance. Excluded assets: 10 RWA.xyz-derived, 9 unrecognized provenance, and 59 without a 30-day value.
@@ -176,12 +176,12 @@ Ranked by accepted trailing-30-day spot volume; excluded provenance never enters
 | 1 | SPCX — SpaceX | Equities | birdeye | $185.42M |
 | 2 | SPY — SP500 | ETFs | birdeye | $157.62M |
 | 3 | CRCL — Circle | Equities | birdeye | $150.43M |
-| 4 | SKHY — SK Hynix | Equities | clickhouse_trades | $139.36M |
-| 5 | MU — Micron Technology | Equities | clickhouse_trades | $95.86M |
+| 4 | SKHY — SK Hynix | Equities | birdeye | $139.36M |
+| 5 | MU — Micron Technology | Equities | birdeye | $95.86M |
 | 6 | GLD — Gold | Commodities | birdeye | $83.74M |
-| 7 | SNDK — SanDisk | Equities | clickhouse_trades | $48.74M |
+| 7 | SNDK — SanDisk | Equities | birdeye | $48.74M |
 | 8 | NVDA — NVIDIA | Equities | birdeye | $47.5M |
-| 9 | OPENAI — OpenAI | Equities | birdeye | $43.14M |
+| 9 | OPENAI — OpenAI | Equities | clickhouse_trades | $43.14M |
 | 10 | MSTR — MicroStrategy | Equities | birdeye | $38.33M |
 
 ### Retired RWA.xyz transfer-volume evidence
@@ -273,7 +273,7 @@ No active warning met its full threshold and freshness requirements.
 | [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-09-02T04:26:58.364Z | 2026-09-01 |
 | [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-09-02T04:26:58.364Z | 2026-09-02T02:50:11.303Z |
 | [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-09-02T04:26:58.364Z | 2026-09-01 |
-| [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-09-02T01:22:43.042Z | 2026-09-02T01:22:43.042Z |
+| [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-09-02T07:25:29.100Z | 2026-09-02T07:25:29.100Z |
 | [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-09-02T04:26:58.364Z | 2026-08-27T04:15:00.000Z |
 | [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-09-02T04:26:58.364Z | 2026-09-02T04:26:58.364Z |
 | [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-02T06:35:04.688Z | 2026-09-02T06:35:04.688Z |
