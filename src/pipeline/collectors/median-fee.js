@@ -47,11 +47,15 @@ export async function collectMedianFee(context, previousHistory) {
     })), {
       timeoutMs: config.http.blockTimeoutMs,
       maxBytes: config.http.maxBytes.rpcBlockBatch,
-      attempts: 2
+      attempts: 3
     });
     for (let index = 0; index < batchSlots.length; index += 1) {
       const outcome = result[`block-${offset + index}`];
-      if (!outcome?.ok || outcome.value === null) {
+      if (!outcome) {
+        throw new PipelineError("INCOMPLETE_FEE_BLOCK_SAMPLE", `Selected block ${batchSlots[index]} was unavailable`, { retryable: true });
+      }
+      if (!outcome.ok) throw outcome.error;
+      if (outcome.value === null) {
         throw new PipelineError("INCOMPLETE_FEE_BLOCK_SAMPLE", `Selected block ${batchSlots[index]} was unavailable`, { retryable: true });
       }
       blocks.push(blockSchema.parse(outcome.value));

@@ -8,8 +8,13 @@ function rpcError(value, sourceId) {
   const nonRetryable = new Set([-32700, -32600, -32601, -32602]);
   return new PipelineError(`RPC_${value.code}`, `RPC error ${value.code}: ${value.message}`, {
     sourceId,
-    retryable: !nonRetryable.has(value.code) && (value.code === -32603 || (value.code <= -32000 && value.code >= -32099))
+    retryable: value.code === 429
+      || (!nonRetryable.has(value.code) && (value.code === -32603 || (value.code <= -32000 && value.code >= -32099)))
   });
+}
+
+function isRateLimitError(error) {
+  return error?.code === "RPC_429" || error?.code === "HTTP_429";
 }
 
 function parseEnvelope(envelope, id, sourceId) {
@@ -26,7 +31,17 @@ function parseEnvelope(envelope, id, sourceId) {
 export function createRpcClient(options) {
   const { url, http, sourceId = "solanaRpc" } = options;
   const defaultRetryDelaysMs = options.retryDelaysMs || [1_000, 3_000];
+  const rateLimitRetryDelayMs = options.rateLimitRetryDelayMs ?? 10_000;
   let sequence = 0;
+
+  function retryDelay(requestOptions, retryIndex, errors) {
+    const delays = requestOptions.retryDelaysMs || defaultRetryDelaysMs;
+    const configuredDelay = delays[Math.min(retryIndex, Math.max(0, delays.length - 1))]
+      ?? (retryIndex + 1) * 1_000;
+    return errors.some(isRateLimitError)
+      ? Math.max(configuredDelay, rateLimitRetryDelayMs)
+      : configuredDelay;
+  }
 
   async function post(body, requestOptions = {}) {
     return http.request(url, {
@@ -53,7 +68,7 @@ export function createRpcClient(options) {
       } catch (error) {
         finalError = asPipelineError(error, { sourceId });
         if (!finalError.retryable || attempt >= maxAttempts) break;
-        await sleep(requestOptions.retryDelaysMs?.[attempt - 1] ?? defaultRetryDelaysMs[attempt - 1] ?? attempt * 1_000);
+        await sleep(retryDelay(requestOptions, attempt - 1, [finalError]));
       }
     }
     throw finalError;
@@ -82,8 +97,7 @@ export function createRpcClient(options) {
       const normalized = asPipelineError(error, { sourceId });
       const remainingAttempts = requestOptions.attempts ?? 3;
       if (normalized.retryable && remainingAttempts > 1) {
-        const delays = requestOptions.retryDelaysMs || defaultRetryDelaysMs;
-        await sleep(delays[Math.min(retryIndex, delays.length - 1)] ?? (retryIndex + 1) * 1_000);
+        await sleep(retryDelay(requestOptions, retryIndex, [normalized]));
         return batchWithRetry(requests, { ...requestOptions, attempts: remainingAttempts - 1 }, retryIndex + 1);
       }
       throw normalized;
@@ -114,12 +128,20 @@ export function createRpcClient(options) {
         };
       }
     }
-    const retryableItem = Object.values(outcomes).find((outcome) => !outcome.ok && outcome.error.retryable);
+    const retryableKeys = new Set(Object.entries(outcomes)
+      .filter(([, outcome]) => !outcome.ok && outcome.error.retryable)
+      .map(([key]) => key));
     const remainingAttempts = requestOptions.attempts ?? 3;
-    if (retryableItem && remainingAttempts > 1) {
-      const delays = requestOptions.retryDelaysMs || defaultRetryDelaysMs;
-      await sleep(delays[Math.min(retryIndex, delays.length - 1)] ?? (retryIndex + 1) * 1_000);
-      return batchWithRetry(requests, { ...requestOptions, attempts: remainingAttempts - 1 }, retryIndex + 1);
+    if (retryableKeys.size > 0 && remainingAttempts > 1) {
+      const retryableRequests = requests.filter((request) => retryableKeys.has(request.key));
+      const retryableErrors = retryableRequests.map((request) => outcomes[request.key].error);
+      await sleep(retryDelay(requestOptions, retryIndex, retryableErrors));
+      const retried = await batchWithRetry(
+        retryableRequests,
+        { ...requestOptions, attempts: remainingAttempts - 1 },
+        retryIndex + 1
+      );
+      return { ...outcomes, ...retried };
     }
     return outcomes;
   }

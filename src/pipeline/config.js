@@ -65,7 +65,8 @@ export function createConfig(env = process.env) {
       alertBaselineSamples: 60,
       feeWindowSlots: 9_000,
       feeSampleBlocks: 16,
-      feeBlockBatchSize: 8,
+      feeBlockBatchSize: 1,
+      rateLimitRetryDelayMs: 10_000,
       minimumValidatorCount: 100,
       minimumValidatorRetentionPct: 80
     }),

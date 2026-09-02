@@ -115,7 +115,8 @@ export async function runUpdate(options = {}) {
     url: config.rpc.url,
     http,
     sourceId: "solanaRpc",
-    retryDelaysMs: config.http.retryDelaysMs
+    retryDelaysMs: config.http.retryDelaysMs,
+    rateLimitRetryDelayMs: config.rpc.rateLimitRetryDelayMs
   });
   const context = { now, config, previous, http, rpc };
 

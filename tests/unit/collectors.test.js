@@ -12,6 +12,7 @@ import { collectSolanaCore } from "../../src/pipeline/collectors/solana-core.js"
 import { collectSolanaData } from "../../src/pipeline/collectors/solana-data.js";
 import { collectTokenizedMarkets } from "../../src/pipeline/collectors/tokens.js";
 import { collectUpgrades } from "../../src/pipeline/collectors/upgrades.js";
+import { PipelineError } from "../../src/pipeline/lib/errors.js";
 
 const now = new Date("2026-08-20T12:00:00.000Z");
 const epoch = (value) => Math.floor(Date.parse(value) / 1_000);
@@ -205,4 +206,25 @@ test("Solana RPC collectors validate batch domains and a complete fee sample", a
   assert.equal(core.validators.ok, true);
   assert.equal(fee.sample.selectedBlockCount, 16);
   assert.equal(fee.medianLamports, 5_000);
+});
+
+test("median fee collector preserves an exhausted RPC error", async () => {
+  const rpcError = new PipelineError("RPC_429", "RPC error 429: Too many requests for a specific RPC call", {
+    sourceId: "solanaRpc",
+    retryable: true
+  });
+  const rpc = {
+    call: async (method) => method === "getSlot"
+      ? 10_000
+      : Array.from({ length: 100 }, (_, index) => 1_001 + index * 80),
+    batch: async (requests) => Object.fromEntries(requests.map((request, index) => [
+      request.key,
+      index === 0 ? { ok: false, error: rpcError } : { ok: true, value: { transactions: [{ meta: { fee: 5_000 } }] } }
+    ]))
+  };
+
+  await assert.rejects(
+    collectMedianFee({ now, config: DEFAULT_CONFIG, rpc }, []),
+    (error) => error === rpcError
+  );
 });
