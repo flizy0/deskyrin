@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-09-03T22:29:35.866Z**
+Updated: **2026-09-03T23:21:47.126Z**
 
 Update status: **partial**
 
@@ -200,14 +200,14 @@ Final retained values: $3.21B across tokenized assets and $2.14B across tokenize
 
 ### Ecosystem and Community News
 
+- 2026-09-03 — [Payment Channels: 1 Million Payments Per Second](https://solana.com/news/payment-channels-1-million-payments-per-second)
+- 2026-09-03 — [How to Reclaim Excess SOL After Rent Reduction](https://solana.com/news/how-to-reclaim-excess-sol-after-rent-reduction)
 - 2026-09-02 — [The Token Supercycle: Everything of Value is Becoming Programmable](https://solana.com/news/the-token-supercycle-oped)
 - 2026-09-01 — [Webinar Recap: Cross-Border Payments in Latin America](https://solana.com/news/webinar-recap-cross-border-payments-in-latin-america)
 - 2026-08-28 — [Solana Changelog: August 27, 2026](https://solana.com/news/solana-changelog-august-27-2026)
 - 2026-08-27 — [The Token Supercycle Is Here: Solana Brings Breakpoint 2026 to London](https://solana.com/news/breakpoint-2026-london-speakers)
 - 2026-08-24 — [Solana Changelog: August 20, 2026](https://solana.com/news/solana-changelog-august-20-2026)
 - 2026-08-19 — [Lowering Slot Time and Validator Economics](https://solana.com/news/lowering-slot-time-and-validators-economic)
-- 2026-08-17 — [v1 Transactions and the ALT Trade-off](https://solana.com/news/transaction-v1-and-the-alt-trade-off)
-- 2026-08-13 — [Solana Changelog: August 13, 2026](https://solana.com/news/solana-changelog-august-13-2026)
 
 ### Recent Agave releases
 
@@ -267,15 +267,15 @@ No active warning met its full threshold and freshness requirements.
 | [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-09-03T22:28:51.345Z | 2026-09-03T22:28:51.345Z |
 | [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-09-03T22:28:51.345Z | 2026-09-03T22:24:50.000Z |
 | [CoinGecko Keyless API](https://api.coingecko.com/api/v3/simple/price) | stale | 2026-09-03T21:24:07.468Z | 2026-09-03T21:22:30.000Z |
-| [Coinbase Exchange SOL-USD](https://api.exchange.coinbase.com/products/SOL-USD/candles) | fresh | 2026-09-03T17:24:57.326Z | 2026-09-02 |
-| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-09-03T17:24:57.326Z | 2026-09-02 |
-| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-09-03T17:24:57.326Z | 2026-09-02 |
-| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-09-03T17:24:57.326Z | 2026-09-02 |
-| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-09-03T17:24:57.326Z | 2026-09-03T14:50:21.495Z |
-| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-09-03T17:24:57.326Z | 2026-09-02 |
+| [Coinbase Exchange SOL-USD](https://api.exchange.coinbase.com/products/SOL-USD/candles) | fresh | 2026-09-03T23:21:45.114Z | 2026-09-02 |
+| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-09-03T23:21:45.114Z | 2026-09-02 |
+| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-09-03T23:21:45.114Z | 2026-09-02 |
+| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-09-03T23:21:45.114Z | 2026-09-02 |
+| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-09-03T23:21:45.114Z | 2026-09-03T21:50:20.429Z |
+| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-09-03T23:21:45.114Z | 2026-09-02 |
 | [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-09-03T19:21:52.850Z | 2026-09-03T19:21:52.850Z |
-| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-09-03T17:24:57.326Z | 2026-09-02T09:00:00.000Z |
-| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-09-03T17:24:57.326Z | 2026-09-03T17:24:57.326Z |
+| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-09-03T23:21:45.114Z | 2026-09-03T16:26:00.000Z |
+| [Solana Upgrades Hub](https://solana.com/upgrades) | stale | 2026-09-03T17:24:57.326Z | 2026-09-03T17:24:57.326Z |
 | [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-03T22:28:51.345Z | 2026-09-03T22:28:51.345Z |
 | [Agave Releases](https://api.github.com/repos/anza-xyz/agave/releases) | fresh | 2026-09-03T18:28:56.089Z | 2026-08-28T18:53:56.000Z |
 
