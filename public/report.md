@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-09-03T05:08:50.686Z**
+Updated: **2026-09-03T05:43:46.195Z**
 
 Update status: **partial**
 
@@ -277,6 +277,6 @@ No active warning met its full threshold and freshness requirements.
 | [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-09-03T05:07:26.260Z | 2026-09-02T09:00:00.000Z |
 | [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-09-03T05:07:26.260Z | 2026-09-03T05:07:26.260Z |
 | [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-03T05:07:26.260Z | 2026-09-03T05:07:26.260Z |
-| [Agave Releases](https://api.github.com/repos/anza-xyz/agave/releases) | fresh | 2026-09-02T23:22:40.514Z | 2026-08-28T18:53:56.000Z |
+| [Agave Releases](https://api.github.com/repos/anza-xyz/agave/releases) | fresh | 2026-09-03T05:43:44.967Z | 2026-08-28T18:53:56.000Z |
 
 Detailed definitions, windows, aggregation rules, and limitations are documented in [`methodology.md`](./methodology.md).
