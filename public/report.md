@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-09-04T12:32:00.411Z**
+Updated: **2026-09-04T13:25:53.530Z**
 
 Update status: **partial**
 
@@ -150,11 +150,11 @@ Provider definitions can differ materially. The values are shown side by side, n
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| Tokenized-market spot volume (trailing 30d) | $1.23B | 2026-09-04T07:30:24.777Z | Fresh |
-| Tokenized-equity spot volume (trailing 30d) | $931.92M | 2026-09-04T07:30:24.777Z | Fresh |
+| Tokenized-market spot volume (trailing 30d) | $1.23B | 2026-09-04T13:25:52.328Z | Fresh |
+| Tokenized-equity spot volume (trailing 30d) | $931.92M | 2026-09-04T13:25:52.328Z | Fresh |
 | Daily active addresses (initiating signers/fee payers) | 2,089,449 | 2026-09-02 | Fresh |
 
-Tokens.xyz coverage: 362 of 439 indexed tokenized-market assets and 336 of 394 equities have accepted 30-day volume provenance. Excluded assets: 10 RWA.xyz-derived, 10 unrecognized provenance, and 57 without a 30-day value.
+Tokens.xyz coverage: 361 of 439 indexed tokenized-market assets and 336 of 394 equities have accepted 30-day volume provenance. Excluded assets: 10 RWA.xyz-derived, 11 unrecognized provenance, and 57 without a 30-day value.
 
 ### Tokenized market category breakdown
 
@@ -163,7 +163,7 @@ This is a current cross-sectional breakdown of the same provenance-filtered trai
 | Category | Indexed assets | Covered assets | Trailing 30d spot volume |
 |---|---:|---:|---:|
 | Equities | 394 | 336 | $931.92M |
-| ETFs | 25 | 18 | $184.6M |
+| ETFs | 25 | 17 | $184.55M |
 | Commodities | 5 | 5 | $109M |
 | Other RWA | 15 | 3 | $2.57K |
 
@@ -176,11 +176,11 @@ Ranked by accepted trailing-30-day spot volume; excluded provenance never enters
 | 1 | SPCX — SpaceX | Equities | birdeye | $182.02M |
 | 2 | CRCL — Circle | Equities | birdeye | $154.61M |
 | 3 | SPY — SP500 | ETFs | birdeye | $146.14M |
-| 4 | SKHY — SK Hynix | Equities | birdeye | $120.71M |
-| 5 | MU — Micron Technology | Equities | clickhouse_trades | $90.27M |
+| 4 | SKHY — SK Hynix | Equities | clickhouse_trades | $120.71M |
+| 5 | MU — Micron Technology | Equities | birdeye | $90.27M |
 | 6 | GLD — Gold | Commodities | birdeye | $86.04M |
 | 7 | NVDA — NVIDIA | Equities | birdeye | $44.44M |
-| 8 | OPENAI — OpenAI | Equities | clickhouse_trades | $41.72M |
+| 8 | OPENAI — OpenAI | Equities | birdeye | $41.72M |
 | 9 | SNDK — SanDisk | Equities | clickhouse_trades | $40.86M |
 | 10 | MSTR — MicroStrategy | Equities | clickhouse_trades | $39.8M |
 
@@ -273,7 +273,7 @@ No active warning met its full threshold and freshness requirements.
 | [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-09-04T11:29:39.896Z | 2026-09-03 |
 | [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-09-04T11:29:39.896Z | 2026-09-04T06:33:05.087Z |
 | [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-09-04T11:29:39.896Z | 2026-09-03 |
-| [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-09-04T07:30:24.777Z | 2026-09-04T07:30:24.777Z |
+| [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-09-04T13:25:52.328Z | 2026-09-04T13:25:52.328Z |
 | [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-09-04T11:29:39.896Z | 2026-09-03T16:26:00.000Z |
 | [Solana Upgrades Hub](https://solana.com/upgrades) | stale | 2026-09-03T17:24:57.326Z | 2026-09-03T17:24:57.326Z |
 | [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-04T12:31:16.514Z | 2026-09-04T12:31:16.514Z |
