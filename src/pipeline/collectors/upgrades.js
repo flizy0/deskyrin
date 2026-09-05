@@ -5,6 +5,7 @@ import { isoTimestamp } from "../lib/time.js";
 const STAGES = new Map([
   ["In Development", "in_development"],
   ["Pending Feature Activation", "pending_activation"],
+  ["Partially Activated", "pending_activation"],
   ["Action Required", "action_required"]
 ]);
 const LIVE_STAGES = new Set(["Live", "Live on Mainnet"]);

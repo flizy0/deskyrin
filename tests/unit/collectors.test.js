@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { DEFAULT_CONFIG } from "../../src/pipeline/config.js";
 import { collectDexVolume } from "../../src/pipeline/collectors/defi-dex.js";
-import { collectDefiLlamaPrice } from "../../src/pipeline/collectors/defi-price.js";
+import { collectCoinGeckoPrice, collectDefiLlamaPrice } from "../../src/pipeline/collectors/defi-price.js";
 import { collectStablecoins } from "../../src/pipeline/collectors/defi-stablecoins.js";
 import { collectTvl } from "../../src/pipeline/collectors/defi-tvl.js";
 import { collectJito } from "../../src/pipeline/collectors/jito.js";
@@ -66,6 +66,25 @@ test("SOL price collector enforces a real 24-hour reference", async () => {
   assert.equal(result.sourceId, "defiLlamaCoins");
   assert.ok(Math.abs(result.domain.change24hPct - 10) < 1e-12);
   assert.equal(result.domain.reference24h.elapsedSeconds, 86_400);
+});
+
+test("CoinGecko current quote supersedes a chart point at the same timestamp", async () => {
+  const currentTimestamp = epoch("2026-08-20T11:59:00.000Z");
+  const observedAt = new Date(currentTimestamp * 1_000).toISOString();
+  const context = httpContext(async (url) => {
+    if (url.includes("/simple/price")) return {
+      solana: { usd: 110, usd_24h_change: 10, last_updated_at: currentTimestamp }
+    };
+    if (url.includes("/market_chart")) return { prices: [
+      [Date.parse("2026-08-19T00:00:00.000Z"), 100],
+      [currentTimestamp * 1_000, 109.5]
+    ] };
+    throw new Error(`Unexpected fixture URL ${url}`);
+  });
+
+  const result = await collectCoinGeckoPrice(context);
+  const currentPoints = result.domain.history.filter((point) => point.observedAt === observedAt);
+  assert.deepEqual(currentPoints, [{ observedAt, priceUsd: 110 }]);
 });
 
 test("Solana Data and Jito collectors normalize fresh completed data", async () => {
@@ -166,18 +185,34 @@ test("Tokens.xyz and RSS collectors preserve provenance and legacy boundaries", 
   assert.equal(news.items[0].description, "Source-authored text.");
 });
 
-test("official upgrades fixture retains listing-named SIMD links", async () => {
-  const hub = `<html><body><section><h2>Agave 4.3</h2><a href="/upgrades/alpenglow"><span>In Development</span><h3>Alpenglow</h3><p>Consensus upgrade</p></a><a href="/upgrades/reduced-slot-times"><span>Pending Feature Activation</span><h3>Reduced Slot Times</h3><p>Faster slots</p></a></section></body></html>`;
+test("official upgrades fixture retains SIMD links and partially activated cards", async () => {
+  const hub = `<html><body><section><h2>Agave 4.3</h2><a href="/upgrades/alpenglow"><span>In Development</span><h3>Alpenglow</h3><p>Consensus upgrade</p></a><a href="/upgrades/reduced-slot-times"><span>Pending Feature Activation</span><h3>Reduced Slot Times</h3><p>Faster slots</p></a><a href="/upgrades/reduced-rent"><span>Partially Activated</span><h3>Reduced Rent</h3><p>Lower account costs</p></a></section></body></html>`;
   const detail = (id) => `<html><body><a href="https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/${id}-proposal.md">SIMD-${id}</a></body></html>`;
   const context = httpContext(async (url) => {
     if (url === DEFAULT_CONFIG.endpoints.solanaUpgrades) return hub;
     if (url.endsWith("/alpenglow")) return detail("0326");
     if (url.endsWith("/reduced-slot-times")) return detail("0525");
+    if (url.endsWith("/reduced-rent")) return "<html><body></body></html>";
     throw new Error(`Unexpected fixture URL ${url}`);
   });
   const upgrades = await collectUpgrades(context);
-  assert.equal(upgrades.items.length, 2);
+  assert.equal(upgrades.items.length, 3);
   assert.ok(upgrades.items.some((item) => item.simds.some((simd) => simd.id === "0525")));
+  assert.deepEqual(
+    upgrades.items.find((item) => item.id === "reduced-rent"),
+    {
+      id: "reduced-rent",
+      title: "Reduced Rent",
+      subtitle: "Lower account costs",
+      url: "https://solana.com/upgrades/reduced-rent",
+      stage: "pending_activation",
+      stageLabel: "Partially Activated",
+      releaseId: "agave-4-3",
+      releaseLabel: "Agave 4.3",
+      metrics: [],
+      simds: []
+    }
+  );
 });
 
 test("Solana RPC collectors validate batch domains and a complete fee sample", async () => {

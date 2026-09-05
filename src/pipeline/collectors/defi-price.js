@@ -10,7 +10,8 @@ import { percentageChange } from "../lib/statistics.js";
 import { assertFreshObservation, epochSecondsToIso, isoTimestamp } from "../lib/time.js";
 
 function boundedHistory(points, current, config) {
-  return normalizeHistory([...points, current], {
+  const historical = points.filter((point) => point.observedAt !== current.observedAt);
+  return normalizeHistory([...historical, current], {
     key: (point) => point.observedAt,
     limit: config.history.dailyPoints + 1
   });
