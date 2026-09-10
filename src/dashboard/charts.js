@@ -1,5 +1,6 @@
 import Chart from "chart.js/auto";
 import { visibleDataTimestampBounds } from "./chart-range.js";
+import { formatUtcDateTime } from "./format.js";
 
 const charts = new Set();
 
@@ -44,7 +45,7 @@ Chart.defaults.plugins.tooltip.cornerRadius = 6;
 
 function utcTick(value, spanMs) {
   const options = spanMs <= 3 * 86_400_000
-    ? { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" }
+    ? { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "UTC" }
     : { month: "short", day: "numeric", timeZone: "UTC" };
   return new Date(Number(value)).toLocaleString("en-US", options);
 }
@@ -87,7 +88,7 @@ function baseOptions(yFormatter, bounds, {
         padding: 10,
         filter: (context) => Number.isFinite(context.parsed.y),
         callbacks: {
-          title: (items) => items.length ? new Date(items[0].parsed.x).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }) : "",
+          title: (items) => items.length ? formatUtcDateTime(items[0].parsed.x) : "",
           label: (context) => `${context.dataset.label}: ${yFormatter(context.parsed.y)}`
         }
       }
@@ -150,11 +151,7 @@ function colorWithAlpha(color, alpha) {
 }
 
 function accessibleTimestamp(value) {
-  return new Date(value).toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "UTC"
-  });
+  return formatUtcDateTime(value);
 }
 
 function enableKeyboardTooltip(canvas, chart, validIndices, describe) {

@@ -1,4 +1,5 @@
 import "./styles.css";
+import { formatUtcDateTime } from "./format.js";
 import { renderDashboard, resetDashboard } from "./render.js";
 import { initHashRouter } from "./router.js";
 import { el, safeLink } from "./ui.js";
@@ -82,11 +83,7 @@ function refreshTimestamp() {
   if (!snapshot?.updatedAt) return;
   updatedAt.textContent = relativeAge(snapshot.updatedAt);
   updatedAt.dateTime = snapshot.updatedAt;
-  updatedAt.title = new Date(snapshot.updatedAt).toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "long",
-    timeZone: "UTC"
-  });
+  updatedAt.title = formatUtcDateTime(snapshot.updatedAt, "long");
 }
 
 function updateSnapshotUtility() {

@@ -69,7 +69,7 @@ The Solana Foundation Data response also contains contributor-labelled daily row
 
 ## Median transaction fee
 
-The pipeline requests the finalized slot, all produced slots in the preceding 9,000-slot window, and selects 16 midpoint strata. All selected blocks must return successfully. Every finalized transaction's `meta.fee` is included, whether vote/non-vote and successful/failed.
+The pipeline requests the finalized slot, all produced slots in the preceding 9,000-slot window, and selects 16 midpoint strata. A transient null RPC result is retried only for the exact same selected block; no neighboring block is substituted. All selected blocks must return successfully. Every finalized transaction's `meta.fee` is included, whether vote/non-vote and successful/failed.
 
 For sorted fees `x`:
 

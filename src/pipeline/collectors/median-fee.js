@@ -47,12 +47,19 @@ export async function collectMedianFee(context, previousHistory) {
     })), {
       timeoutMs: config.http.blockTimeoutMs,
       maxBytes: config.http.maxBytes.rpcBlockBatch,
-      attempts: 3
+      attempts: 3,
+      retryNullResults: true
     });
     for (let index = 0; index < batchSlots.length; index += 1) {
       const outcome = result[`block-${offset + index}`];
       if (!outcome) {
         throw new PipelineError("INCOMPLETE_FEE_BLOCK_SAMPLE", `Selected block ${batchSlots[index]} was unavailable`, { retryable: true });
+      }
+      if (!outcome.ok && outcome.error.code === "NULL_RPC_RESULT") {
+        throw new PipelineError("INCOMPLETE_FEE_BLOCK_SAMPLE", `Selected block ${batchSlots[index]} was unavailable`, {
+          retryable: true,
+          cause: outcome.error
+        });
       }
       if (!outcome.ok) throw outcome.error;
       if (outcome.value === null) {

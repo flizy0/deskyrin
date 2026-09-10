@@ -2,8 +2,17 @@ const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFra
 const decimal = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 const integer = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 2 });
-const dateTime = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" });
+const dateTimes = Object.freeze(Object.fromEntries(["short", "medium", "long"].map((timeStyle) => [
+  timeStyle,
+  new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle, hourCycle: "h23", timeZone: "UTC" })
+])));
 const dateOnly = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+
+export function formatUtcDateTime(value, timeStyle = "short") {
+  const formatter = dateTimes[timeStyle];
+  if (!formatter) throw new RangeError(`Unsupported UTC time style: ${timeStyle}`);
+  return formatter.format(new Date(value));
+}
 
 export const fmt = {
   compact: (value) => compact.format(value),
@@ -11,7 +20,7 @@ export const fmt = {
   integer: (value) => integer.format(value),
   usd: (value) => usd.format(value),
   pct: (value, signed = false) => `${signed && value > 0 ? "+" : ""}${decimal.format(value)}%`,
-  utc: (value) => `${dateTime.format(new Date(value))} UTC`,
+  utc: (value) => `${formatUtcDateTime(value)} UTC`,
   date: (value) => dateOnly.format(new Date(value.length === 10 ? `${value}T00:00:00Z` : value)),
   shortKey: (value) => `${value.slice(0, 5)}…${value.slice(-5)}`,
   stakeSol(value) {

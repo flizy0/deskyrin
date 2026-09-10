@@ -101,3 +101,56 @@ test("RPC batch retries JSON-RPC 429 responses without repeating successful item
   assert.deepEqual(result.one, { ok: true, value: "first" });
   assert.deepEqual(result.two, { ok: true, value: "second" });
 });
+
+test("RPC batch can retry null results without repeating successful items", async () => {
+  const payloads = [];
+  const http = {
+    request: async (_url, options) => {
+      const requests = JSON.parse(options.body);
+      payloads.push(requests);
+      if (payloads.length === 1) {
+        return [
+          { jsonrpc: "2.0", id: requests[0].id, result: "first" },
+          { jsonrpc: "2.0", id: requests[1].id, result: null }
+        ];
+      }
+      return [{ jsonrpc: "2.0", id: requests[0].id, result: "second" }];
+    }
+  };
+  const rpc = createRpcClient({
+    url: "https://example.com",
+    http,
+    retryDelaysMs: [0],
+    rateLimitRetryDelayMs: 0
+  });
+  const result = await rpc.batch([
+    { key: "one", method: "getBlock" },
+    { key: "two", method: "getBlock" }
+  ], { attempts: 2, retryNullResults: true });
+
+  assert.equal(payloads.length, 2);
+  assert.equal(payloads[0].length, 2);
+  assert.equal(payloads[1].length, 1);
+  assert.match(payloads[1][0].id, /^two-/);
+  assert.deepEqual(result.one, { ok: true, value: "first" });
+  assert.deepEqual(result.two, { ok: true, value: "second" });
+});
+
+test("RPC batch reports a null result after exact-request retries are exhausted", async () => {
+  let calls = 0;
+  const http = {
+    request: async (_url, options) => {
+      calls += 1;
+      const [request] = JSON.parse(options.body);
+      return [{ jsonrpc: "2.0", id: request.id, result: null }];
+    }
+  };
+  const rpc = createRpcClient({ url: "https://example.com", http, retryDelaysMs: [0] });
+  const result = await rpc.batch([
+    { key: "block", method: "getBlock" }
+  ], { attempts: 2, retryNullResults: true });
+
+  assert.equal(calls, 2);
+  assert.equal(result.block.ok, false);
+  assert.equal(result.block.error.code, "NULL_RPC_RESULT");
+});

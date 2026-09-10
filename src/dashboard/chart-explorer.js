@@ -1,4 +1,5 @@
 import { destroyChart, fitChartXDomain, lineChart, stackedBarChart } from "./charts.js";
+import { formatUtcDateTime } from "./format.js";
 import {
   clampRange,
   normalizeTimestamps,
@@ -35,11 +36,7 @@ function button(label, className = "chart-explorer-button") {
 }
 
 function utc(value) {
-  return new Date(value).toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "medium",
-    timeZone: "UTC"
-  });
+  return formatUtcDateTime(value, "medium");
 }
 
 function sameRange(left, right) {

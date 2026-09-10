@@ -115,7 +115,14 @@ export function createRpcClient(options) {
       seenIds.add(id);
       const key = idToKey.get(id);
       try {
-        outcomes[key] = { ok: true, value: parseEnvelope(envelope, id, sourceId) };
+        const value = parseEnvelope(envelope, id, sourceId);
+        if (requestOptions.retryNullResults && value === null) {
+          throw new PipelineError("NULL_RPC_RESULT", `RPC batch returned null for ${key}`, {
+            sourceId,
+            retryable: true
+          });
+        }
+        outcomes[key] = { ok: true, value };
       } catch (error) {
         outcomes[key] = { ok: false, error: asPipelineError(error, { sourceId }) };
       }

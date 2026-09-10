@@ -11,16 +11,26 @@ const AFFECTED_METRICS = Object.freeze([
 ]);
 const REASON = "Scheduled collection did not publish during part of this interval, and the first subsequent publication was rejected by canonical commission-history ordering validation.";
 const DISCLOSURE = "No values were interpolated. Provider-dated histories may be retrieved after recovery.";
+const MEDIAN_FEE_GAP = Object.freeze({
+  id: "median-fee-gap-2026-09-02",
+  status: "resolved",
+  startedAt: "2026-09-02T01:34:05.253Z",
+  endedAt: "2026-09-02T12:31:57.796Z",
+  affectedMetrics: Object.freeze(["Sampled median transaction fee"]),
+  reason: "The Solana RPC returned null for a selected finalized block across consecutive due attempts, so the required complete block sample was not published.",
+  disclosure: "No values were interpolated. Exact selected-block null responses are now retried; persistent absence still leaves the metric stale."
+});
+
+function copyIncident(incident) {
+  return { ...incident, affectedMetrics: [...incident.affectedMetrics] };
+}
 
 export function buildCoverageIncidents(previousIncidents, recovery, observedAt, firstMissedAt = COLLECTION_GAP_STARTED_AT) {
   const observation = isoTimestamp(observedAt, "coverage observation");
   const retained = Array.isArray(previousIncidents)
     ? previousIncidents
-      .filter((incident) => incident?.id !== COLLECTION_GAP_ID)
-      .map((incident) => ({
-        ...incident,
-        affectedMetrics: Array.isArray(incident.affectedMetrics) ? [...incident.affectedMetrics] : incident.affectedMetrics
-      }))
+      .filter((incident) => incident?.id !== COLLECTION_GAP_ID && incident?.id !== MEDIAN_FEE_GAP.id)
+      .map((incident) => Array.isArray(incident.affectedMetrics) ? copyIncident(incident) : { ...incident })
     : [];
   const previous = Array.isArray(previousIncidents)
     ? previousIncidents.find((incident) => incident?.id === COLLECTION_GAP_ID)
@@ -36,7 +46,7 @@ export function buildCoverageIncidents(previousIncidents, recovery, observedAt, 
     ? observation
     : null);
 
-  return [...retained, {
+  const incidents = [...retained, {
     id: COLLECTION_GAP_ID,
     status: endedAt ? "resolved" : "ongoing",
     startedAt,
@@ -45,4 +55,8 @@ export function buildCoverageIncidents(previousIncidents, recovery, observedAt, 
     reason: REASON,
     disclosure: DISCLOSURE
   }];
+  if (Date.parse(observation) >= Date.parse(MEDIAN_FEE_GAP.startedAt)) {
+    incidents.push(copyIncident(MEDIAN_FEE_GAP));
+  }
+  return incidents;
 }

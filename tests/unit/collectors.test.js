@@ -224,14 +224,17 @@ test("Solana RPC collectors validate batch domains and a complete fee sample", a
     slot: 10_000 - index
   }));
   const vote = { activatedStake: 1_000n, commission: 5, epochVoteAccount: true, lastVote: 9_999, rootSlot: 9_998, nodePubkey: "11111111111111111111111111111111", votePubkey: "22222222222222222222222222222222" };
+  const feeBatchOptions = [];
   const rpc = {
-    batch: async (requests) => requests[0].key === "performance"
-      ? {
+    batch: async (requests, options) => {
+      if (requests[0].key === "performance") return {
           performance: { ok: true, value: performance },
           epoch: { ok: true, value: { absoluteSlot: 10_000, blockHeight: 9_000, epoch: 4, slotIndex: 100, slotsInEpoch: 400 } },
           validators: { ok: true, value: { current: [vote], delinquent: [] } }
-        }
-      : Object.fromEntries(requests.map((request) => [request.key, { ok: true, value: { transactions: [{ meta: { fee: 5_000 } }] } }])),
+        };
+      feeBatchOptions.push(options);
+      return Object.fromEntries(requests.map((request) => [request.key, { ok: true, value: { transactions: [{ meta: { fee: 5_000 } }] } }]));
+    },
     call: async (method) => method === "getSlot" ? 10_000 : Array.from({ length: 100 }, (_, index) => 1_001 + index * 80)
   };
   const context = { now, config: DEFAULT_CONFIG, rpc };
@@ -241,6 +244,7 @@ test("Solana RPC collectors validate batch domains and a complete fee sample", a
   assert.equal(core.validators.ok, true);
   assert.equal(fee.sample.selectedBlockCount, 16);
   assert.equal(fee.medianLamports, 5_000);
+  assert.ok(feeBatchOptions.every((options) => options.retryNullResults === true));
 });
 
 test("median fee collector preserves an exhausted RPC error", async () => {
