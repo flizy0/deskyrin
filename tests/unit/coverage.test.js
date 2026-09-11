@@ -52,21 +52,6 @@ test("coverage incident preserves its first recovery timestamp thereafter", () =
   assert.equal(afterNonRecoveryRun[0].status, "resolved");
 });
 
-test("coverage discloses the resolved September median-fee gap", () => {
-  const incidents = buildCoverageIncidents([], true, "2026-09-10T00:00:00.000Z");
-  const incident = incidents.find((item) => item.id === "median-fee-gap-2026-09-02");
-
-  assert.deepEqual(incident, {
-    id: "median-fee-gap-2026-09-02",
-    status: "resolved",
-    startedAt: "2026-09-02T01:34:05.253Z",
-    endedAt: "2026-09-02T12:31:57.796Z",
-    affectedMetrics: ["Sampled median transaction fee"],
-    reason: "The Solana RPC returned null for a selected finalized block across consecutive due attempts, so the required complete block sample was not published.",
-    disclosure: "No values were interpolated. Exact selected-block null responses are now retried; persistent absence still leaves the metric stale."
-  });
-});
-
 test("coverage incident construction does not mutate previous data", () => {
   const previous = [{
     id: "older-gap",

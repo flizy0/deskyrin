@@ -80,6 +80,8 @@ even n: (x[n / 2 - 1] + x[n / 2]) / 2
 
 The canonical unit is lamports. This sampling estimate avoids an impractical exhaustive public-RPC scan while covering the window temporally.
 
+Eight failed observations on September 2, 2026 are recomputed from the immutable finalized ledger. Each repair uses the finalized chain slot retained by that same scheduled run as its window endpoint, then applies the same 9,000-slot, 16-stratum, all-block-required methodology. The original run timestamp is retained; no values are interpolated.
+
 ## Ecosystem Growth
 
 The listing-defined growth metrics are limited to the following.
