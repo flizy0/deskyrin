@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-09-13T09:48:20.775Z**
+Updated: **2026-09-13T10:27:36.228Z**
 
 Update status: **complete**
 
@@ -275,7 +275,7 @@ No active warning met its full threshold and freshness requirements.
 | [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-09-13T08:25:47.345Z | 2026-09-12 |
 | [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-09-13T08:25:47.345Z | 2026-09-13T08:25:47.345Z |
 | [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-09-13T08:25:47.345Z | 2026-09-08T13:14:00.000Z |
-| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-09-13T04:25:26.560Z | 2026-09-13T04:25:26.560Z |
+| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-09-13T10:27:34.107Z | 2026-09-13T10:27:34.107Z |
 | [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-13T09:47:42.999Z | 2026-09-13T09:47:42.999Z |
 | [Agave Releases](https://api.github.com/repos/anza-xyz/agave/releases) | fresh | 2026-09-13T09:47:42.999Z | 2026-09-11T14:39:49.000Z |
 
