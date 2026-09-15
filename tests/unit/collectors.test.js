@@ -224,6 +224,7 @@ test("Solana RPC collectors validate batch domains and a complete fee sample", a
     slot: 10_000 - index
   }));
   const vote = { activatedStake: 1_000n, commission: 5, epochVoteAccount: true, lastVote: 9_999, rootSlot: 9_998, nodePubkey: "11111111111111111111111111111111", votePubkey: "22222222222222222222222222222222" };
+  const feeBatchRequests = [];
   const feeBatchOptions = [];
   const rpc = {
     batch: async (requests, options) => {
@@ -232,6 +233,7 @@ test("Solana RPC collectors validate batch domains and a complete fee sample", a
           epoch: { ok: true, value: { absoluteSlot: 10_000, blockHeight: 9_000, epoch: 4, slotIndex: 100, slotsInEpoch: 400 } },
           validators: { ok: true, value: { current: [vote], delinquent: [] } }
         };
+      feeBatchRequests.push(...requests);
       feeBatchOptions.push(options);
       return Object.fromEntries(requests.map((request) => [request.key, { ok: true, value: { transactions: [{ meta: { fee: 5_000 } }] } }]));
     },
@@ -244,6 +246,7 @@ test("Solana RPC collectors validate batch domains and a complete fee sample", a
   assert.equal(core.validators.ok, true);
   assert.equal(fee.sample.selectedBlockCount, 16);
   assert.equal(fee.medianLamports, 5_000);
+  assert.ok(feeBatchRequests.every((request) => request.params[1].maxSupportedTransactionVersion === 1));
   assert.ok(feeBatchOptions.every((options) => options.retryNullResults === true));
 });
 

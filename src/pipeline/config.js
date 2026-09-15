@@ -66,6 +66,7 @@ export function createConfig(env = process.env) {
       feeWindowSlots: 9_000,
       feeSampleBlocks: 16,
       feeBlockBatchSize: 1,
+      maxSupportedTransactionVersion: 1,
       rateLimitRetryDelayMs: 10_000,
       minimumValidatorCount: 100,
       minimumValidatorRetentionPct: 80

@@ -25,7 +25,23 @@ export const MEDIAN_FEE_REPAIR_TARGETS = Object.freeze([
   { observedAt: "2026-09-02T08:27:07.280Z", endSlot: 443650759, evidenceCommit: "6863009cd958a929f99164cb4a07309c2972ca63" },
   { observedAt: "2026-09-02T09:26:05.648Z", endSlot: 443661999, evidenceCommit: "ac3773f7ab0f3e02dc7913c7917515104089eb15" },
   { observedAt: "2026-09-02T10:26:53.856Z", endSlot: 443673595, evidenceCommit: "d11e6620242548414947357d60f2694a451efa43" },
-  { observedAt: "2026-09-02T11:25:11.089Z", endSlot: 443684708, evidenceCommit: "5b6e0069a947fa61f480051d7baee0b11ccbb3d7" }
+  { observedAt: "2026-09-02T11:25:11.089Z", endSlot: 443684708, evidenceCommit: "5b6e0069a947fa61f480051d7baee0b11ccbb3d7" },
+  { observedAt: "2026-09-15T02:27:39.173Z", endSlot: 447135770, evidenceCommit: "7120414059669d477160b9a40cee38256c9fdb59" },
+  { observedAt: "2026-09-15T03:27:48.038Z", endSlot: 447147206, evidenceCommit: "fdf14c51d9a2c6e19e00c3bf1d0144b90ca533f4" },
+  { observedAt: "2026-09-15T04:27:35.176Z", endSlot: 447158536, evidenceCommit: "bda9f1e173f39037cc83eb819727028eff4dc4bf" },
+  { observedAt: "2026-09-15T05:26:21.437Z", endSlot: 447169717, evidenceCommit: "3d0cd60f02f487c891e21d43868d9ac2dd73d062" },
+  { observedAt: "2026-09-15T06:33:10.935Z", endSlot: 447182429, evidenceCommit: "5c82a8091c918e47990ec3718d2f772352ff4df3" },
+  { observedAt: "2026-09-15T07:28:30.078Z", endSlot: 447192933, evidenceCommit: "20ff0d679a6680a05c8fae252a8eb07f20239b69" },
+  { observedAt: "2026-09-15T08:29:37.489Z", endSlot: 447204561, evidenceCommit: "c687b1952f92cd532a3e00e373aef4ffee7fc735" },
+  { observedAt: "2026-09-15T09:32:16.288Z", endSlot: 447216467, evidenceCommit: "f7d4c862c0d05ffabd1e16ff95eba147810aa02e" },
+  { observedAt: "2026-09-15T10:27:26.420Z", endSlot: 447226992, evidenceCommit: "950a33799ee3f78b739fc3a6cbddb89ae7563815" },
+  { observedAt: "2026-09-15T11:25:08.117Z", endSlot: 447237955, evidenceCommit: "78649e8a64eaa9508335985f2833b81bfddb3f51" },
+  { observedAt: "2026-09-15T12:31:03.753Z", endSlot: 447250493, evidenceCommit: "4b92963336de672cbbb1621c02ad3778b962f8d2" },
+  { observedAt: "2026-09-15T13:27:19.317Z", endSlot: 447261183, evidenceCommit: "a745260dfbca7a241155694fd7f69744a3f8f0d7" },
+  { observedAt: "2026-09-15T14:26:34.530Z", endSlot: 447272423, evidenceCommit: "1aba35bcbc525e63df1b1f0f7db6003f409f3463" },
+  { observedAt: "2026-09-15T15:25:30.438Z", endSlot: 447283597, evidenceCommit: "3f37b82e8bddad96c0bdd99e13e32a2509be1fa0" },
+  { observedAt: "2026-09-15T16:26:21.612Z", endSlot: 447295149, evidenceCommit: "bbed6dcf708e89b8484c6680bcd9484dfb71306a" },
+  { observedAt: "2026-09-15T17:23:21.747Z", endSlot: 447305935, evidenceCommit: "93dd5420e356a54eec50480b0818871644bdc897" }
 ]);
 
 function rpcAtFinalizedSlot(rpc, endSlot) {

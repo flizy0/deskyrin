@@ -42,7 +42,7 @@ export async function collectMedianFee(context, previousHistory) {
         encoding: "json",
         transactionDetails: "accounts",
         rewards: false,
-        maxSupportedTransactionVersion: 0
+        maxSupportedTransactionVersion: config.rpc.maxSupportedTransactionVersion
       }]
     })), {
       timeoutMs: config.http.blockTimeoutMs,

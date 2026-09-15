@@ -7,12 +7,12 @@ import {
 } from "../../scripts/repair-median-fee-history.js";
 
 test("median-fee repair anchors are sorted, unique, and backed by commits", () => {
-  assert.equal(MEDIAN_FEE_REPAIR_TARGETS.length, 8);
+  assert.equal(MEDIAN_FEE_REPAIR_TARGETS.length, 24);
   assert.deepEqual(
     MEDIAN_FEE_REPAIR_TARGETS.map((target) => target.observedAt),
     [...MEDIAN_FEE_REPAIR_TARGETS].map((target) => target.observedAt).sort()
   );
-  assert.equal(new Set(MEDIAN_FEE_REPAIR_TARGETS.map((target) => target.observedAt)).size, 8);
+  assert.equal(new Set(MEDIAN_FEE_REPAIR_TARGETS.map((target) => target.observedAt)).size, 24);
   assert.ok(MEDIAN_FEE_REPAIR_TARGETS.every((target) => /^[0-9a-f]{40}$/.test(target.evidenceCommit)));
 });
 
