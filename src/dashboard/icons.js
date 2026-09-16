@@ -46,10 +46,6 @@ const iconDefinitions = Object.freeze({
     ["path", { d: "M8 4H5v16h14V4h-3" }],
     ["path", { d: "M9 2h6v4H9zM8 11h8M8 15h6" }]
   ],
-  refresh: [
-    ["path", { d: "M20 6v5h-5M4 18v-5h5" }],
-    ["path", { d: "M18.3 9A7.5 7.5 0 0 0 5.7 6.7L4 11m16 2-1.7 4.3A7.5 7.5 0 0 1 5.7 15" }]
-  ],
   menu: [["path", { d: "M4 7h16M4 12h16M4 17h16" }]],
   close: [["path", { d: "m6 6 12 12M18 6 6 18" }]]
 });

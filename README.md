@@ -152,7 +152,8 @@ Vercel serves only static build output. `/data.json` and `/report.md` are explic
 - “Daily active addresses” means initiating signers/fee payers, not unique people.
 - Tokens.xyz values are rolling 30-day spot volumes for curated tokenized-market lists. Assets without Birdeye or on-chain trade volume provenance are disclosed in coverage counts and excluded rather than treated as zero. The category breakdown and leading-assets table are current cross-sections of that accepted universe.
 - The Tokens.xyz timeline appears only after eight genuine observations exist. Until then the current snapshot and collection progress remain visible; no point is invented, interpolated, or retimestamped to improve chart density.
-- Retired RWA.xyz transfer-volume history is preserved in canonical JSON and the generated report, clearly separated through its final successful observation, and is never spliced into the Tokens.xyz spot-volume series or shown as an active dashboard chart.
+- Project-collected network, validator, median-fee, and tokenized-market snapshots are retained from `2026-08-29T15:10:55.812Z` inclusive; later-starting series retain their genuine first point. Pre-boundary commission detections, retired transfer-volume evidence, and the archived August collection record are excluded from public outputs. Provider-dated market and daily histories retain their independent rolling windows and are not cut at this snapshot boundary.
+- The snapshot loads when the page opens, with Retry available on a load failure. There is no manual Refresh button; scheduled GitHub Actions continue to collect and publish data.
 - Official news is intentionally not an exhaustive independent-community feed.
 - Static Git/Vercel delivery means a successful data commit is followed by normal deployment latency.
 - Chart exploration changes only the visible range of the checked-in snapshot; it does not interpolate points, poll providers, or make daily/hourly data real-time.

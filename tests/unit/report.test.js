@@ -14,7 +14,7 @@ function supplementalReportFixture() {
     commissionPct: 5
   }];
   snapshot.coverageIncidents = [{
-    id: "collection-gap-2026-08-26",
+    id: "example-collection-gap",
     status: "resolved",
     startedAt: "2026-08-26T16:57:53.898Z",
     endedAt: "2026-08-29T12:00:00.000Z",
@@ -94,7 +94,7 @@ test("baseline report omits unavailable supplemental sections", () => {
   assert.doesNotMatch(report, /## Network Observability/);
 });
 
-test("report presents the current tokenized snapshot and keeps retired RWA evidence separate", () => {
+test("report presents the current tokenized snapshot without retired RWA evidence", () => {
   const snapshot = canonicalFixture();
   snapshot.ecosystem.tokenizedAssets.categoryBreakdown = [
     { id: "equities", indexedAssetCount: 4, coveredAssetCount: 3, spotVolume30dUsd: 2_000 },
@@ -117,8 +117,7 @@ test("report presents the current tokenized snapshot and keeps retired RWA evide
   assert.match(report, /\| ETFs \| 2 \| 2 \| \$500 \|/);
   assert.match(report, /### Leading covered tokenized assets/);
   assert.match(report, /TEST — Test Equity/);
-  assert.match(report, /### Retired RWA\.xyz transfer-volume evidence/);
-  assert.match(report, /not joined to Tokens\.xyz spot-volume history/);
+  assert.doesNotMatch(report, /Retired RWA\.xyz transfer-volume evidence|Final retained values/);
 });
 
 test("published methodology matches its source and documents evidence boundaries", async () => {
@@ -134,11 +133,12 @@ test("published methodology matches its source and documents evidence boundaries
   assert.match(source, /Solana Status is evidence/);
   assert.match(source, /Agave releases come independently/);
   assert.match(source, /No missing live observations are interpolated/);
-  assert.match(source, /without claiming that Solana itself was unavailable/);
+  assert.match(source, /2026-08-29T15:10:55\.812Z/);
+  assert.match(source, /Provider-dated histories retain their existing/);
   assert.match(source, /previousObservedAt/);
   assert.match(source, /never claims the exact on-chain change time/);
   assert.match(source, /Tokens\.xyz's public curated Solana lists/);
-  assert.match(source, /retired RWA\.xyz trailing-30-day transfer-volume history/);
+  assert.doesNotMatch(source, /A persistent `coverageIncidents` record discloses the collection gap/);
   assert.match(source, /eight genuine observations/);
   assert.match(source, /No synthetic points, interpolation, or timestamp reuse/);
 });

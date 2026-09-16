@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createConfig } from "./config.js";
 import { parseCanonicalSnapshot } from "./contracts/canonical.js";
+import { assertSnapshotHistoryRetention } from "./history-retention.js";
 import { renderReport } from "./outputs/report.js";
 
 export async function validateOutputs(root = process.cwd(), config = createConfig({})) {
@@ -16,6 +17,7 @@ export async function validateOutputs(root = process.cwd(), config = createConfi
   ]);
   if (dataStat.size > config.output.maxDataBytes) throw new Error(`data.json exceeds ${config.output.maxDataBytes} bytes`);
   const snapshot = parseCanonicalSnapshot(JSON.parse(dataText), config.history);
+  assertSnapshotHistoryRetention(snapshot, config.history.snapshotStartAt);
   const expectedReport = `${renderReport(snapshot).trimEnd()}\n`;
   if (report !== expectedReport) throw new Error("report.md is not the exact deterministic rendering of data.json");
   return { snapshot, dataBytes: dataStat.size, reportBytes: Buffer.byteLength(report) };

@@ -6,21 +6,6 @@ Update status: **complete**
 
 All values are generated deterministically from the cited public sources; this report contains no AI-generated analysis.
 
-## Data Coverage
-
-Coverage incidents describe missing observations; they are not network incidents and are never filled with synthetic values.
-
-### collection-gap-2026-08-26
-
-State: **resolved** · 2026-08-26T17:57:44.334Z → 2026-08-29T15:10:55.812Z
-
-Affected observations: TPS, Non-vote TPS, Slot time, Validator snapshots and commission tracking, Sampled median transaction fee.
-
-Reason: Scheduled collection did not publish during part of this interval, and the first subsequent publication was rejected by canonical commission-history ordering validation.
-
-Disclosure: **No values were interpolated. Provider-dated histories may be retrieved after recovery.**
-
-
 ## Network Performance
 
 | Metric | Value | Observation | Status |
@@ -183,12 +168,6 @@ Ranked by accepted trailing-30-day spot volume; excluded provenance never enters
 | 8 | GLD — Gold | Commodities | birdeye | $94.24M |
 | 9 | NVDA — NVIDIA | Equities | birdeye | $89.3M |
 | 10 | AAPL — Apple | Equities | birdeye | $60.83M |
-
-### Retired RWA.xyz transfer-volume evidence
-
-The legacy trailing-30-day transfer-volume series ended at 2026-08-26T06:02:39.551Z. It remains available as historical evidence and is not joined to Tokens.xyz spot-volume history.
-
-Final retained values: $3.21B across tokenized assets and $2.14B across tokenized equities.
 
 ### Upcoming upgrades and developments
 

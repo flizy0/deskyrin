@@ -66,3 +66,18 @@ test("median-fee repair merges real points and removes the resolved placeholder"
   assert.deepEqual(repaired.coverageIncidents.map((incident) => incident.id), ["older-gap"]);
   assert.equal(repaired.updatedAt, "2026-09-11T12:00:00.000Z");
 });
+
+test("median-fee repairs cannot republish observations before the snapshot boundary", () => {
+  const snapshot = {
+    updatedAt: "2026-09-16T00:00:00.000Z",
+    coverageIncidents: [{ id: "collection-gap-2026-08-26" }],
+    economics: { medianTransactionFee: { history: [
+      { observedAt: "2026-08-29T15:10:55.812Z", medianLamports: 5_000, transactionCount: 10_000, selectedBlockCount: 16 }
+    ] } }
+  };
+  const repaired = applyMedianFeeRepairs(snapshot, [{ point: {
+    observedAt: "2026-08-26T00:00:00.000Z", medianLamports: 5_000, transactionCount: 10_000, selectedBlockCount: 16
+  } }], snapshot.updatedAt);
+  assert.deepEqual(repaired.economics.medianTransactionFee.history, snapshot.economics.medianTransactionFee.history);
+  assert.deepEqual(repaired.coverageIncidents, []);
+});

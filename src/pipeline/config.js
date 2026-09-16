@@ -4,6 +4,7 @@ const DAY_MS = 24 * HOUR_MS;
 
 export const SCHEMA_VERSION = "1.4.0";
 export const METHODOLOGY_VERSION = "1.4.0";
+export const SNAPSHOT_HISTORY_START_AT = "2026-08-29T15:10:55.812Z";
 
 export const SOURCE_IDS = Object.freeze({
   solanaRpc: "solanaRpc",
@@ -118,6 +119,7 @@ export function createConfig(env = process.env) {
       delinquencyConfirmationGap: 2.5 * HOUR_MS
     }),
     history: Object.freeze({
+      snapshotStartAt: SNAPSHOT_HISTORY_START_AT,
       hourlyPoints: 720,
       dailyPoints: 90,
       tokenizedPoints: 365,

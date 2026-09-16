@@ -2,6 +2,7 @@ import { mkdir, rename, unlink, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { PipelineError } from "../lib/errors.js";
 import { serializeCanonicalSnapshot } from "../contracts/canonical.js";
+import { assertSnapshotHistoryRetention } from "../history-retention.js";
 
 function requiredReportChecks(report, snapshot) {
   const headings = ["Network Performance", "Validator Status", "Economic Indicators", "Ecosystem Growth", "Alerts / notable changes"];
@@ -12,6 +13,7 @@ function requiredReportChecks(report, snapshot) {
 
 export async function publishOutputs(snapshot, report, config, options = {}) {
   const json = serializeCanonicalSnapshot(snapshot, config.history);
+  assertSnapshotHistoryRetention(snapshot, config.history.snapshotStartAt);
   const bytes = Buffer.byteLength(json);
   if (bytes > config.output.maxDataBytes) {
     throw new PipelineError("OUTPUT_TOO_LARGE", `data.json is ${bytes} bytes; limit is ${config.output.maxDataBytes}`);

@@ -250,18 +250,6 @@ export function renderReport(snapshot) {
     }
     lines.push("");
   }
-  if (tokenized.legacyTransferVolume) {
-    const legacy = tokenized.legacyTransferVolume;
-    const latest = legacy.history.at(-1);
-    lines.push(
-      "### Retired RWA.xyz transfer-volume evidence",
-      "",
-      `The legacy trailing-${legacy.windowDays}-day transfer-volume series ended at ${legacy.endedAt}. It remains available as historical evidence and is not joined to Tokens.xyz spot-volume history.`,
-      "",
-      `Final retained values: ${usd.format(latest.totalTransferVolumeUsd)} across tokenized assets and ${usd.format(latest.equityTransferVolumeUsd)} across tokenized equities.`,
-      ""
-    );
-  }
   lines.push(
     "### Upcoming upgrades and developments",
     ""

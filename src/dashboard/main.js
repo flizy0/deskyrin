@@ -9,7 +9,6 @@ const errorPanel = document.querySelector("#load-error");
 const status = document.querySelector("#overall-status");
 const updatedAt = document.querySelector("#updated-at");
 const snapshotState = document.querySelector(".snapshot-state");
-const refreshButton = document.querySelector("[data-refresh-snapshot]");
 
 let snapshot;
 let activeRoute = { id: "overview" };
@@ -118,7 +117,7 @@ function showLoadError(error, { retainSnapshot = false } = {}) {
   if (!retainSnapshot) resetDashboard(root);
   const copy = el("div", "load-error-copy");
   copy.append(
-    el("strong", undefined, retainSnapshot ? "Refresh failed; showing the previous snapshot." : "Dashboard data is unavailable."),
+    el("strong", undefined, retainSnapshot ? "Loading failed; showing the previous snapshot." : "Dashboard data is unavailable."),
     el("p", undefined, error instanceof Error ? error.message : String(error))
   );
   const actions = el("div", "load-error-actions");
@@ -141,8 +140,6 @@ async function loadSnapshot() {
   const retainingSnapshot = Boolean(snapshot);
   loading = true;
   errorPanel.hidden = true;
-  refreshButton.disabled = true;
-  refreshButton.dataset.loading = "true";
   if (!retainingSnapshot) {
     status.textContent = "Loading snapshot";
     status.className = "status-badge loading";
@@ -160,8 +157,6 @@ async function loadSnapshot() {
     showLoadError(error, { retainSnapshot: retainingSnapshot });
   } finally {
     loading = false;
-    refreshButton.disabled = false;
-    delete refreshButton.dataset.loading;
   }
 }
 
@@ -172,6 +167,5 @@ initHashRouter({
   }
 });
 
-refreshButton.addEventListener("click", loadSnapshot);
 window.addEventListener("pagehide", () => clearInterval(relativeTimeTimer), { once: true });
 loadSnapshot();

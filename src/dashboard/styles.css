@@ -402,7 +402,6 @@ table caption {
   color: var(--text-secondary);
 }
 
-.refresh-snapshot,
 .navigation-open,
 .sidebar-close {
   min-width: 34px;
@@ -418,25 +417,10 @@ table caption {
   cursor: pointer;
 }
 
-.refresh-snapshot {
-  display: inline-flex;
-  font-size: 0.68rem;
-}
-
-.refresh-snapshot:hover,
 .navigation-open:hover,
 .sidebar-close:hover {
   background: var(--surface-raised);
   color: var(--text);
-}
-
-.refresh-snapshot:disabled {
-  cursor: wait;
-  opacity: 0.55;
-}
-
-.refresh-snapshot[data-loading="true"] svg {
-  animation: rotate 900ms linear infinite;
 }
 
 .app-main {
@@ -2311,8 +2295,7 @@ th[aria-sort="descending"] .sort-button::after {
   }
 
   .update-label,
-  .utility-divider,
-  .refresh-label {
+  .utility-divider {
     display: none;
   }
 

@@ -97,7 +97,6 @@ Tokens.xyz's public curated Solana lists (`rwas`, `stocks`, `etfs`, and `metals`
 - The leading-assets snapshot contains at most ten covered assets, ordered by accepted trailing-30-day spot volume descending and then stable asset ID. Each row retains the asset identity, category group, value, and its accepted volume source. It is a current cross-section, not historical backfill.
 - The public endpoint is keyless and checked every six hours. One observation is appended per successful collection and active history is capped at 365 points.
 - The dashboard presents the current snapshot immediately, but it does not render the temporal spot-volume chart until the active history contains at least eight genuine observations. Before that threshold it shows collection progress instead. No synthetic points, interpolation, or timestamp reuse are used to manufacture a fuller chart; genuine missing collection periods remain gaps.
-- The retired RWA.xyz trailing-30-day transfer-volume history is retained under `legacyTransferVolume` through its last genuine observation and remains available in canonical JSON and the generated report as clearly labelled legacy evidence. It is excluded from the active dashboard and is never joined, interpolated, or compared as if it were Tokens.xyz spot volume.
 
 ### Daily active addresses
 
@@ -136,9 +135,12 @@ A stale input makes its check `unavailable`; it does not keep or create an activ
 - A required bootstrap domain with no last-known-good value is critical and stops publication.
 - Intentionally not-due data stays fresh only inside its budget; a stale value cannot heal without a successful fetch.
 - Due checks include a five-minute scheduler-jitter allowance, preventing a fixed hourly cron from slipping to every other hour because the previous run completed a few seconds after `:17`.
-- Provider histories are trimmed to 90 daily points. Project hourly histories are capped at 720; active tokenized-market and retired RWA histories are each capped at 365; validator commission tracking is capped at 1,000 sparse events.
-- A persistent `coverageIncidents` record discloses the collection gap beginning at the first missed due observation, `2026-08-26T17:57:44.334Z`. The affected project-owned observations are TPS, non-vote TPS, slot time, validator snapshots/commission tracking, and sampled median transaction fee. The incident closes only at the first run where all three corresponding live collectors succeed.
-- Scheduled collection did not publish during part of this interval, and the first subsequent candidate was rejected by canonical commission-history ordering validation. This records the known publication sequence without claiming that Solana itself was unavailable. No missing live observations are interpolated, carried forward under false timestamps, or reconstructed. Provider-dated daily histories may reappear only when their original public providers return those historical dates; the report keeps that distinction explicit.
+- Provider histories are trimmed to 90 daily points. Project hourly histories are capped at 720; active tokenized-market history is capped at 365; validator commission tracking is capped at 1,000 sparse events.
+- Published project-collected snapshot histories begin at `2026-08-29T15:10:55.812Z` inclusive (20:10:55.812 at UTC+5), the first retained successful observation. This boundary applies only to network performance, validators, sampled median transaction fees, and tokenized-market snapshots. A series collected later keeps its actual first observation; Tokens.xyz is not backfilled to this boundary.
+- Provider-dated histories retain their existing rolling windows independently of the snapshot boundary. SOL market prices, TVL, stablecoins, DEX volume, REV, active addresses, and contributor comparisons keep their original provider dates, including earlier June observations while those dates remain inside their configured limits. The 24-hour and trailing-30-day value definitions do not change.
+- Commission detections preceding the boundary are discarded. For a retained event whose lower-bound snapshot precedes the boundary, `previousObservedAt` becomes `null`; the detection timestamp and percentages remain unchanged. No new interval start is invented.
+- Pre-boundary retired transfer-volume evidence and the archived August collection-coverage record are excluded from public JSON and the generated report. The updater no longer seeds that historical incident; original publications remain recoverable through repository history. Publication validation rejects reintroduced pre-boundary snapshots, including after a repair or a last-known-good update.
+- No missing live observations are interpolated or carried forward under false timestamps. Genuine missing periods within retained histories remain missing; official status incidents and unrelated coverage records retain their own evidence.
 - The final snapshot and exact deterministic Markdown rendering are validated before each temporary file is atomically renamed into place. The updater's Git commit is the pair-level publication boundary; `data.json` must remain below 2 MB.
 
 ## Sources
@@ -151,7 +153,6 @@ A stale input makes its check `unavailable`; it does not keep or create an activ
 - [Jito daily MEV rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards)
 - [Tokens.xyz application](https://www.tokens.xyz/)
 - [Solana Foundation Tokens source](https://github.com/solana-foundation/tokens)
-- [RWA.xyz methodology (retired historical series only)](https://docs.rwa.xyz/methodology/data-coverage)
 - [Solana News](https://solana.com/news)
 - [Solana Upgrades](https://solana.com/upgrades)
 - [Solana Status](https://status.solana.com/)

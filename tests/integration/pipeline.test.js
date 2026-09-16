@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { DEFAULT_CONFIG } from "../../src/pipeline/config.js";
+import { ARCHIVED_COLLECTION_GAP_ID } from "../../src/pipeline/coverage.js";
+import { assertSnapshotHistoryRetention } from "../../src/pipeline/history-retention.js";
 import { parseCanonicalSnapshot } from "../../src/pipeline/contracts/canonical.js";
 import { PipelineError } from "../../src/pipeline/lib/errors.js";
 import { needsTokenizedSnapshotMigration, runUpdate } from "../../src/pipeline/update.js";
@@ -64,6 +66,30 @@ test("not-due updater runs are deterministic for an injected clock", async () =>
   const second = await runUpdate({ ...options, previous: first.snapshot });
   assert.deepEqual(second.snapshot, first.snapshot);
   assert.equal(second.report, first.report);
+});
+
+test("repeated not-due and failed updates cannot restore pre-recovery snapshots", async () => {
+  const previous = parseCanonicalSnapshot(JSON.parse(await readFile("public/data.json", "utf8")), DEFAULT_CONFIG.history);
+  for (const domain of [previous.network.performance, previous.validators, previous.economics.medianTransactionFee]) {
+    domain.history.unshift({ ...domain.history[0], observedAt: "2026-08-26T00:00:00.000Z" });
+  }
+  previous.coverageIncidents.push({ id: ARCHIVED_COLLECTION_GAP_ID });
+  previous.ecosystem.tokenizedAssets.legacyTransferVolume = canonicalFixture().ecosystem.tokenizedAssets.legacyTransferVolume;
+  const options = { config: DEFAULT_CONFIG, http: failingHttp, rpc: failingRpc, dryRun: true };
+  const now = beforeAnySourceIsDue(previous);
+  const first = await runUpdate({ ...options, previous, now });
+  const second = await runUpdate({ ...options, previous: first.snapshot, now });
+  const failed = await runUpdate({ ...options, previous: second.snapshot, now: afterEverySourceIsDue(second.snapshot) });
+  for (const result of [first, second, failed]) {
+    assert.doesNotThrow(() => assertSnapshotHistoryRetention(result.snapshot));
+    assert.equal(result.snapshot.ecosystem.tokenizedAssets.legacyTransferVolume, undefined);
+    assert.ok(!result.snapshot.coverageIncidents.some((incident) => incident.id === ARCHIVED_COLLECTION_GAP_ID));
+    assert.deepEqual(result.snapshot.economics.solPrice.history, previous.economics.solPrice.history);
+    assert.deepEqual(result.snapshot.providerComparisons.metrics, previous.providerComparisons.metrics);
+    assert.doesNotMatch(result.report, /collection-gap-2026-08-26|Retired RWA\.xyz/);
+  }
+  assert.deepEqual(second.snapshot, first.snapshot);
+  assert.equal(failed.snapshot.network.performance.status, "stale");
 });
 
 test("full updater stops a bootstrap when required sources are unavailable", async () => {

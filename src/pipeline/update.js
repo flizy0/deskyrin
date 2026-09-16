@@ -18,7 +18,8 @@ import { collectTokenizedMarkets, TOKENIZED_MARKETS_METHODOLOGY } from "./collec
 import { collectUpgrades } from "./collectors/upgrades.js";
 import { parseCanonicalSnapshot, parsePreviousCanonicalSnapshot } from "./contracts/canonical.js";
 import { createConfig } from "./config.js";
-import { buildCoverageIncidents } from "./coverage.js";
+import { retainCoverageIncidents } from "./coverage.js";
+import { applySnapshotHistoryRetention } from "./history-retention.js";
 import { asPipelineError, safeError } from "./lib/errors.js";
 import { createHttpClient } from "./lib/http.js";
 import { createRpcClient } from "./lib/rpc.js";
@@ -260,15 +261,10 @@ export async function runUpdate(options = {}) {
 
   const publicationNow = options.now || new Date();
   const updatedAt = isoTimestamp(publicationNow);
-  const coverageIncidents = buildCoverageIncidents(
-    previous?.coverageIncidents,
-    performanceResult.state === "fresh" && validatorResult.state === "fresh" && collected.fee.state === "fresh",
-    runObservedAt,
-    previous?.sources?.solanaRpc?.nextDueAt
-  );
+  const coverageIncidents = retainCoverageIncidents(previous?.coverageIncidents);
   const sources = {};
   for (const [id, result] of Object.entries(sourceResults)) sources[id] = buildSourceRecord(id, result, previous, now, config);
-  const preliminary = {
+  const preliminary = applySnapshotHistoryRetention({
     schemaVersion: config.schemaVersion,
     methodologyVersion: config.methodologyVersion,
     updatedAt,
@@ -283,7 +279,7 @@ export async function runUpdate(options = {}) {
     ...(providerComparisons ? { providerComparisons } : {}),
     alertChecks: [],
     alerts: []
-  };
+  }, config.history.snapshotStartAt);
   preliminary.updateStatus = allDomains(preliminary).some((domain) => domain.status === "stale") ? "partial" : "complete";
   const alertResult = calculateAlerts(preliminary, {
     performance: performanceResult.state === "fresh" ? performanceEvidence : undefined,

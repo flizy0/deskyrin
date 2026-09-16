@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { collectMedianFee } from "../src/pipeline/collectors/median-fee.js";
 import { createConfig } from "../src/pipeline/config.js";
 import { parseCanonicalSnapshot } from "../src/pipeline/contracts/canonical.js";
+import { applySnapshotHistoryRetention } from "../src/pipeline/history-retention.js";
 import { appendHistory } from "../src/pipeline/lib/history.js";
 import { createHttpClient } from "../src/pipeline/lib/http.js";
 import { createRpcClient } from "../src/pipeline/lib/rpc.js";
@@ -107,7 +108,7 @@ async function collectRepair(target, rpc, config) {
   return { target, point, sample: domain.sample };
 }
 
-export function applyMedianFeeRepairs(snapshot, repairs, publishedAt, historyLimit = 720) {
+export function applyMedianFeeRepairs(snapshot, repairs, publishedAt, historyLimit = 720, snapshotStartAt) {
   const repaired = structuredClone(snapshot);
   let history = repaired.economics.medianTransactionFee.history;
   for (const repair of repairs) {
@@ -120,7 +121,7 @@ export function applyMedianFeeRepairs(snapshot, repairs, publishedAt, historyLim
   repaired.coverageIncidents = (repaired.coverageIncidents || [])
     .filter((incident) => incident.id !== REPAIR_INCIDENT_ID);
   repaired.updatedAt = isoTimestamp(publishedAt, "repair publication time");
-  return repaired;
+  return applySnapshotHistoryRetention(repaired, snapshotStartAt);
 }
 
 export async function repairMedianFeeHistory(options = {}) {
@@ -164,7 +165,8 @@ export async function repairMedianFeeHistory(options = {}) {
     snapshot,
     repairs,
     options.now || new Date(),
-    config.history.hourlyPoints
+    config.history.hourlyPoints,
+    config.history.snapshotStartAt
   );
   const repairedSnapshot = parseCanonicalSnapshot(candidate, config.history);
   const report = renderReport(repairedSnapshot);
