@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-09-19T15:24:38.151Z**
+Updated: **2026-09-19T16:25:08.057Z**
 
 Update status: **complete**
 
@@ -10,11 +10,11 @@ All values are generated deterministically from the cited public sources; this r
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| TPS (all transactions) | 4,533.94 | 2026-09-19T15:23:52.190Z | Fresh |
-| Non-vote TPS | 2,029.03 | 2026-09-19T15:23:52.190Z | Fresh |
-| Slot time | 268.82 ms | 2026-09-19T15:23:52.190Z | Fresh |
-| Block height | 426,487,934 | 2026-09-19T15:23:52.190Z | Fresh |
-| Epoch progress | 7.2% (epoch 1038) | 2026-09-19T15:23:52.190Z | Fresh |
+| TPS (all transactions) | 4,724.12 | 2026-09-19T16:24:22.266Z | Fresh |
+| Non-vote TPS | 2,206 | 2026-09-19T16:24:22.266Z | Fresh |
+| Slot time | 267.62 ms | 2026-09-19T16:24:22.266Z | Fresh |
+| Block height | 426,501,483 | 2026-09-19T16:24:22.266Z | Fresh |
+| Epoch progress | 10.34% (epoch 1038) | 2026-09-19T16:24:22.266Z | Fresh |
 
 ## Validator Status
 
@@ -73,11 +73,11 @@ A row means the commission differed between two successful validator snapshots. 
 
 | Indicator | Value | Data through | Status |
 |---|---:|---|---|
-| SOL price | $111.79 (+1.44% / 24h) | 2026-09-19T15:19:40.000Z | Fresh |
+| SOL price | $111.65 (+0.15% / 24h) | 2026-09-19T16:20:40.000Z | Fresh |
 | Stablecoin supply (USD-equivalent circulating) | $15.71B | 2026-09-18 | Fresh |
 | DEX volume (completed UTC day) | $3.54B | 2026-09-18 | Fresh |
 | Real Economic Value (REV) | 9,854.48 SOL | 2026-09-17 | Fresh |
-| Median transaction fee | 5,000 lamports | 2026-09-19T15:23:52.190Z | Fresh |
+| Median transaction fee | 5,000 lamports | 2026-09-19T16:24:22.266Z | Fresh |
 | TVL alert input | $5.9B (+1.99% day/day) | 2026-09-18 | Fresh |
 
 REV components for 2026-09-17: transaction fees 8,102.59 SOL (median of Allium and Dune) + gross Jito tips 1,751.89 SOL.
@@ -88,7 +88,7 @@ These comparison observations are retained separately and are not averaged into 
 
 | Series | Value | Data through | Status |
 |---|---:|---|---|
-| CoinGecko keyless comparison | $111.72 | 2026-09-19T15:21:20.000Z | Fresh |
+| CoinGecko keyless comparison | $111.64 | 2026-09-19T16:21:40.000Z | Fresh |
 | Coinbase Exchange SOL-USD daily close | $112.7 | 2026-09-18 | Fresh |
 
 ## Provider Comparison Evidence
@@ -171,6 +171,7 @@ Ranked by accepted trailing-30-day spot volume; excluded provenance never enters
 
 ### Upcoming upgrades and developments
 
+- [sBPFv3 Programs](https://solana.com/upgrades/sbpfv3-programs) — In Development, Agave 4.4. Simplifying and modernizing the Solana runtime and program deployments ([SIMD-0500](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0500-disable-deployment-of-sbpf-v0-v1-v2.md), [SIMD-0178](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0178-static-syscalls.md), [SIMD-0377](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0377-ebpf-isa-compatibility.md))
 - [Alpenglow](https://solana.com/upgrades/alpenglow) — In Development, Agave 4.3. Solana's next consensus protocol delivers sub-second finality ([SIMD-0363](https://github.com/solana-foundation/solana-improvement-documents/pull/363), [SIMD-0326](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0326-alpenglow.md), [SIMD-0337](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0337-parent-ready-update-marker.md), [SIMD-0357](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0357-alpenglow_validator_admission_ticket.md), [SIMD-0384](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0384-alpenglow-migration.md), [SIMD-0387](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0387-bls-pubkey-management-in-vote-account.md))
 - [Reduced Slot Times](https://solana.com/upgrades/reduced-slot-times) — Partially Activated, Agave 4.2. Cutting slot times from 400ms to 200ms ([SIMD-0525](https://github.com/solana-foundation/solana-improvement-documents/pull/525), [SIMD-0498](https://github.com/solana-foundation/solana-improvement-documents/pull/498))
 - [Reduced Rent](https://solana.com/upgrades/reduced-rent) — Partially Activated, Agave 4.2. Cutting the cost of on-chain storage by 90% ([SIMD-0437](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0437-incremental-rent-reduction.md), [SIMD-0392](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0392-rent-increase-adaptations.md))
@@ -203,7 +204,7 @@ Status: **Fresh**. Published releases and prereleases are kept separate from upc
 
 ## Network Observability
 
-Official Solana Status: **All Systems Operational** (none). Observed 2026-09-19T15:23:52.190Z; provider page updated 2026-09-19T08:53:52.126Z.
+Official Solana Status: **All Systems Operational** (none). Observed 2026-09-19T16:24:22.266Z; provider page updated 2026-09-19T15:54:32.850Z.
 
 8 of 8 retained components report operational.
 
@@ -231,19 +232,19 @@ No active warning met its full threshold and freshness requirements.
 
 | Check | State | Current / reason |
 |---|---|---|
-| tps-change | normal | +4.03% |
-| slow-slot-time | normal | +0.9% |
+| tps-change | normal | +5.2% |
+| slow-slot-time | normal | -0.09% |
 | high-validator-delinquency | normal | 0.04% |
 | large-tvl-change | normal | +1.99% |
-| large-sol-price-move | normal | +1.44% |
+| large-sol-price-move | normal | +0.15% |
 
 ## Data Sources and Freshness
 
 | Source | State | Last success | Data through |
 |---|---|---|---|
-| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-09-19T15:23:52.190Z | 2026-09-19T15:23:52.190Z |
-| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-09-19T15:23:52.190Z | 2026-09-19T15:19:40.000Z |
-| [CoinGecko Keyless API](https://api.coingecko.com/api/v3/simple/price) | fresh | 2026-09-19T15:23:52.190Z | 2026-09-19T15:21:20.000Z |
+| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-09-19T16:24:22.266Z | 2026-09-19T16:24:22.266Z |
+| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-09-19T16:24:22.266Z | 2026-09-19T16:20:40.000Z |
+| [CoinGecko Keyless API](https://api.coingecko.com/api/v3/simple/price) | fresh | 2026-09-19T16:24:22.266Z | 2026-09-19T16:21:40.000Z |
 | [Coinbase Exchange SOL-USD](https://api.exchange.coinbase.com/products/SOL-USD/candles) | fresh | 2026-09-19T14:23:24.065Z | 2026-09-18 |
 | [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-09-19T14:23:24.065Z | 2026-09-18 |
 | [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-09-19T14:23:24.065Z | 2026-09-18 |
@@ -252,8 +253,8 @@ No active warning met its full threshold and freshness requirements.
 | [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-09-19T14:23:24.065Z | 2026-09-18 |
 | [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-09-19T14:23:24.065Z | 2026-09-19T14:23:24.065Z |
 | [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-09-19T14:23:24.065Z | 2026-09-16T00:56:00.000Z |
-| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-09-19T10:24:03.922Z | 2026-09-19T10:24:03.922Z |
-| [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-19T15:23:52.190Z | 2026-09-19T15:23:52.190Z |
-| [Agave Releases](https://api.github.com/repos/anza-xyz/agave/releases) | fresh | 2026-09-19T10:24:03.922Z | 2026-09-18T15:32:23.000Z |
+| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-09-19T16:24:22.266Z | 2026-09-19T16:24:22.266Z |
+| [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-19T16:24:22.266Z | 2026-09-19T16:24:22.266Z |
+| [Agave Releases](https://api.github.com/repos/anza-xyz/agave/releases) | fresh | 2026-09-19T16:24:22.266Z | 2026-09-18T15:32:23.000Z |
 
 Detailed definitions, windows, aggregation rules, and limitations are documented in [`methodology.md`](./methodology.md).
