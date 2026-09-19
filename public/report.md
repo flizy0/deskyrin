@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-09-19T04:25:35.705Z**
+Updated: **2026-09-19T05:23:56.956Z**
 
 Update status: **complete**
 
@@ -10,11 +10,11 @@ All values are generated deterministically from the cited public sources; this r
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| TPS (all transactions) | 4,264.07 | 2026-09-19T04:24:51.740Z | Fresh |
-| Non-vote TPS | 1,746.11 | 2026-09-19T04:24:51.740Z | Fresh |
-| Slot time | 267.86 ms | 2026-09-19T04:24:51.740Z | Fresh |
-| Block height | 426,339,360 | 2026-09-19T04:24:51.740Z | Fresh |
-| Epoch progress | 72.8% (epoch 1037) | 2026-09-19T04:24:51.740Z | Fresh |
+| TPS (all transactions) | 3,898.49 | 2026-09-19T05:23:13.376Z | Fresh |
+| Non-vote TPS | 1,402.06 | 2026-09-19T05:23:13.376Z | Fresh |
+| Slot time | 270.51 ms | 2026-09-19T05:23:13.376Z | Fresh |
+| Block height | 426,352,516 | 2026-09-19T05:23:13.376Z | Fresh |
+| Epoch progress | 75.85% (epoch 1037) | 2026-09-19T05:23:13.376Z | Fresh |
 
 ## Validator Status
 
@@ -22,9 +22,9 @@ Status: **Fresh**. Active and delinquent counts include only vote accounts with 
 
 | Metric | Value |
 |---|---:|
-| Active validators | 676 |
-| Delinquent validators | 11 |
-| Delinquent activated stake | 0.04% |
+| Active validators | 677 |
+| Delinquent validators | 10 |
+| Delinquent activated stake | 0.03% |
 | Top 10 stake share | 24.27% |
 
 ### Top validators by activated stake
@@ -73,11 +73,11 @@ A row means the commission differed between two successful validator snapshots. 
 
 | Indicator | Value | Data through | Status |
 |---|---:|---|---|
-| SOL price | $113.28 (+7.91% / 24h) | 2026-09-19T04:18:40.000Z | Fresh |
+| SOL price | $112.62 (+6.62% / 24h) | 2026-09-19T05:18:50.000Z | Fresh |
 | Stablecoin supply (USD-equivalent circulating) | $15.71B | 2026-09-18 | Fresh |
 | DEX volume (completed UTC day) | $1.37B | 2026-09-18 | Fresh |
 | Real Economic Value (REV) | 9,854.48 SOL | 2026-09-17 | Fresh |
-| Median transaction fee | 5,000 lamports | 2026-09-19T04:24:51.740Z | Fresh |
+| Median transaction fee | 5,000 lamports | 2026-09-19T05:23:13.376Z | Fresh |
 | TVL alert input | $6.39B (+10.57% day/day) | 2026-09-18 | Fresh |
 
 REV components for 2026-09-17: transaction fees 8,102.59 SOL (median of Allium and Dune) + gross Jito tips 1,751.89 SOL.
@@ -88,7 +88,7 @@ These comparison observations are retained separately and are not averaged into 
 
 | Series | Value | Data through | Status |
 |---|---:|---|---|
-| CoinGecko keyless comparison | $113.14 | 2026-09-19T04:22:50.000Z | Fresh |
+| CoinGecko keyless comparison | $112.69 | 2026-09-19T05:21:20.000Z | Fresh |
 | Coinbase Exchange SOL-USD daily close | $112.7 | 2026-09-18 | Fresh |
 
 ## Provider Comparison Evidence
@@ -203,7 +203,7 @@ Status: **Fresh**. Published releases and prereleases are kept separate from upc
 
 ## Network Observability
 
-Official Solana Status: **All Systems Operational** (none). Observed 2026-09-19T04:24:51.740Z; provider page updated 2026-09-19T03:38:59.708Z.
+Official Solana Status: **All Systems Operational** (none). Observed 2026-09-19T05:23:13.376Z; provider page updated 2026-09-19T03:38:59.708Z.
 
 8 of 8 retained components report operational.
 
@@ -230,19 +230,19 @@ Solana Status incidents and Deskyrin collection gaps are independent records: th
 
 | Check | State | Current / reason |
 |---|---|---|
-| tps-change | normal | +2.47% |
-| slow-slot-time | normal | +0.8% |
-| high-validator-delinquency | normal | 0.04% |
+| tps-change | normal | -6.82% |
+| slow-slot-time | normal | +1.71% |
+| high-validator-delinquency | normal | 0.03% |
 | large-tvl-change | triggered | +10.57% |
-| large-sol-price-move | normal | +7.91% |
+| large-sol-price-move | normal | +6.62% |
 
 ## Data Sources and Freshness
 
 | Source | State | Last success | Data through |
 |---|---|---|---|
-| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-09-19T04:24:51.740Z | 2026-09-19T04:24:51.740Z |
-| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-09-19T04:24:51.740Z | 2026-09-19T04:18:40.000Z |
-| [CoinGecko Keyless API](https://api.coingecko.com/api/v3/simple/price) | fresh | 2026-09-19T04:24:51.740Z | 2026-09-19T04:22:50.000Z |
+| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-09-19T05:23:13.376Z | 2026-09-19T05:23:13.376Z |
+| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-09-19T05:23:13.376Z | 2026-09-19T05:18:50.000Z |
+| [CoinGecko Keyless API](https://api.coingecko.com/api/v3/simple/price) | fresh | 2026-09-19T05:23:13.376Z | 2026-09-19T05:21:20.000Z |
 | [Coinbase Exchange SOL-USD](https://api.exchange.coinbase.com/products/SOL-USD/candles) | fresh | 2026-09-19T02:24:35.590Z | 2026-09-18 |
 | [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-09-19T02:24:35.590Z | 2026-09-18 |
 | [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-09-19T02:24:35.590Z | 2026-09-18 |
@@ -252,7 +252,7 @@ Solana Status incidents and Deskyrin collection gaps are independent records: th
 | [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-09-19T02:24:35.590Z | 2026-09-19T02:24:35.590Z |
 | [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-09-19T02:24:35.590Z | 2026-09-16T00:56:00.000Z |
 | [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-09-19T04:24:51.740Z | 2026-09-19T04:24:51.740Z |
-| [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-19T04:24:51.740Z | 2026-09-19T04:24:51.740Z |
+| [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-09-19T05:23:13.376Z | 2026-09-19T05:23:13.376Z |
 | [Agave Releases](https://api.github.com/repos/anza-xyz/agave/releases) | fresh | 2026-09-19T04:24:51.740Z | 2026-09-18T15:32:23.000Z |
 
 Detailed definitions, windows, aggregation rules, and limitations are documented in [`methodology.md`](./methodology.md).
