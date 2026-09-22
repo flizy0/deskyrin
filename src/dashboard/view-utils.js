@@ -108,17 +108,37 @@ function isPlottable(history, timestamp, fields) {
 export function historySpec(snapshot, { title, note, domain, history, time, series, formatter, beginAtZero = false, type = "line" }) {
   const fields = series.map((item) => item.field);
   if (!isPlottable(history, time, fields)) return null;
+  const quality = history.map((point) => point.imputed === true
+    ? "imputed"
+    : point.recoveredFrom
+      ? "recovered"
+      : "observed");
+  const discloseQuality = quality.some((value) => value !== "observed");
   return {
     title,
     note,
     labels: history.map(time),
-    datasets: series.map(({ label, field, ...style }) => ({ label, data: history.map((point) => point[field]), ...style })),
+    datasets: series.map(({ label, field, ...style }) => ({
+      label,
+      data: history.map((point) => point[field]),
+      ...(discloseQuality ? { quality } : {}),
+      ...style
+    })),
     yFormatter: formatter,
     beginAtZero,
     type,
     observedAt: domain.observedAt,
-    updatedAt: snapshot.updatedAt
+    updatedAt: snapshot.updatedAt,
+    ...(discloseQuality ? { quality } : {})
   };
+}
+
+export function historyProvenanceMeta(history) {
+  const imputed = history.filter((point) => point.imputed === true).length;
+  const recovered = history.filter((point) => point.recoveredFrom).length;
+  const direct = history.length - imputed - recovered;
+  if (!imputed && !recovered) return `${direct} direct observations`;
+  return `${direct} direct · ${recovered} recovered · ${imputed} estimated`;
 }
 
 export function chartPanel(spec, { title, note, className = "", meta = [], emptyMessage, type } = {}) {

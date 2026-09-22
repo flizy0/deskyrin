@@ -2,9 +2,10 @@ name: Update public report
 
 on:
   schedule:
-    # GitHub may delay or drop individual schedule events. The updater's due
-    # gate keeps publication hourly while this second offset is a retry path.
-    - cron: "17,47 * * * *"
+    # GitHub may delay or drop individual schedule events. Six off-peak
+    # attempts improve delivery; a dependency-free preflight keeps the full
+    # collector hourly by skipping runs until a source is actually due.
+    - cron: "3,13,23,33,43,53 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -26,13 +27,21 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: npm
-      - run: npm ci
+      - name: Check whether collection is due
+        id: due
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: node scripts/check-update-due.js
+      - if: steps.due.outputs.due == 'true'
+        run: npm ci
       - name: Collect, calculate, and generate outputs
+        if: steps.due.outputs.due == 'true'
         run: npm run update
       - name: Verify generated artifacts
+        if: steps.due.outputs.due == 'true'
         run: npm run ci
       - name: Commit changed data
+        if: steps.due.outputs.due == 'true'
         shell: bash
         run: |
           if git diff --quiet -- public/data.json public/report.md; then

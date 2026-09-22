@@ -132,13 +132,26 @@ test("published methodology matches its source and documents evidence boundaries
   assert.match(source, /Provider comparison evidence/);
   assert.match(source, /Solana Status is evidence/);
   assert.match(source, /Agave releases come independently/);
-  assert.match(source, /No missing live observations are interpolated/);
+  assert.match(source, /Live collection never substitutes an estimate for a current value/);
   assert.match(source, /2026-08-29T15:10:55\.812Z/);
   assert.match(source, /Provider-dated histories retain their existing/);
   assert.match(source, /previousObservedAt/);
   assert.match(source, /never claims the exact on-chain change time/);
   assert.match(source, /Tokens\.xyz's public curated Solana lists/);
   assert.doesNotMatch(source, /A persistent `coverageIncidents` record discloses the collection gap/);
-  assert.match(source, /eight genuine observations/);
-  assert.match(source, /No synthetic points, interpolation, or timestamp reuse/);
+  assert.match(source, /eight non-imputed observations/);
+  assert.match(source, /Every estimated row carries `imputed: true`/);
+  assert.match(source, /never extrapolates/);
+});
+
+test("report discloses recovered and imputed history without changing current values", () => {
+  const snapshot = canonicalFixture();
+  snapshot.network.performance.history.unshift(
+    { observedAt: "2026-08-19T22:00:00.000Z", totalTps: 2_800, nonVoteTps: 1_800, slotTimeMs: 410, imputed: true },
+    { observedAt: "2026-08-19T23:00:00.000Z", totalTps: 2_900, nonVoteTps: 1_900, slotTimeMs: 408, recoveredFrom: "solana_rpc_performance_samples" }
+  );
+  const report = renderReport(snapshot);
+  assert.match(report, /## Historical Continuity Repairs/);
+  assert.match(report, /Current values, source freshness, and alerts use direct observations only/);
+  assert.match(report, /\| Network performance \| 1 \| 1 \| 1 \|/);
 });

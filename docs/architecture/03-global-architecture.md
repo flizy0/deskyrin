@@ -490,11 +490,11 @@ It includes no prose inference, AI analysis, prediction, or causal explanation. 
 ### Scheduler
 
 - `.github/workflows/update.yml`;
-- redundant `schedule: 17,47 * * * *` UTC plus `workflow_dispatch`, with the updater's due gate retaining an hourly publication cadence;
+- redundant `schedule: 3,13,23,33,43,53 * * * *` UTC plus `workflow_dispatch`; a dependency-free preflight skips package installation and collection until the snapshot age or a checked-in source deadline is due, retaining hourly publication with six scheduler-delivery opportunities;
 - an offset freshness watchdog at `7,37 * * * *` requests `workflow_dispatch` when deployed data exceeds the operational age limit;
 - one concurrency group, active run not canceled;
 - 15-minute job timeout;
-- install, update, full verification, build, staged-diff check, normal commit/push.
+- due preflight, then install, update, full verification, build, staged-diff check, normal commit/push.
 
 ## Configuration
 

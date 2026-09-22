@@ -37,7 +37,7 @@ test("network charts open one lazy native explorer with canonical source rows", 
   await expect(page.locator("[data-chart-explorer-canvas]")).toHaveCount(1);
 
   const table = page.locator("[data-chart-explorer-table]");
-  await expect(table.locator("thead th")).toHaveText(["UTC time", "Total TPS", "Non-vote TPS"]);
+  await expect(table.locator("thead th")).toHaveText(["UTC time", "Provenance", "Total TPS", "Non-vote TPS"]);
   const rows = table.locator("tbody tr");
   const history = data.network.performance.history;
   await expect(rows).toHaveCount(history.length);
@@ -45,9 +45,11 @@ test("network charts open one lazy native explorer with canonical source rows", 
     const row = rows.nth(rowIndex);
     await expect(row).toHaveAttribute("data-timestamp", point.observedAt);
     await expect(row.locator("time")).toHaveAttribute("datetime", point.observedAt);
-    await expect(row.locator("td").nth(1)).toHaveAttribute("data-value", String(point.totalTps));
-    await expect(row.locator("td").nth(2)).toHaveAttribute("data-value", String(point.nonVoteTps));
+    await expect(row.locator("td").nth(1)).toHaveAttribute("data-quality", point.imputed ? "imputed" : point.recoveredFrom ? "recovered" : "observed");
+    await expect(row.locator("td").nth(2)).toHaveAttribute("data-value", String(point.totalTps));
+    await expect(row.locator("td").nth(3)).toHaveAttribute("data-value", String(point.nonVoteTps));
   }
+  await expect(table.locator('[data-quality="imputed"]').first()).toHaveText("Estimated");
   expect(errors).toEqual([]);
 });
 

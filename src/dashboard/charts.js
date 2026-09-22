@@ -89,7 +89,11 @@ function baseOptions(yFormatter, bounds, {
         filter: (context) => Number.isFinite(context.parsed.y),
         callbacks: {
           title: (items) => items.length ? formatUtcDateTime(items[0].parsed.x) : "",
-          label: (context) => `${context.dataset.label}: ${yFormatter(context.parsed.y)}`
+          label: (context) => {
+            const quality = context.raw?.quality;
+            const suffix = quality === "imputed" ? " · estimated" : quality === "recovered" ? " · recovered" : "";
+            return `${context.dataset.label}: ${yFormatter(context.parsed.y)}${suffix}`;
+          }
         }
       }
     },
@@ -224,17 +228,30 @@ export function lineChart(canvas, labels, datasets, yFormatter, {
       const color = dataset.color || DATA_COLORS.categorical[index % DATA_COLORS.categorical.length];
       const values = dataset.data.map((value) => Number.isFinite(value) ? value : null);
       const finitePointCount = values.filter(Number.isFinite).length;
+      const normalPointRadius = finitePointCount < 3 ? 3 : 0;
       return {
         ...dataset,
-        data: points.map((point) => ({ x: point.x, y: values[point.index] })),
+        data: points.map((point) => ({
+          x: point.x,
+          y: values[point.index],
+          quality: dataset.quality?.[point.index] || "observed"
+        })),
         borderColor: color,
         backgroundColor: dataset.backgroundColor || colorWithAlpha(color, 0.09),
         borderWidth: dataset.borderWidth ?? 2,
         fill: dataset.fill ?? false,
-        pointRadius: dataset.pointRadius ?? (finitePointCount < 3 ? 3 : 0),
+        pointRadius: dataset.pointRadius ?? ((context) => context.raw?.quality === "observed" ? normalPointRadius : 2.5),
         pointHoverRadius: 4,
         tension: dataset.tension ?? 0.22,
-        spanGaps: dataset.spanGaps ?? 129_600_000
+        spanGaps: dataset.spanGaps ?? 129_600_000,
+        segment: {
+          ...(dataset.segment || {}),
+          borderDash(context) {
+            if (context.p0?.raw?.quality === "imputed" || context.p1?.raw?.quality === "imputed") return [5, 4];
+            const configured = dataset.segment?.borderDash;
+            return typeof configured === "function" ? configured(context) : configured;
+          }
+        }
       };
     }) },
     options: {
@@ -265,7 +282,7 @@ export function lineChart(canvas, labels, datasets, yFormatter, {
       const values = chart.data.datasets.flatMap((dataset, datasetIndex) => {
         const value = dataset.data[index]?.y;
         return chart.isDatasetVisible(datasetIndex) && Number.isFinite(value)
-          ? [`${dataset.label}: ${yFormatter(value)}`]
+          ? [`${dataset.label}: ${yFormatter(value)}${dataset.data[index]?.quality === "imputed" ? " (estimated)" : dataset.data[index]?.quality === "recovered" ? " (recovered)" : ""}`]
           : [];
       }).join("; ");
       return `${accessibleTimestamp(timestamp)} UTC. ${values}`;

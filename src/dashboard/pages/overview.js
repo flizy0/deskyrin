@@ -7,6 +7,7 @@ import {
   formatCheckEvidence,
   formatCheckValue,
   formatStakeCompact,
+  historyProvenanceMeta,
   historySpec,
   metricCard,
   metricGrid,
@@ -175,7 +176,7 @@ export function renderOverview(snapshot, root) {
 
   const tpsSpec = historySpec(snapshot, {
     title: "Network activity",
-    note: "Total and non-vote transactions per second · exact UTC observations",
+    note: "Total and non-vote transactions per second · estimated intervals are dashed",
     domain: network,
     history: network.history,
     time: (point) => point.observedAt,
@@ -187,7 +188,7 @@ export function renderOverview(snapshot, root) {
   });
   const activity = chartPanel(tpsSpec, {
     className: "span-8 chart-primary cut-corner",
-    meta: [`${network.history.length} observations`, "No interpolation", `Observed ${fmt.utc(network.observedAt)}`]
+    meta: [historyProvenanceMeta(network.history), "Estimated points never drive current values or alerts", `Observed ${fmt.utc(network.observedAt)}`]
   });
   const primaryGrid = el("div", "analytics-grid overview-primary-grid");
   primaryGrid.append(activity.card, validatorSnapshot(snapshot));

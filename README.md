@@ -24,14 +24,14 @@ The terminal separates Overview, Network, Validators, Economy, Ecosystem, and So
 - **Explainable, noise-resistant alerts:** TPS and slot-time checks use duration-weighted samples, two adjacent recent bins, a median prior-hour baseline, and simultaneous relative and absolute thresholds. Validator delinquency is stake-weighted and requires a second fresh confirmation, while stale evidence produces an unavailable check rather than a false alert or false all-clear.
 - **Derived on-chain fee sampling:** the median transaction fee is calculated directly from finalized Solana blocks selected through a deterministic 16-block stratified sample across an approximately 9,000-slot window. The sampling frame and transaction counts are published with the result.
 - **Failure-aware state without a database:** the previous validated snapshot acts as bounded state. Independent domains can retain explicit stale last-known-good values when a provider fails, while healthy domains continue to update; missing data is never replaced with invented zeroes.
-- **Auditable presentation from one canonical snapshot:** the dashboard, interactive source-history tables, generated Markdown, alerts, and machine-readable JSON all derive from the same validated artifact. The browser performs no hidden provider fetches, interpolation, prediction, or synthetic history generation.
+- **Auditable presentation from one canonical snapshot:** the dashboard, interactive source-history tables, generated Markdown, alerts, and machine-readable JSON all derive from the same validated artifact. The browser performs no hidden provider fetches or calculations; bounded historical estimates are precomputed, validated, and explicitly labelled in that artifact.
 
 These are deterministic, domain-specific engineering choices rather than AI/ML claims: the alert thresholds are fixed and documented, Allium/Dune observations arrive through the Solana Foundation data aggregator, and the sampled fee is an estimate rather than an exact network-wide median.
 
 ## Static-first architecture
 
 ```text
-GitHub Actions (hourly data, redundant :17/:47 triggers)
+GitHub Actions (hourly data, six delivery attempts/hour)
                  │
                  ▼
        keyless collectors
@@ -91,13 +91,14 @@ npm run verify    # scope/static architecture/artifact checks
 npm run ci        # complete non-browser verification
 npm run update:dry
 npm run check:freshness
+npm run repair:gaps   # deterministic, provenance-labelled historical repair
 ```
 
 `npm run e2e` runs the reproducible Chromium suite after `npx playwright install chromium`. The browser job is available through manual GitHub Actions dispatch and is intentionally reserved for final UI verification. The browser binary is not required to update, build, or deploy the dashboard.
 
 ## Auto-update behavior
 
-`.github/workflows/update.yml` is triggered at `:17` and `:47` each hour and also supports manual dispatch. The updater's due gate still publishes project snapshots at most hourly; the second trigger is a retry opportunity when GitHub drops a scheduled event. One invocation:
+`.github/workflows/update.yml` is offered six off-peak trigger opportunities per hour (`:03`, `:13`, `:23`, `:33`, `:43`, and `:53`) and also supports manual dispatch. A dependency-free preflight reads the checked-in source deadlines and snapshot age before installing packages; not-due attempts stop there, while the first delivered due attempt runs the full collector. Publication remains at most hourly even when GitHub delivers every trigger. One due invocation:
 
 1. reads and validates the previous canonical snapshot;
 2. checks which source groups are due;
@@ -122,7 +123,7 @@ PUBLIC_DATA_URL=https://deskyrin-gamma.vercel.app/data.json \
 MAX_DATA_AGE_MINUTES=180 npm run check:freshness
 ```
 
-The watchdog now requests the first recovery automatically. A manual fallback remains available through **Update public report → Run workflow** in GitHub Actions. Recovery must start from the latest publication branch and its newest validated canonical snapshot—never from a stale feature branch, because that can erase legitimate history points. If scheduled Actions are unavailable, use a clean, up-to-date checkout of `main`, run `npm ci`, `npm run update`, then `npm run ci`; inspect the diff and commit only `public/data.json` and `public/report.md`. Never hand-edit generated values or publish after validation fails. Authoritative historical source data may be recovered normally, while unavailable point-in-time observations remain an explicit gap.
+The watchdog now requests the first recovery automatically. A manual fallback remains available through **Update public report → Run workflow** in GitHub Actions. Recovery must start from the latest publication branch and its newest validated canonical snapshot—never from a stale feature branch, because that can erase legitimate history points. If scheduled Actions are unavailable, use a clean, up-to-date checkout of `main`, run `npm ci`, `npm run update`, then `npm run ci`; inspect the diff and commit only `public/data.json` and `public/report.md`. Never hand-edit generated values or publish after validation fails. Authoritative historical source data is recovered first; only unavailable point-in-time history may use the documented `imputed: true` bounded repair.
 
 ## Deploying to Vercel
 
@@ -151,12 +152,12 @@ Vercel serves only static build output. `/data.json` and `/report.md` are explic
 - TVL, stablecoin, DEX, REV, and active-address series can lag by a completed UTC day and inherit provider classification/revision choices.
 - “Daily active addresses” means initiating signers/fee payers, not unique people.
 - Tokens.xyz values are rolling 30-day spot volumes for curated tokenized-market lists. Assets without Birdeye or on-chain trade volume provenance are disclosed in coverage counts and excluded rather than treated as zero. The category breakdown and leading-assets table are current cross-sections of that accepted universe.
-- The Tokens.xyz timeline appears only after eight genuine observations exist. Until then the current snapshot and collection progress remain visible; no point is invented, interpolated, or retimestamped to improve chart density.
+- The Tokens.xyz timeline appears only after eight non-imputed observations exist. Historical estimates, when present between bounding observations, are labelled `imputed: true`, shown as estimated in tables/tooltips, and drawn with dashed segments.
 - Project-collected network, validator, median-fee, and tokenized-market snapshots are retained from `2026-08-29T15:10:55.812Z` inclusive; later-starting series retain their genuine first point. Pre-boundary commission detections, retired transfer-volume evidence, and the archived August collection record are excluded from public outputs. Provider-dated market and daily histories retain their independent rolling windows and are not cut at this snapshot boundary.
 - The snapshot loads when the page opens, with Retry available on a load failure. There is no manual Refresh button; scheduled GitHub Actions continue to collect and publish data.
 - Official news is intentionally not an exhaustive independent-community feed.
 - Static Git/Vercel delivery means a successful data commit is followed by normal deployment latency.
-- Chart exploration changes only the visible range of the checked-in snapshot; it does not interpolate points, poll providers, or make daily/hourly data real-time.
+- Chart exploration changes only the visible range of the checked-in snapshot; it does not calculate estimates, poll providers, or make daily/hourly data real-time.
 
 ## Research and verification
 

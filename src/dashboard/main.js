@@ -57,7 +57,7 @@ function hasInvalidOptionalArrays(data) {
 
 function validateSnapshot(data) {
   if (
-    data?.schemaVersion !== "1.4.0"
+    data?.schemaVersion !== "1.5.0"
     || !data.network?.chain
     || !data.sources
     || Array.isArray(data.sources)

@@ -21,6 +21,7 @@ const isoTime = z.string().refine((value) => {
   const date = new Date(value);
   return !Number.isNaN(date.getTime()) && date.toISOString() === value;
 }, "Expected a canonical ISO timestamp");
+const imputedField = { imputed: z.literal(true).optional() };
 
 const sourceErrorSchema = z.object({
   code: z.string().min(1).max(100),
@@ -49,7 +50,9 @@ const performanceHistoryPointSchema = z.object({
   observedAt: isoTime,
   totalTps: nonNegative,
   nonVoteTps: nonNegative,
-  slotTimeMs: positive
+  slotTimeMs: positive,
+  ...imputedField,
+  recoveredFrom: z.literal("solana_rpc_performance_samples").optional()
 }).strict();
 
 const networkPerformanceSchema = z.object({
@@ -96,7 +99,8 @@ const validatorHistoryPointSchema = z.object({
   delinquentCount: nonNegativeInteger,
   totalStakeLamports: decimalInteger,
   delinquentStakeLamports: decimalInteger,
-  delinquentStakePct: nonNegative.max(100)
+  delinquentStakePct: nonNegative.max(100),
+  ...imputedField
 }).strict();
 
 const commissionChangeSchema = z.object({
@@ -256,7 +260,8 @@ const medianFeeSchema = z.object({
     observedAt: isoTime,
     medianLamports: positive,
     transactionCount: positiveInteger,
-    selectedBlockCount: positiveInteger
+    selectedBlockCount: positiveInteger,
+    ...imputedField
   }).strict()).min(1)
 }).strict();
 
@@ -292,7 +297,8 @@ const tokenizedMarketHistoryPointSchema = z.object({
   indexedAssetCount: positiveInteger,
   indexedEquityCount: positiveInteger,
   coveredAssetCount: positiveInteger,
-  coveredEquityCount: positiveInteger
+  coveredEquityCount: positiveInteger,
+  ...imputedField
 }).strict();
 
 const tokenizedMarketsV13Schema = z.object({
@@ -585,7 +591,12 @@ export const canonicalSnapshotSchema = z.object({
   alerts: z.array(alertSchema).max(5)
 }).strict();
 
-const canonicalSnapshotV13Schema = canonicalSnapshotSchema.extend({
+const canonicalSnapshotV14Schema = canonicalSnapshotSchema.extend({
+  schemaVersion: z.literal("1.4.0"),
+  methodologyVersion: z.literal("1.4.0")
+});
+
+const canonicalSnapshotV13Schema = canonicalSnapshotV14Schema.extend({
   schemaVersion: z.literal("1.3.0"),
   methodologyVersion: z.literal("1.3.0"),
   ecosystem: z.object({
@@ -640,6 +651,15 @@ function assertSortedUnique(points, key, limit, label) {
 
 function assertUnique(points, key, code, message) {
   assert(new Set(points.map(key)).size === points.length, code, message);
+}
+
+function assertEstimatedHistory(history, currentObservedAt, label, { allowRecovery = false } = {}) {
+  const current = history.find((point) => point.observedAt === currentObservedAt);
+  assert(!current?.imputed && !current?.recoveredFrom, "ESTIMATED_CURRENT_VALUE", `${label} current value must be directly observed`);
+  assert(history.every((point) => !(point.imputed && point.recoveredFrom)), "INVALID_HISTORY_PROVENANCE", `${label} point cannot be both recovered and imputed`);
+  if (!allowRecovery) {
+    assert(history.every((point) => !point.recoveredFrom), "INVALID_HISTORY_PROVENANCE", `${label} does not support recovered RPC points`);
+  }
 }
 
 function domains(snapshot) {
@@ -724,6 +744,10 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
   assertSortedUnique(snapshot.economics.rev.history, (point) => point.date, dailyLimit, "REV history");
   assertSortedUnique(snapshot.ecosystem.tokenizedAssets.history, (point) => point.observedAt, tokenizedLimit, "tokenized-market history");
   assertSortedUnique(snapshot.ecosystem.dailyActiveAddresses.history, (point) => point.date, dailyLimit, "active-address history");
+  assertEstimatedHistory(snapshot.network.performance.history, snapshot.network.performance.observedAt, "network history", { allowRecovery: true });
+  assertEstimatedHistory(snapshot.validators.history, snapshot.validators.observedAt, "validator history");
+  assertEstimatedHistory(snapshot.economics.medianTransactionFee.history, snapshot.economics.medianTransactionFee.observedAt, "fee history");
+  assertEstimatedHistory(snapshot.ecosystem.tokenizedAssets.history, snapshot.ecosystem.tokenizedAssets.observedAt, "tokenized-market history");
   if (snapshot.economics.coinGeckoPrice) {
     assertSortedUnique(snapshot.economics.coinGeckoPrice.history, (point) => point.observedAt, dailyLimit + 1, "CoinGecko price history");
   }
@@ -873,7 +897,7 @@ export function validateCanonicalInvariants(snapshot, limits = {}) {
       && item.coveredEquityCount <= item.indexedEquityCount
       && item.coveredEquityCount <= item.coveredAssetCount
     ), "TOKENIZED_HISTORY_MISMATCH", "Tokenized-market history contains incoherent volume or coverage subsets");
-    if (snapshot.schemaVersion === SCHEMA_VERSION) {
+    if (Array.isArray(tokenized.categoryBreakdown)) {
       const categoryIndexedCount = tokenized.categoryBreakdown.reduce((sum, item) => sum + item.indexedAssetCount, 0);
       const categoryCoveredCount = tokenized.categoryBreakdown.reduce((sum, item) => sum + item.coveredAssetCount, 0);
       const categoryVolume = tokenized.categoryBreakdown.reduce((sum, item) => sum + item.spotVolume30dUsd, 0);
@@ -1031,6 +1055,10 @@ export function parseCanonicalSnapshot(value, limits) {
 export function parsePreviousCanonicalSnapshot(value, limits) {
   if (value?.schemaVersion === SCHEMA_VERSION && value?.methodologyVersion === METHODOLOGY_VERSION) {
     return parseCanonicalSnapshot(value, limits);
+  }
+  if (value?.schemaVersion === "1.4.0" && value?.methodologyVersion === "1.4.0") {
+    const parsed = canonicalSnapshotV14Schema.parse(value);
+    return validateCanonicalInvariants(parsed, limits);
   }
   if (value?.schemaVersion === "1.3.0" && value?.methodologyVersion === "1.3.0") {
     const parsed = canonicalSnapshotV13Schema.parse(value);

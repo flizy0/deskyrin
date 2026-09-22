@@ -1,8 +1,8 @@
 # Methodology
 
-Version: `1.4.0`
+Version: `1.5.0`
 
-Canonical schema: `1.4.0`
+Canonical schema: `1.5.0`
 
 This document defines every published value. Changing a definition, population, comparison window, or threshold requires a `methodologyVersion` change. `updatedAt` is captured immediately before candidate validation/publication; every domain also keeps its own `observedAt`, and every source records attempts, successes, data coverage, and next due time.
 
@@ -12,7 +12,7 @@ This document defines every published value. Changing a definition, population, 
 - **Slot time:** `1,000 × sum(samplePeriodSecs) / sum(numSlots)` over the same five samples. This is observed average produced-slot interval, not a hard protocol target.
 - **Block height:** the exact `blockHeight` from finalized `getEpochInfo`, serialized as a decimal string.
 - **Epoch progress:** `100 × slotIndex / slotsInEpoch` from the same response.
-- Project-originated network history is one point per successful hourly run, deduplicated by timestamp and capped at 720 points.
+- Direct project-originated network history is one point per successful hourly run, deduplicated by timestamp and capped at 720 points. Labelled historical repairs are governed by “Historical continuity repairs” below.
 
 ## Validators
 
@@ -96,7 +96,7 @@ Tokens.xyz's public curated Solana lists (`rwas`, `stocks`, `etfs`, and `metals`
 - The current category snapshot partitions the deduplicated universe into four disjoint groups: `equity` → Equities, `etf` → ETFs, `commodity` → Commodities, and every remaining category → Other RWA. Indexed count, covered count, and accepted 30-day volume are published for each group; their totals must reconcile with the headline market totals.
 - The leading-assets snapshot contains at most ten covered assets, ordered by accepted trailing-30-day spot volume descending and then stable asset ID. Each row retains the asset identity, category group, value, and its accepted volume source. It is a current cross-section, not historical backfill.
 - The public endpoint is keyless and checked every six hours. One observation is appended per successful collection and active history is capped at 365 points.
-- The dashboard presents the current snapshot immediately, but it does not render the temporal spot-volume chart until the active history contains at least eight genuine observations. Before that threshold it shows collection progress instead. No synthetic points, interpolation, or timestamp reuse are used to manufacture a fuller chart; genuine missing collection periods remain gaps.
+- The dashboard presents the current snapshot immediately, but it does not render the temporal spot-volume chart until the active history contains at least eight non-imputed observations. Before that threshold it shows collection progress instead.
 
 ### Daily active addresses
 
@@ -140,7 +140,11 @@ A stale input makes its check `unavailable`; it does not keep or create an activ
 - Provider-dated histories retain their existing rolling windows independently of the snapshot boundary. SOL market prices, TVL, stablecoins, DEX volume, REV, active addresses, and contributor comparisons keep their original provider dates, including earlier June observations while those dates remain inside their configured limits. The 24-hour and trailing-30-day value definitions do not change.
 - Commission detections preceding the boundary are discarded. For a retained event whose lower-bound snapshot precedes the boundary, `previousObservedAt` becomes `null`; the detection timestamp and percentages remain unchanged. No new interval start is invented.
 - Pre-boundary retired transfer-volume evidence and the archived August collection-coverage record are excluded from public JSON and the generated report. The updater no longer seeds that historical incident; original publications remain recoverable through repository history. Publication validation rejects reintroduced pre-boundary snapshots, including after a repair or a last-known-good update.
-- No missing live observations are interpolated or carried forward under false timestamps. Genuine missing periods within retained histories remain missing; official status incidents and unrelated coverage records retain their own evidence.
+- Live collection never substitutes an estimate for a current value. Current values, source freshness, alert inputs, and validator alert confirmations use direct observations only; an `imputed: true` history point cannot be the current domain observation.
+- Historical continuity repair is bounded to gaps longer than 1.5 times the intended cadence in the four project-collected histories. The repair inserts `round(gap / cadence) - 1` points at evenly spaced timestamps between two non-imputed bounding points and never extrapolates before the first or after the last point. Numeric fields use linear interpolation; integer counts are rounded; lamport strings use integer arithmetic; derived validator percentages are recomputed from the interpolated stakes. Hourly cadence applies to network, validators, and median fees; six-hour cadence applies to Tokens.xyz snapshots.
+- Every estimated row carries `imputed: true` in canonical JSON, appears as “Estimated” in the explorer table and tooltip, and is joined with dashed chart segments. Running the repair again first removes prior estimates and deterministically rebuilds them from non-imputed points, so estimates never compound.
+- Three September 22 network-performance points were recovered before the RPC's recent-sample window expired. Their five one-minute inputs, ending slots, and recomputed values are checked in at `scripts/history-gap-recovery-results.json`; they carry `recoveredFrom: "solana_rpc_performance_samples"`, not `imputed`. Older performance samples, historical vote-account snapshots, absent scheduled median-fee samples, and past Tokens.xyz snapshots were not available with their original point-in-time semantics and therefore use the disclosed bounded estimates.
+- Existing authoritative ledger repairs remain direct evidence rather than estimates. Official status incidents and unrelated coverage records retain their own evidence.
 - The final snapshot and exact deterministic Markdown rendering are validated before each temporary file is atomically renamed into place. The updater's Git commit is the pair-level publication boundary; `data.json` must remain below 2 MB.
 
 ## Sources

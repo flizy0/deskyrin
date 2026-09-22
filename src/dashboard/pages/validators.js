@@ -7,6 +7,7 @@ import {
   chartPanel,
   copyButton,
   formatStakeCompact,
+  historyProvenanceMeta,
   historySpec,
   metricCard,
   metricGrid,
@@ -235,7 +236,7 @@ export function renderValidators(snapshot, root) {
 
   const healthSpec = historySpec(snapshot, {
     title: "Validator health history",
-    note: "Delinquent activated stake share at exact snapshot observations",
+    note: "Delinquent activated stake share; estimated intervals are dashed",
     domain: data,
     history: chartHistory,
     time: (point) => point.observedAt,
@@ -245,7 +246,7 @@ export function renderValidators(snapshot, root) {
   });
   const history = chartPanel(healthSpec, {
     className: "span-7 chart-primary cut-corner",
-    meta: [`${chartHistory.length} observations`, "Stake-weighted · no synthetic points"]
+    meta: [historyProvenanceMeta(chartHistory), "Stake-weighted · estimates excluded from alerts"]
   });
   const grid = el("div", "analytics-grid validator-analysis-grid");
   grid.append(history.card, concentrationPanel(data));

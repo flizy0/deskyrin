@@ -31,7 +31,7 @@ function section(lines, title) {
 function renderCoverage(lines, incidents) {
   if (!Array.isArray(incidents) || incidents.length === 0) return;
   section(lines, "Data Coverage");
-  lines.push("Coverage incidents describe missing observations; they are not network incidents and are never filled with synthetic values.", "");
+  lines.push("Coverage incidents describe collection failures, not network incidents. Any bounded historical estimates are disclosed separately below.", "");
   for (const incident of incidents) {
     const end = incident.endedAt || "ongoing";
     lines.push(
@@ -46,6 +46,32 @@ function renderCoverage(lines, incidents) {
       `Disclosure: **${md(incident.disclosure)}**`,
       ""
     );
+  }
+}
+
+function renderHistoricalRepairs(lines, snapshot) {
+  const rows = [
+    ["Network performance", snapshot.network.performance.history],
+    ["Validator aggregates", snapshot.validators.history],
+    ["Median transaction fee", snapshot.economics.medianTransactionFee.history],
+    ["Tokenized-market spot volume", snapshot.ecosystem.tokenizedAssets.history]
+  ].map(([label, history]) => ({
+    label,
+    total: history.length,
+    recovered: history.filter((point) => point.recoveredFrom).length,
+    imputed: history.filter((point) => point.imputed === true).length
+  }));
+  if (!rows.some((row) => row.recovered || row.imputed)) return;
+
+  section(lines, "Historical Continuity Repairs");
+  lines.push(
+    "Current values, source freshness, and alerts use direct observations only. Recovered points come from retained source evidence; `imputed: true` points are deterministic linear estimates between two bounding non-imputed observations. Nothing is extrapolated.",
+    "",
+    "| History | Direct | Recovered source evidence | Imputed |",
+    "|---|---:|---:|---:|"
+  );
+  for (const row of rows) {
+    lines.push(`| ${row.label} | ${integer.format(row.total - row.recovered - row.imputed)} | ${integer.format(row.recovered)} | ${integer.format(row.imputed)} |`);
   }
 }
 
@@ -136,10 +162,11 @@ export function renderReport(snapshot) {
     "",
     `Update status: **${snapshot.updateStatus}**`,
     "",
-    "All values are generated deterministically from the cited public sources; this report contains no AI-generated analysis."
+    "All current values are generated deterministically from the cited public sources; this report contains no AI-generated analysis."
   ];
 
   renderCoverage(lines, snapshot.coverageIncidents);
+  renderHistoricalRepairs(lines, snapshot);
 
   section(lines, "Network Performance");
   const performance = snapshot.network.performance;

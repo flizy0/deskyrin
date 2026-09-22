@@ -40,6 +40,30 @@ test("previous canonical parser accepts the active Tokens.xyz 1.3 snapshot durin
   assert.throws(() => parseCanonicalSnapshot(previous));
 });
 
+test("previous canonical parser accepts the 1.4 snapshot during methodology migration", () => {
+  const previous = canonicalFixture();
+  previous.schemaVersion = "1.4.0";
+  previous.methodologyVersion = "1.4.0";
+
+  assert.equal(parsePreviousCanonicalSnapshot(previous).schemaVersion, "1.4.0");
+  assert.throws(() => parseCanonicalSnapshot(previous));
+});
+
+test("canonical history provenance permits bounded estimates but never an estimated current value", () => {
+  const fixture = canonicalFixture();
+  fixture.network.performance.history.unshift({
+    observedAt: "2026-08-19T23:00:00.000Z",
+    totalTps: 2_900,
+    nonVoteTps: 1_900,
+    slotTimeMs: 410,
+    imputed: true
+  });
+  assert.equal(parseCanonicalSnapshot(fixture).network.performance.history[0].imputed, true);
+
+  fixture.network.performance.history.at(-1).imputed = true;
+  assert.throws(() => parseCanonicalSnapshot(fixture), (error) => error.code === "ESTIMATED_CURRENT_VALUE");
+});
+
 test("canonical snapshot migrates version 1.0.0 without mutating its input", () => {
   const legacy = legacyCanonicalFixture("1.0.0");
   const original = structuredClone(legacy);

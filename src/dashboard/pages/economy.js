@@ -5,6 +5,7 @@ import { providerComparisonPanel } from "../provider-selector.js";
 import { el } from "../ui.js";
 import {
   chartPanel,
+  historyProvenanceMeta,
   historySpec,
   metricCard,
   metricGrid,
@@ -245,7 +246,10 @@ export function renderEconomy(snapshot, root) {
     type: "stackedBar",
     meta: [`Total ${fmt.compact(data.rev.totalSol)} SOL`, `Data through ${fmt.date(data.rev.date)}`]
   });
-  const fee = chartPanel(feeSpec, { className: "span-4" });
+  const fee = chartPanel(feeSpec, {
+    className: "span-4",
+    meta: [historyProvenanceMeta(data.medianTransactionFee.history), "Estimated segments are dashed"]
+  });
   const providerFees = providerComparisonPanel(snapshot, "fees", {
     title: "Transaction fees · provider comparison",
     note: "Independent daily provider observations; Deskyrin REV continues to use the documented Allium + Dune same-date median.",

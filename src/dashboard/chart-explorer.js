@@ -206,8 +206,10 @@ function explorerChartType(spec) {
 
 function renderTable(spec, timestamps, range) {
   const { caption, tableBody, tableHead } = explorer;
+  const hasQuality = Array.isArray(spec.quality);
   const header = document.createElement("tr");
   header.append(el("th", undefined, "UTC time"));
+  if (hasQuality) header.append(el("th", "history-quality-heading", "Provenance"));
   for (const dataset of spec.datasets) header.append(el("th", undefined, dataset.label));
   tableHead.replaceChildren(header);
 
@@ -222,6 +224,13 @@ function renderTable(spec, timestamps, range) {
     time.textContent = utc(timestamps[index]);
     timeCell.append(time);
     row.append(timeCell);
+    if (hasQuality) {
+      const quality = spec.quality[index] || "observed";
+      const label = quality === "imputed" ? "Estimated" : quality === "recovered" ? "Recovered" : "Direct";
+      const qualityCell = el("td", `history-quality history-quality-${quality}`, label);
+      qualityCell.dataset.quality = quality;
+      row.append(qualityCell);
+    }
     for (const dataset of spec.datasets) {
       const cell = document.createElement("td");
       const value = dataset.data[index];
@@ -232,7 +241,10 @@ function renderTable(spec, timestamps, range) {
     return row;
   });
   tableBody.replaceChildren(...rows);
-  caption.textContent = `${rows.length} source observation${rows.length === 1 ? "" : "s"} in the visible range`;
+  const imputed = hasQuality
+    ? indexes.filter((index) => spec.quality[index] === "imputed").length
+    : 0;
+  caption.textContent = `${rows.length} history point${rows.length === 1 ? "" : "s"} in the visible range${imputed ? ` · ${imputed} estimated` : ""}`;
   return rows.length;
 }
 
@@ -500,6 +512,11 @@ export function openChartExplorer(spec, opener) {
   const metadata = [];
   if (spec.observedAt) metadata.push(`Observed ${utc(Date.parse(spec.observedAt))} UTC`);
   if (spec.updatedAt) metadata.push(`Snapshot ${utc(Date.parse(spec.updatedAt))} UTC`);
+  if (Array.isArray(spec.quality)) {
+    const imputed = spec.quality.filter((value) => value === "imputed").length;
+    const recovered = spec.quality.filter((value) => value === "recovered").length;
+    metadata.push(`${imputed} estimated · ${recovered} recovered`);
+  }
   ui.metadata.textContent = metadata.join(" · ");
   ui.tableHead.replaceChildren();
   ui.tableBody.replaceChildren();

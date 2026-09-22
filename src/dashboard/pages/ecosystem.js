@@ -5,6 +5,7 @@ import { appendTableRow, createTable } from "../table.js";
 import { el, emptyStatePanel, safeLink } from "../ui.js";
 import {
   chartPanel,
+  historyProvenanceMeta,
   historySpec,
   metricCard,
   metricGrid,
@@ -22,7 +23,8 @@ const TOKENIZED_CATEGORY_META = {
 };
 
 function tokenizedHistoryReady(assets) {
-  return Array.isArray(assets.history) && assets.history.length >= MIN_TOKENIZED_HISTORY_POINTS;
+  return Array.isArray(assets.history)
+    && assets.history.filter((point) => point.imputed !== true).length >= MIN_TOKENIZED_HISTORY_POINTS;
 }
 
 function percentOf(value, total) {
@@ -99,7 +101,7 @@ function tokenizedSnapshotPanel(assets) {
   card.append(provenance);
 
   if (!tokenizedHistoryReady(assets)) {
-    const count = assets.history?.length || 0;
+    const count = assets.history?.filter((point) => point.imputed !== true).length || 0;
     card.append(el(
       "p",
       "tokenized-history-state",
@@ -346,7 +348,7 @@ export function renderEcosystem(snapshot, root) {
   const assetsChart = showTokenizedHistory ? chartPanel(assetSpec, {
     className: "chart-wide",
     meta: [
-      `${assets.history.length} retained observations`,
+      historyProvenanceMeta(assets.history),
       `${assets.coveredAssetCount}/${assets.indexedAssetCount} indexed assets with accepted volume provenance`
     ]
   }) : null;

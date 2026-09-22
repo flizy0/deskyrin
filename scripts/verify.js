@@ -7,7 +7,7 @@ const root = process.cwd();
 const requiredFiles = [
   "index.html", "public/data.json", "public/report.md", "public/methodology.md", "README.md", "LICENSE", "docs/methodology.md",
   ".github/workflows/ci.yml", ".github/workflows/update.yml", ".github/workflows/freshness.yml",
-  "scripts/check-public-freshness.js", "vercel.json"
+  "scripts/check-public-freshness.js", "scripts/check-update-due.js", "vercel.json"
 ];
 for (const file of requiredFiles) await access(resolve(root, file));
 
@@ -27,7 +27,13 @@ const publicMethodology = await readFile(resolve(root, "public/methodology.md"),
 if (methodology !== publicMethodology) throw new Error("Published methodology copy is out of sync");
 
 const workflowRequirements = new Map([
-  [".github/workflows/update.yml", ["cron: \"17,47 * * * *\"", "workflow_dispatch:", "cancel-in-progress: false"]],
+  [".github/workflows/update.yml", [
+    "cron: \"3,13,23,33,43,53 * * * *\"",
+    "workflow_dispatch:",
+    "node scripts/check-update-due.js",
+    "steps.due.outputs.due == 'true'",
+    "cancel-in-progress: false"
+  ]],
   [".github/workflows/freshness.yml", [
     "cron: \"7,37 * * * *\"",
     "actions: write",

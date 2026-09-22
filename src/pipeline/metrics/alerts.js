@@ -97,8 +97,9 @@ export function calculateAlerts(snapshot, evidence, config) {
   if (validators.status !== "fresh") {
     checks.push(unavailable(IDS[2], "validator_delinquency", "validators.stake.delinquentPct", "% activated stake", "two fresh scheduled observations", validatorThreshold, "STALE_EVIDENCE"));
   } else {
-    const current = validators.history.at(-1);
-    const previous = validators.history.at(-2);
+    const observedHistory = validators.history.filter((point) => point.imputed !== true);
+    const current = observedHistory.at(-1);
+    const previous = observedHistory.at(-2);
     if (current.delinquentStakePct < config.alerts.validatorDelinquencyPct) {
       checks.push({ id: IDS[2], kind: "validator_delinquency", status: "normal", metricPath: "validators.stake.delinquentPct", unit: "% activated stake", window: "two fresh scheduled observations", threshold: validatorThreshold, observedAt: current.observedAt, currentValue: current.delinquentStakePct });
     } else {

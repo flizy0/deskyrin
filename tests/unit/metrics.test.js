@@ -80,3 +80,17 @@ test("alerts trigger only after complete threshold logic", () => {
   assert.equal(result.checks.find((check) => check.id === "slow-slot-time").status, "triggered");
   assert.equal(result.checks.find((check) => check.id === "large-sol-price-move").status, "triggered");
 });
+
+test("validator alert confirmation ignores imputed history points", () => {
+  const snapshot = canonicalFixture();
+  snapshot.validators.history = [
+    { observedAt: "2026-08-19T22:00:00.000Z", activeCount: 1, delinquentCount: 1, totalStakeLamports: "110", delinquentStakeLamports: "4", delinquentStakePct: 4 },
+    { observedAt: "2026-08-19T23:00:00.000Z", activeCount: 1, delinquentCount: 1, totalStakeLamports: "110", delinquentStakeLamports: "10", delinquentStakePct: 9.0909, imputed: true },
+    snapshot.validators.history[0]
+  ];
+
+  const result = calculateAlerts(snapshot, {}, DEFAULT_CONFIG);
+  const validator = result.checks.find((check) => check.id === "high-validator-delinquency");
+  assert.equal(validator.status, "unavailable");
+  assert.equal(validator.reasonCode, "PENDING_CONFIRMATION");
+});
