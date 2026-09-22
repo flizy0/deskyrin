@@ -31,7 +31,7 @@ These are deterministic, domain-specific engineering choices rather than AI/ML c
 ## Static-first architecture
 
 ```text
-GitHub Actions (hourly at :17 UTC)
+GitHub Actions (hourly data, redundant :17/:47 triggers)
                  │
                  ▼
        keyless collectors
@@ -97,7 +97,7 @@ npm run check:freshness
 
 ## Auto-update behavior
 
-`.github/workflows/update.yml` runs hourly and also supports manual dispatch. One invocation:
+`.github/workflows/update.yml` is triggered at `:17` and `:47` each hour and also supports manual dispatch. The updater's due gate still publishes project snapshots at most hourly; the second trigger is a retry opportunity when GitHub drops a scheduled event. One invocation:
 
 1. reads and validates the previous canonical snapshot;
 2. checks which source groups are due;
@@ -113,7 +113,7 @@ The workflow has a non-cancelling concurrency group, so scheduled runs cannot ov
 
 ### Freshness monitoring and recovery
 
-`.github/workflows/freshness.yml` checks the deployed `/data.json` separately from the updater. It fails on an HTTP/JSON error, an incompatible public schema envelope, an invalid `updatedAt`, or data older than three hours. `PUBLIC_DATA_URL`, `MAX_DATA_AGE_MINUTES`, and `EXPECTED_SCHEMA_VERSION` are configurable repository variables; no secret or API key is required.
+`.github/workflows/freshness.yml` checks the deployed `/data.json` at `:07` and `:37`, independently of the updater. It fails on an HTTP/JSON error, an incompatible public schema envelope, an invalid `updatedAt`, or data older than 75 minutes by default. On failure it uses the narrowly scoped built-in `GITHUB_TOKEN` to request `workflow_dispatch` for the updater, then remains failed so the operational alert is not hidden. `PUBLIC_DATA_URL`, `MAX_DATA_AGE_MINUTES`, and `EXPECTED_SCHEMA_VERSION` remain configurable repository variables; no custom secret or API key is required.
 
 For true scheduler independence, run the same dependency-free checker from an external cron or uptime service and alert on its non-zero exit code:
 
@@ -122,7 +122,7 @@ PUBLIC_DATA_URL=https://deskyrin-gamma.vercel.app/data.json \
 MAX_DATA_AGE_MINUTES=180 npm run check:freshness
 ```
 
-If data is stale, first use **Update public report → Run workflow** in GitHub Actions. Recovery must start from the latest publication branch and its newest validated canonical snapshot—never from a stale feature branch, because that can erase legitimate history points. If scheduled Actions are unavailable, use a clean, up-to-date checkout of `main`, run `npm ci`, `npm run update`, then `npm run ci`; inspect the diff and commit only `public/data.json` and `public/report.md`. Never hand-edit generated values or publish after validation fails. Authoritative historical source data may be recovered normally, while unavailable point-in-time observations remain an explicit gap.
+The watchdog now requests the first recovery automatically. A manual fallback remains available through **Update public report → Run workflow** in GitHub Actions. Recovery must start from the latest publication branch and its newest validated canonical snapshot—never from a stale feature branch, because that can erase legitimate history points. If scheduled Actions are unavailable, use a clean, up-to-date checkout of `main`, run `npm ci`, `npm run update`, then `npm run ci`; inspect the diff and commit only `public/data.json` and `public/report.md`. Never hand-edit generated values or publish after validation fails. Authoritative historical source data may be recovered normally, while unavailable point-in-time observations remain an explicit gap.
 
 ## Deploying to Vercel
 

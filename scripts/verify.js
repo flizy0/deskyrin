@@ -26,6 +26,23 @@ const methodology = await readFile(resolve(root, "docs/methodology.md"), "utf8")
 const publicMethodology = await readFile(resolve(root, "public/methodology.md"), "utf8");
 if (methodology !== publicMethodology) throw new Error("Published methodology copy is out of sync");
 
+const workflowRequirements = new Map([
+  [".github/workflows/update.yml", ["cron: \"17,47 * * * *\"", "workflow_dispatch:", "cancel-in-progress: false"]],
+  [".github/workflows/freshness.yml", [
+    "cron: \"7,37 * * * *\"",
+    "actions: write",
+    "MAX_DATA_AGE_MINUTES: ${{ vars.MAX_DATA_AGE_MINUTES || '75' }}",
+    "continue-on-error: true",
+    "gh workflow run update.yml"
+  ]]
+]);
+for (const [file, fragments] of workflowRequirements) {
+  const workflow = await readFile(resolve(root, file), "utf8");
+  for (const fragment of fragments) {
+    if (!workflow.includes(fragment)) throw new Error(`${file} is missing recovery invariant: ${fragment}`);
+  }
+}
+
 const packageJson = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
 const forbidden = ["next", "express", "@vercel/blob", "@vercel/kv", "postgres", "pg", "redis", "@supabase/supabase-js"];
 const dependencies = { ...packageJson.dependencies, ...packageJson.devDependencies };

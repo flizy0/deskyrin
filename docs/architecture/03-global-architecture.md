@@ -490,7 +490,8 @@ It includes no prose inference, AI analysis, prediction, or causal explanation. 
 ### Scheduler
 
 - `.github/workflows/update.yml`;
-- `schedule: 17 * * * *` UTC plus `workflow_dispatch`;
+- redundant `schedule: 17,47 * * * *` UTC plus `workflow_dispatch`, with the updater's due gate retaining an hourly publication cadence;
+- an offset freshness watchdog at `7,37 * * * *` requests `workflow_dispatch` when deployed data exceeds the operational age limit;
 - one concurrency group, active run not canceled;
 - 15-minute job timeout;
 - install, update, full verification, build, staged-diff check, normal commit/push.

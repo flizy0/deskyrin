@@ -2,7 +2,9 @@ name: Update public report
 
 on:
   schedule:
-    - cron: "17 * * * *"
+    # GitHub may delay or drop individual schedule events. The updater's due
+    # gate keeps publication hourly while this second offset is a retry path.
+    - cron: "17,47 * * * *"
   workflow_dispatch:
 
 permissions:

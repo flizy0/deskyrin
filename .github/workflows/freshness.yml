@@ -2,10 +2,13 @@ name: Check deployed data freshness
 
 on:
   schedule:
-    - cron: "47 * * * *"
+    # Offset from both updater attempts so a missed collection is detected
+    # independently and can request a workflow_dispatch recovery.
+    - cron: "7,37 * * * *"
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: read
 
 concurrency:
@@ -18,11 +21,22 @@ jobs:
     timeout-minutes: 3
     env:
       PUBLIC_DATA_URL: ${{ vars.PUBLIC_DATA_URL || 'https://deskyrin-gamma.vercel.app/data.json' }}
-      MAX_DATA_AGE_MINUTES: ${{ vars.MAX_DATA_AGE_MINUTES || '180' }}
+      MAX_DATA_AGE_MINUTES: ${{ vars.MAX_DATA_AGE_MINUTES || '75' }}
       EXPECTED_SCHEMA_VERSION: ${{ vars.EXPECTED_SCHEMA_VERSION }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - run: npm run check:freshness
+      - name: Check deployed snapshot
+        id: freshness
+        continue-on-error: true
+        run: npm run check:freshness
+      - name: Request recovery collection
+        if: steps.freshness.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run update.yml --repo "$GITHUB_REPOSITORY" --ref "${{ github.event.repository.default_branch }}"
+      - name: Preserve watchdog failure
+        if: steps.freshness.outcome == 'failure'
+        run: exit 1
