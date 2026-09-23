@@ -4,9 +4,9 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createConfig } from "../src/pipeline/config.js";
 import { parseCanonicalSnapshot } from "../src/pipeline/contracts/canonical.js";
-import { applySnapshotHistoryRetention } from "../src/pipeline/history-retention.js";
 import { publishOutputs } from "../src/pipeline/outputs/publish.js";
 import { renderReport } from "../src/pipeline/outputs/report.js";
+import { postProcessSnapshot } from "../src/pipeline/post-process.js";
 
 export async function pruneSnapshotHistory(options = {}) {
   const root = options.root || process.cwd();
@@ -16,13 +16,16 @@ export async function pruneSnapshotHistory(options = {}) {
   );
   // This is a retention-only rewrite, not a collection. Preserve observation,
   // publication, and source-health timestamps instead of claiming new data.
-  const snapshot = parseCanonicalSnapshot(
-    applySnapshotHistoryRetention(previous, config.history.snapshotStartAt), config.history
-  );
+  const processed = await postProcessSnapshot(previous, {
+    config,
+    context: "snapshot_prune",
+    notify: options.notify
+  });
+  const snapshot = processed.snapshot;
   const published = await publishOutputs(snapshot, renderReport(snapshot), config, {
     root, dryRun: options.write !== true
   });
-  return { snapshot, published };
+  return { snapshot, published, autoRepair: processed.autoRepair };
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
@@ -33,6 +36,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
     console.log(JSON.stringify({
       snapshotStartAt: createConfig({}).history.snapshotStartAt,
       updatedAt: result.snapshot.updatedAt,
+      autoRepairs: result.autoRepair.repairs,
       dataBytes: result.published.bytes,
       written: result.published.written
     }));

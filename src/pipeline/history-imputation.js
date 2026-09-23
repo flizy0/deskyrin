@@ -44,6 +44,15 @@ function withoutExistingImputations(history) {
   return history.filter((point) => point.imputed !== true);
 }
 
+function capRepairedHistory(history, limit) {
+  if (history.length <= limit) return history;
+  const start = history.length - limit;
+  const capped = history.slice(start);
+  if (capped[0].imputed !== true) return capped;
+  const leftAnchor = history.slice(0, start).findLast((point) => point.imputed !== true);
+  return leftAnchor ? [leftAnchor, ...capped.slice(1)] : capped;
+}
+
 export function imputeBoundedHistory(history, {
   cadenceMs,
   interpolate,
@@ -53,6 +62,7 @@ export function imputeBoundedHistory(history, {
 }) {
   assert(Array.isArray(history) && history.length > 0, "INVALID_IMPUTATION_HISTORY", `${label} history is empty`);
   assert(Number.isFinite(minimumGapMs) && minimumGapMs > 0, "INVALID_IMPUTATION_THRESHOLD", `${label} minimum gap must be positive`);
+  assert(Number.isInteger(limit) && limit > 0, "INVALID_IMPUTATION_LIMIT", `${label} history limit must be positive`);
   const observed = withoutExistingImputations(history);
   assert(observed.length > 0, "INVALID_IMPUTATION_HISTORY", `${label} has no observed points`);
   const repaired = [];
@@ -67,6 +77,7 @@ export function imputeBoundedHistory(history, {
     if (gapMs <= minimumGapMs) continue;
 
     const missingCount = Math.max(0, Math.round(gapMs / cadenceMs) - 1);
+    assert(missingCount < limit, "IMPUTED_GAP_TOO_LARGE", `${label} gap exceeds the bounded repair window`);
     const denominator = missingCount + 1;
     for (let numerator = 1; numerator <= missingCount; numerator += 1) {
       repaired.push({
@@ -77,8 +88,7 @@ export function imputeBoundedHistory(history, {
     }
   }
 
-  assert(repaired.length <= limit, "IMPUTED_HISTORY_TOO_LARGE", `${label} repair would exceed ${limit} points`);
-  return repaired;
+  return capRepairedHistory(repaired, limit);
 }
 
 function addRecoveredNetworkPoints(history, recoveredPoints) {

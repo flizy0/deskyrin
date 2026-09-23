@@ -3,12 +3,11 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createConfig } from "../src/pipeline/config.js";
-import { parseCanonicalSnapshot, parsePreviousCanonicalSnapshot } from "../src/pipeline/contracts/canonical.js";
-import { repairSnapshotHistoryGaps } from "../src/pipeline/history-imputation.js";
-import { applySnapshotHistoryRetention } from "../src/pipeline/history-retention.js";
+import { parsePreviousCanonicalSnapshot } from "../src/pipeline/contracts/canonical.js";
 import { nearlyEqual } from "../src/pipeline/lib/numbers.js";
 import { publishOutputs } from "../src/pipeline/outputs/publish.js";
 import { renderReport } from "../src/pipeline/outputs/report.js";
+import { postProcessSnapshot } from "../src/pipeline/post-process.js";
 
 const RECOVERY_RESULTS_PATH = "scripts/history-gap-recovery-results.json";
 
@@ -45,24 +44,25 @@ export async function repairSnapshotGaps(options = {}) {
     config.history
   );
   const evidence = options.evidence || JSON.parse(await readFile(resolve(root, RECOVERY_RESULTS_PATH), "utf8"));
-  const result = repairSnapshotHistoryGaps(previous, {
-    recoveredNetworkPoints: recoveredNetworkPoints(evidence),
-    hourlyLimit: config.history.hourlyPoints,
-    tokenizedLimit: config.history.tokenizedPoints
-  });
-  const candidate = applySnapshotHistoryRetention({
-    ...result.snapshot,
+  const candidate = {
+    ...previous,
     schemaVersion: config.schemaVersion,
     methodologyVersion: config.methodologyVersion
-  }, config.history.snapshotStartAt);
+  };
   // This is a historical repair, not a live collection. Preserve updatedAt,
   // domain observations, source health, current values, and alert evidence.
-  const snapshot = parseCanonicalSnapshot(candidate, config.history);
+  const processed = await postProcessSnapshot(candidate, {
+    config,
+    context: "manual_history_repair",
+    notify: options.notify,
+    recoveredNetworkPoints: recoveredNetworkPoints(evidence)
+  });
+  const snapshot = processed.snapshot;
   const published = await publishOutputs(snapshot, renderReport(snapshot), config, {
     root,
     dryRun: options.write !== true
   });
-  return { snapshot, summary: result.summary, published };
+  return { snapshot, summary: processed.autoRepair.summary, published, autoRepair: processed.autoRepair };
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
@@ -73,6 +73,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
     console.log(JSON.stringify({
       updatedAt: result.snapshot.updatedAt,
       summary: result.summary,
+      autoRepairs: result.autoRepair.repairs,
       dataBytes: result.published.bytes,
       written: result.published.written
     }));

@@ -16,10 +16,9 @@ import { collectSolanaData } from "./collectors/solana-data.js";
 import { collectSolanaStatus } from "./collectors/solana-status.js";
 import { collectTokenizedMarkets, TOKENIZED_MARKETS_METHODOLOGY } from "./collectors/tokens.js";
 import { collectUpgrades } from "./collectors/upgrades.js";
-import { parseCanonicalSnapshot, parsePreviousCanonicalSnapshot } from "./contracts/canonical.js";
+import { parsePreviousCanonicalSnapshot } from "./contracts/canonical.js";
 import { createConfig } from "./config.js";
 import { retainCoverageIncidents } from "./coverage.js";
-import { applySnapshotHistoryRetention } from "./history-retention.js";
 import { asPipelineError, safeError } from "./lib/errors.js";
 import { createHttpClient } from "./lib/http.js";
 import { createRpcClient } from "./lib/rpc.js";
@@ -31,6 +30,7 @@ import { calculateActiveAddresses, calculateRev } from "./metrics/rev.js";
 import { calculateValidators } from "./metrics/validators.js";
 import { publishOutputs } from "./outputs/publish.js";
 import { renderReport } from "./outputs/report.js";
+import { postProcessSnapshot } from "./post-process.js";
 import {
   allDomains,
   buildPriceSourceResults,
@@ -264,7 +264,7 @@ export async function runUpdate(options = {}) {
   const coverageIncidents = retainCoverageIncidents(previous?.coverageIncidents);
   const sources = {};
   for (const [id, result] of Object.entries(sourceResults)) sources[id] = buildSourceRecord(id, result, previous, now, config);
-  const preliminary = applySnapshotHistoryRetention({
+  const preliminary = {
     schemaVersion: config.schemaVersion,
     methodologyVersion: config.methodologyVersion,
     updatedAt,
@@ -279,7 +279,7 @@ export async function runUpdate(options = {}) {
     ...(providerComparisons ? { providerComparisons } : {}),
     alertChecks: [],
     alerts: []
-  }, config.history.snapshotStartAt);
+  };
   preliminary.updateStatus = allDomains(preliminary).some((domain) => domain.status === "stale") ? "partial" : "complete";
   const alertResult = calculateAlerts(preliminary, {
     performance: performanceResult.state === "fresh" ? performanceEvidence : undefined,
@@ -287,10 +287,15 @@ export async function runUpdate(options = {}) {
   }, config);
   preliminary.alertChecks = alertResult.checks;
   preliminary.alerts = alertResult.alerts;
-  const snapshot = parseCanonicalSnapshot(preliminary, config.history);
+  const processed = await postProcessSnapshot(preliminary, {
+    config,
+    context: "scheduled_update",
+    notify: options.notify
+  });
+  const snapshot = processed.snapshot;
   const report = renderReport(snapshot);
   const published = await publishOutputs(snapshot, report, config, { root, dryRun: options.dryRun });
-  return { snapshot, report, published };
+  return { snapshot, report, published, autoRepair: processed.autoRepair };
 }
 
 async function main() {
@@ -300,6 +305,7 @@ async function main() {
     updatedAt: result.snapshot.updatedAt,
     updateStatus: result.snapshot.updateStatus,
     alerts: result.snapshot.alerts.length,
+    autoRepairs: result.autoRepair.repairs,
     dataBytes: result.published.bytes,
     written: result.published.written
   }));

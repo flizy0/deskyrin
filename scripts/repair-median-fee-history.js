@@ -12,6 +12,7 @@ import { createRpcClient } from "../src/pipeline/lib/rpc.js";
 import { isoTimestamp, sleep } from "../src/pipeline/lib/time.js";
 import { publishOutputs } from "../src/pipeline/outputs/publish.js";
 import { renderReport } from "../src/pipeline/outputs/report.js";
+import { postProcessSnapshot } from "../src/pipeline/post-process.js";
 
 const REPAIR_INCIDENT_ID = "median-fee-gap-2026-09-02";
 const REPAIR_BLOCK_BATCH_SIZE = 8;
@@ -168,13 +169,18 @@ export async function repairMedianFeeHistory(options = {}) {
     config.history.hourlyPoints,
     config.history.snapshotStartAt
   );
-  const repairedSnapshot = parseCanonicalSnapshot(candidate, config.history);
+  const processed = await postProcessSnapshot(candidate, {
+    config,
+    context: "median_fee_repair",
+    notify: options.notify
+  });
+  const repairedSnapshot = processed.snapshot;
   const report = renderReport(repairedSnapshot);
   const published = await publishOutputs(repairedSnapshot, report, config, {
     root,
     dryRun: options.write !== true
   });
-  return { snapshot: repairedSnapshot, repairs, published };
+  return { snapshot: repairedSnapshot, repairs, published, autoRepair: processed.autoRepair };
 }
 
 function parseCli(argv) {
@@ -205,6 +211,7 @@ async function main() {
   console.log(JSON.stringify({
     updatedAt: result.snapshot.updatedAt,
     repairedPoints: result.repairs.length,
+    autoRepairs: result.autoRepair.repairs,
     dataBytes: result.published.bytes,
     written: result.published.written
   }));

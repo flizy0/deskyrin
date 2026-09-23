@@ -106,11 +106,12 @@ npm run repair:gaps   # deterministic, provenance-labelled historical repair
 4. calculates metrics and bounded histories;
 5. retains failed atomic domains as stale last-known-good values;
 6. evaluates all five alert checks with freshness guards;
-7. validates both artifacts and atomically replaces each file; the later Git commit is the pair-level publication boundary;
-8. runs tests/build/verification;
-9. commits only the two generated artifacts.
+7. runs the shared snapshot post-process, automatically rebuilding only recognized bounded history repairs;
+8. validates both artifacts and atomically replaces each file; the later Git commit is the pair-level publication boundary;
+9. runs tests/build/verification;
+10. commits only the two generated artifacts.
 
-The workflow has a non-cancelling concurrency group, so scheduled runs cannot overlap. A critical bootstrap/contract/publication error exits non-zero before any commit.
+The same post-process runs after scheduled updates, snapshot pruning, and both historical repair commands. Unknown post-process failures still stop publication and are passed to a reserved notification hook; delivery from that hook is intentionally disabled for now. The workflow has a non-cancelling concurrency group, so scheduled runs cannot overlap. A critical bootstrap/contract/publication error exits non-zero before any commit.
 
 ### Freshness monitoring and recovery
 

@@ -52,6 +52,26 @@ test("a visual-gap threshold removes obsolete estimates from already connected h
   assert.deepEqual(repaired, [history[0], history[2]]);
 });
 
+test("bounded imputation keeps the newest window without orphaning a leading estimate", () => {
+  const history = [
+    { observedAt: "2026-08-20T00:00:00.000Z", value: 10 },
+    { observedAt: "2026-08-20T07:00:00.000Z", value: 80 }
+  ];
+  const repaired = imputeBoundedHistory(history, {
+    cadenceMs: HOUR_MS,
+    interpolate: (left, right, numerator, denominator) => ({
+      value: (left.value * (denominator - numerator) + right.value * numerator) / denominator
+    }),
+    label: "test",
+    limit: 7
+  });
+
+  assert.equal(repaired.length, 7);
+  assert.deepEqual(repaired[0], history[0]);
+  assert.deepEqual(repaired.at(-1), history[1]);
+  assert.ok(repaired.slice(1, -1).every((point) => point.imputed === true));
+});
+
 test("snapshot repair is deterministic and preserves current observations", () => {
   const fixture = canonicalFixture();
   const later = "2026-08-20T07:00:00.000Z";

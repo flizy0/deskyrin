@@ -51,6 +51,7 @@ test("full updater preserves LKG domains and publishes a partial dry-run candida
   assert.equal(result.snapshot.economics.solPrice.currentUsd, previous.economics.solPrice.currentUsd);
   assert.equal(result.snapshot.sources.solanaRpc.status, "stale");
   assert.equal(result.snapshot.alertChecks.find((check) => check.id === "tps-change").status, "unavailable");
+  assert.equal(result.autoRepair.applied, false);
 });
 
 test("not-due updater runs are deterministic for an injected clock", async () => {
