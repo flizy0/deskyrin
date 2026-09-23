@@ -240,18 +240,10 @@ export function lineChart(canvas, labels, datasets, yFormatter, {
         backgroundColor: dataset.backgroundColor || colorWithAlpha(color, 0.09),
         borderWidth: dataset.borderWidth ?? 2,
         fill: dataset.fill ?? false,
-        pointRadius: dataset.pointRadius ?? ((context) => context.raw?.quality === "observed" ? normalPointRadius : 2.5),
+        pointRadius: dataset.pointRadius ?? normalPointRadius,
         pointHoverRadius: 4,
         tension: dataset.tension ?? 0.22,
-        spanGaps: dataset.spanGaps ?? 129_600_000,
-        segment: {
-          ...(dataset.segment || {}),
-          borderDash(context) {
-            if (context.p0?.raw?.quality === "imputed" || context.p1?.raw?.quality === "imputed") return [5, 4];
-            const configured = dataset.segment?.borderDash;
-            return typeof configured === "function" ? configured(context) : configured;
-          }
-        }
+        spanGaps: dataset.spanGaps ?? 129_600_000
       };
     }) },
     options: {

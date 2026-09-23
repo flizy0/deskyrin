@@ -5,7 +5,6 @@ import { providerComparisonPanel } from "../provider-selector.js";
 import { el } from "../ui.js";
 import {
   chartPanel,
-  historyProvenanceMeta,
   historySpec,
   metricCard,
   metricGrid,
@@ -248,7 +247,7 @@ export function renderEconomy(snapshot, root) {
   });
   const fee = chartPanel(feeSpec, {
     className: "span-4",
-    meta: [historyProvenanceMeta(data.medianTransactionFee.history), "Estimated segments are dashed"]
+    meta: [`${data.medianTransactionFee.history.length} plotted points`, "UTC history"]
   });
   const providerFees = providerComparisonPanel(snapshot, "fees", {
     title: "Transaction fees · provider comparison",

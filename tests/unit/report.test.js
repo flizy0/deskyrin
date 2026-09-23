@@ -144,14 +144,14 @@ test("published methodology matches its source and documents evidence boundaries
   assert.match(source, /never extrapolates/);
 });
 
-test("report discloses recovered and imputed history without changing current values", () => {
+test("report stays focused on current values when history contains provenance metadata", () => {
   const snapshot = canonicalFixture();
   snapshot.network.performance.history.unshift(
     { observedAt: "2026-08-19T22:00:00.000Z", totalTps: 2_800, nonVoteTps: 1_800, slotTimeMs: 410, imputed: true },
     { observedAt: "2026-08-19T23:00:00.000Z", totalTps: 2_900, nonVoteTps: 1_900, slotTimeMs: 408, recoveredFrom: "solana_rpc_performance_samples" }
   );
   const report = renderReport(snapshot);
-  assert.match(report, /## Historical Continuity Repairs/);
-  assert.match(report, /Current values, source freshness, and alerts use direct observations only/);
-  assert.match(report, /\| Network performance \| 1 \| 1 \| 1 \|/);
+  assert.doesNotMatch(report, /## Historical Continuity Repairs/);
+  assert.doesNotMatch(report, /\| History \| Direct \| Recovered source evidence \| Imputed \|/);
+  assert.match(report, /Detailed definitions, windows, aggregation rules, and limitations/);
 });

@@ -133,14 +133,6 @@ export function historySpec(snapshot, { title, note, domain, history, time, seri
   };
 }
 
-export function historyProvenanceMeta(history) {
-  const imputed = history.filter((point) => point.imputed === true).length;
-  const recovered = history.filter((point) => point.recoveredFrom).length;
-  const direct = history.length - imputed - recovered;
-  if (!imputed && !recovered) return `${direct} direct observations`;
-  return `${direct} direct · ${recovered} recovered · ${imputed} estimated`;
-}
-
 export function chartPanel(spec, { title, note, className = "", meta = [], emptyMessage, type } = {}) {
   const chartTitle = title || spec?.title || "History";
   const chartNote = note || spec?.note || "Canonical observations";

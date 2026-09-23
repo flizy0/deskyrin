@@ -40,6 +40,14 @@ test("previous canonical parser accepts the active Tokens.xyz 1.3 snapshot durin
   assert.throws(() => parseCanonicalSnapshot(previous));
 });
 
+test("previous canonical parser accepts the 1.5 snapshot during methodology migration", () => {
+  const previous = canonicalFixture();
+  previous.methodologyVersion = "1.5.0";
+
+  assert.equal(parsePreviousCanonicalSnapshot(previous).methodologyVersion, "1.5.0");
+  assert.throws(() => parseCanonicalSnapshot(previous));
+});
+
 test("previous canonical parser accepts the 1.4 snapshot during methodology migration", () => {
   const previous = canonicalFixture();
   previous.schemaVersion = "1.4.0";

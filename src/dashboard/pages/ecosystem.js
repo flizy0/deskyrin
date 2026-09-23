@@ -5,7 +5,6 @@ import { appendTableRow, createTable } from "../table.js";
 import { el, emptyStatePanel, safeLink } from "../ui.js";
 import {
   chartPanel,
-  historyProvenanceMeta,
   historySpec,
   metricCard,
   metricGrid,
@@ -348,7 +347,7 @@ export function renderEcosystem(snapshot, root) {
   const assetsChart = showTokenizedHistory ? chartPanel(assetSpec, {
     className: "chart-wide",
     meta: [
-      historyProvenanceMeta(assets.history),
+      `${assets.history.length} plotted points`,
       `${assets.coveredAssetCount}/${assets.indexedAssetCount} indexed assets with accepted volume provenance`
     ]
   }) : null;

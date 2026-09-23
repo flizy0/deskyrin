@@ -5,6 +5,8 @@ export const NETWORK_RECOVERY_SOURCE = "solana_rpc_performance_samples";
 
 const HOUR_MS = 60 * 60 * 1_000;
 const TOKENIZED_CADENCE_MS = 6 * HOUR_MS;
+const HOURLY_VISIBLE_GAP_MS = 6 * HOUR_MS;
+const TOKENIZED_VISIBLE_GAP_MS = 36 * HOUR_MS;
 
 function assert(condition, code, message) {
   if (!condition) throw new PipelineError(code, message);
@@ -46,9 +48,11 @@ export function imputeBoundedHistory(history, {
   cadenceMs,
   interpolate,
   label,
-  limit
+  limit,
+  minimumGapMs = cadenceMs * 1.5
 }) {
   assert(Array.isArray(history) && history.length > 0, "INVALID_IMPUTATION_HISTORY", `${label} history is empty`);
+  assert(Number.isFinite(minimumGapMs) && minimumGapMs > 0, "INVALID_IMPUTATION_THRESHOLD", `${label} minimum gap must be positive`);
   const observed = withoutExistingImputations(history);
   assert(observed.length > 0, "INVALID_IMPUTATION_HISTORY", `${label} has no observed points`);
   const repaired = [];
@@ -60,7 +64,7 @@ export function imputeBoundedHistory(history, {
     if (!right) continue;
     const gapMs = Date.parse(right.observedAt) - Date.parse(left.observedAt);
     assert(Number.isFinite(gapMs) && gapMs > 0, "INVALID_IMPUTATION_HISTORY", `${label} must be strictly chronological`);
-    if (gapMs <= cadenceMs * 1.5) continue;
+    if (gapMs <= minimumGapMs) continue;
 
     const missingCount = Math.max(0, Math.round(gapMs / cadenceMs) - 1);
     const denominator = missingCount + 1;
@@ -179,25 +183,29 @@ export function repairSnapshotHistoryGaps(snapshot, {
     cadenceMs: HOUR_MS,
     interpolate: networkPoint,
     label: "network performance",
-    limit: hourlyLimit
+    limit: hourlyLimit,
+    minimumGapMs: HOURLY_VISIBLE_GAP_MS
   });
   repaired.validators.history = imputeBoundedHistory(repaired.validators.history, {
     cadenceMs: HOUR_MS,
     interpolate: validatorPoint,
     label: "validator",
-    limit: hourlyLimit
+    limit: hourlyLimit,
+    minimumGapMs: HOURLY_VISIBLE_GAP_MS
   });
   repaired.economics.medianTransactionFee.history = imputeBoundedHistory(repaired.economics.medianTransactionFee.history, {
     cadenceMs: HOUR_MS,
     interpolate: medianFeePoint,
     label: "median-fee",
-    limit: hourlyLimit
+    limit: hourlyLimit,
+    minimumGapMs: HOURLY_VISIBLE_GAP_MS
   });
   repaired.ecosystem.tokenizedAssets.history = imputeBoundedHistory(repaired.ecosystem.tokenizedAssets.history, {
     cadenceMs: TOKENIZED_CADENCE_MS,
     interpolate: tokenizedPoint,
     label: "tokenized-market",
-    limit: tokenizedLimit
+    limit: tokenizedLimit,
+    minimumGapMs: TOKENIZED_VISIBLE_GAP_MS
   });
 
   return {

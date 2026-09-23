@@ -24,7 +24,7 @@ export function canonicalFixture() {
 
   return {
     schemaVersion: "1.5.0",
-    methodologyVersion: "1.5.0",
+    methodologyVersion: "1.6.0",
     updatedAt: observedAt,
     updateStatus: "complete",
     sources: {

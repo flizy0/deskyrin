@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { appendFile, readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
-import { SCHEMA_VERSION } from "../src/pipeline/config.js";
+import { METHODOLOGY_VERSION, SCHEMA_VERSION } from "../src/pipeline/config.js";
 
 const GRACE_MS = 5 * 60 * 1_000;
 const SAFETY_AGE_MS = 75 * 60 * 1_000;
@@ -9,12 +9,18 @@ const SAFETY_AGE_MS = 75 * 60 * 1_000;
 export function evaluateUpdateDue(snapshot, {
   eventName = "schedule",
   now = new Date(),
-  expectedSchemaVersion = SCHEMA_VERSION
+  expectedSchemaVersion = SCHEMA_VERSION,
+  expectedMethodologyVersion = METHODOLOGY_VERSION
 } = {}) {
   if (eventName === "workflow_dispatch") return { due: true, reason: "manual_dispatch" };
   const nowMs = now instanceof Date ? now.getTime() : new Date(now).getTime();
   if (!Number.isFinite(nowMs)) throw new TypeError("Update due check requires a valid clock");
-  if (!snapshot || typeof snapshot !== "object" || snapshot.schemaVersion !== expectedSchemaVersion) {
+  if (
+    !snapshot
+    || typeof snapshot !== "object"
+    || snapshot.schemaVersion !== expectedSchemaVersion
+    || snapshot.methodologyVersion !== expectedMethodologyVersion
+  ) {
     return { due: true, reason: "schema_migration" };
   }
 

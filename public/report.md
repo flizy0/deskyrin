@@ -6,17 +6,6 @@ Update status: **complete**
 
 All current values are generated deterministically from the cited public sources; this report contains no AI-generated analysis.
 
-## Historical Continuity Repairs
-
-Current values, source freshness, and alerts use direct observations only. Recovered points come from retained source evidence; `imputed: true` points are deterministic linear estimates between two bounding non-imputed observations. Nothing is extrapolated.
-
-| History | Direct | Recovered source evidence | Imputed |
-|---|---:|---:|---:|
-| Network performance | 481 | 3 | 100 |
-| Validator aggregates | 481 | 0 | 103 |
-| Median transaction fee | 479 | 0 | 105 |
-| Tokenized-market spot volume | 92 | 0 | 4 |
-
 ## Network Performance
 
 | Metric | Value | Observation | Status |

@@ -3,7 +3,7 @@ const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;
 
 export const SCHEMA_VERSION = "1.5.0";
-export const METHODOLOGY_VERSION = "1.5.0";
+export const METHODOLOGY_VERSION = "1.6.0";
 export const SNAPSHOT_HISTORY_START_AT = "2026-08-29T15:10:55.812Z";
 
 export const SOURCE_IDS = Object.freeze({

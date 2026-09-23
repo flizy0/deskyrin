@@ -7,7 +7,6 @@ import {
   checkStateLabel,
   formatCheckEvidence,
   formatCheckValue,
-  historyProvenanceMeta,
   historySpec,
   metricCard,
   metricGrid,
@@ -66,7 +65,7 @@ export function renderNetwork(snapshot, root) {
   root.append(pageHeader({
     eyebrow: "Consensus telemetry",
     title: "Network",
-    copy: "Finalized chain position and duration-weighted RPC performance. Retrospective repairs are labelled separately from direct observations.",
+    copy: "Finalized chain position and duration-weighted RPC performance.",
     meta: [`Observed ${fmt.utc(performance.observedAt)}`, `${performance.history.length} stored observations`]
   }));
 
@@ -141,14 +140,14 @@ export function renderNetwork(snapshot, root) {
 
   const tps = chartPanel(tpsSpec, {
     className: "span-8 chart-primary cut-corner",
-    meta: [historyProvenanceMeta(performance.history), "Estimated segments are dashed"]
+    meta: [`${performance.history.length} plotted points`, "UTC timestamps"]
   });
   const top = el("div", "analytics-grid");
   top.append(tps.card, chainStatePanel(chain, performance));
 
   const slot = chartPanel(slotSpec, {
     className: "span-8",
-    meta: ["Produced-slot interval estimate", historyProvenanceMeta(performance.history)]
+    meta: ["Produced-slot interval estimate", `${performance.history.length} plotted points`]
   });
   const bottom = el("div", "analytics-grid");
   bottom.append(slot.card, thresholdEvidence(snapshot));

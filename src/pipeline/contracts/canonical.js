@@ -591,7 +591,12 @@ export const canonicalSnapshotSchema = z.object({
   alerts: z.array(alertSchema).max(5)
 }).strict();
 
-const canonicalSnapshotV14Schema = canonicalSnapshotSchema.extend({
+const canonicalSnapshotV15Schema = canonicalSnapshotSchema.extend({
+  schemaVersion: z.literal("1.5.0"),
+  methodologyVersion: z.literal("1.5.0")
+});
+
+const canonicalSnapshotV14Schema = canonicalSnapshotV15Schema.extend({
   schemaVersion: z.literal("1.4.0"),
   methodologyVersion: z.literal("1.4.0")
 });
@@ -1055,6 +1060,10 @@ export function parseCanonicalSnapshot(value, limits) {
 export function parsePreviousCanonicalSnapshot(value, limits) {
   if (value?.schemaVersion === SCHEMA_VERSION && value?.methodologyVersion === METHODOLOGY_VERSION) {
     return parseCanonicalSnapshot(value, limits);
+  }
+  if (value?.schemaVersion === "1.5.0" && value?.methodologyVersion === "1.5.0") {
+    const parsed = canonicalSnapshotV15Schema.parse(value);
+    return validateCanonicalInvariants(parsed, limits);
   }
   if (value?.schemaVersion === "1.4.0" && value?.methodologyVersion === "1.4.0") {
     const parsed = canonicalSnapshotV14Schema.parse(value);

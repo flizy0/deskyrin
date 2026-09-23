@@ -30,4 +30,7 @@ test("scheduler preflight always admits recovery, stale snapshots, and migration
   assert.equal(evaluateUpdateDue(snapshot, { now: "2026-08-20T01:16:00.000Z" }).reason, "snapshot_age");
   snapshot.schemaVersion = "1.4.0";
   assert.equal(evaluateUpdateDue(snapshot, { now: "2026-08-20T00:01:00.000Z" }).reason, "schema_migration");
+  snapshot.schemaVersion = "1.5.0";
+  snapshot.methodologyVersion = "1.5.0";
+  assert.equal(evaluateUpdateDue(snapshot, { now: "2026-08-20T00:01:00.000Z" }).reason, "schema_migration");
 });
