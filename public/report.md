@@ -1,6 +1,6 @@
 # Deskyrin
 
-Updated: **2026-10-02T16:48:02.173Z**
+Updated: **2026-10-02T17:58:24.991Z**
 
 Update status: **complete**
 
@@ -10,11 +10,11 @@ All current values are generated deterministically from the cited public sources
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| TPS (all transactions) | 4,951.2 | 2026-10-02T16:47:24.971Z | Fresh |
-| Non-vote TPS | 2,474.69 | 2026-10-02T16:47:24.971Z | Fresh |
-| Slot time | 270.27 ms | 2026-10-02T16:47:24.971Z | Fresh |
-| Block height | 430,707,042 | 2026-10-02T16:47:24.971Z | Fresh |
-| Epoch progress | 84.34% (epoch 1047) | 2026-10-02T16:47:24.971Z | Fresh |
+| TPS (all transactions) | 5,064.45 | 2026-10-02T17:57:39.622Z | Fresh |
+| Non-vote TPS | 2,577.93 | 2026-10-02T17:57:39.622Z | Fresh |
+| Slot time | 268.34 ms | 2026-10-02T17:57:39.622Z | Fresh |
+| Block height | 430,722,741 | 2026-10-02T17:57:39.622Z | Fresh |
+| Epoch progress | 87.98% (epoch 1047) | 2026-10-02T17:57:39.622Z | Fresh |
 
 ## Validator Status
 
@@ -73,11 +73,11 @@ A row means the commission differed between two successful validator snapshots. 
 
 | Indicator | Value | Data through | Status |
 |---|---:|---|---|
-| SOL price | $119.92 (+2.17% / 24h) | 2026-10-02T16:45:50.000Z | Fresh |
+| SOL price | $119.61 (+0.91% / 24h) | 2026-10-02T17:53:40.000Z | Fresh |
 | Stablecoin supply (USD-equivalent circulating) | $16.4B | 2026-10-01 | Fresh |
 | DEX volume (completed UTC day) | $2.49B | 2026-10-01 | Fresh |
 | Real Economic Value (REV) | 11,683.9 SOL | 2026-10-01 | Fresh |
-| Median transaction fee | 5,000 lamports | 2026-10-02T16:47:24.971Z | Fresh |
+| Median transaction fee | 5,000 lamports | 2026-10-02T17:57:39.622Z | Fresh |
 | TVL alert input | $6.51B (-0.9% day/day) | 2026-10-01 | Fresh |
 
 REV components for 2026-10-01: transaction fees 9,437.95 SOL (median of Allium and Dune) + gross Jito tips 2,245.96 SOL.
@@ -88,7 +88,7 @@ These comparison observations are retained separately and are not averaged into 
 
 | Series | Value | Data through | Status |
 |---|---:|---|---|
-| CoinGecko keyless comparison | $119.82 | 2026-10-02T16:45:20.000Z | Fresh |
+| CoinGecko keyless comparison | $119.59 | 2026-10-02T17:56:00.000Z | Fresh |
 | Coinbase Exchange SOL-USD daily close | $118.38 | 2026-10-01 | Fresh |
 
 ## Provider Comparison Evidence
@@ -104,39 +104,39 @@ Provider definitions can differ materially. The values are shown side by side, n
 | SOL Price (USD) | DeFiLlama | 2026-10-01 | 90 |
 | SOL Price (USD) | Artemis | 2026-10-01 | 90 |
 | SOL Price (USD) | Birdeye | 2026-10-01 | 90 |
-| SOL Price (USD) | Blockworks | 2026-09-30 | 89 |
+| SOL Price (USD) | Blockworks | 2026-10-01 | 90 |
 | SOL Price (USD) | DexPaprika | 2026-10-01 | 90 |
-| SOL Price (USD) | Token Terminal | 2026-09-30 | 89 |
+| SOL Price (USD) | Token Terminal | 2026-10-01 | 90 |
 | SOL Price (USD) | Top Ledger | 2026-10-01 | 90 |
 | SOL Price (USD) | Uniblock | 2026-10-01 | 90 |
 | Fees (SOL) | Allium | 2026-10-01 | 90 |
 | Fees (SOL) | Dune | 2026-10-01 | 90 |
-| Fees (SOL) | Artemis | 2026-09-30 | 89 |
-| Fees (SOL) | Blockworks | 2026-09-30 | 89 |
+| Fees (SOL) | Artemis | 2026-10-01 | 90 |
+| Fees (SOL) | Blockworks | 2026-10-01 | 90 |
 | Fees (SOL) | Solscan | 2026-10-01 | 90 |
 | Fee Payers (Count) | Allium | 2026-10-01 | 90 |
 | Fee Payers (Count) | Dune | 2026-10-01 | 90 |
-| Fee Payers (Count) | Artemis | 2026-09-30 | 89 |
-| Fee Payers (Count) | Blockworks | 2026-09-30 | 89 |
-| Fee Payers (Count) | Token Terminal | 2026-09-30 | 89 |
+| Fee Payers (Count) | Artemis | 2026-10-01 | 90 |
+| Fee Payers (Count) | Blockworks | 2026-10-01 | 90 |
+| Fee Payers (Count) | Token Terminal | 2026-10-01 | 90 |
 | Fee Payers (Count) | Top Ledger | 2026-10-01 | 90 |
 | DEX Volume (USD) | Allium | 2026-10-01 | 90 |
 | DEX Volume (USD) | Dune | 2026-10-01 | 90 |
 | DEX Volume (USD) | DeFiLlama | 2026-10-01 | 90 |
-| DEX Volume (USD) | Artemis | 2026-09-30 | 89 |
+| DEX Volume (USD) | Artemis | 2026-10-01 | 90 |
 | DEX Volume (USD) | Birdeye | 2026-10-01 | 90 |
-| DEX Volume (USD) | Blockworks | 2026-09-30 | 89 |
+| DEX Volume (USD) | Blockworks | 2026-10-01 | 90 |
 | DEX Volume (USD) | DexPaprika | 2026-10-01 | 90 |
 | DEX Volume (USD) | Solscan | 2026-10-01 | 90 |
-| DEX Volume (USD) | Token Terminal | 2026-09-30 | 89 |
+| DEX Volume (USD) | Token Terminal | 2026-10-01 | 90 |
 | DEX Volume (USD) | Top Ledger | 2026-10-01 | 90 |
 
 ## Ecosystem Growth
 
 | Metric | Value | Observation | Status |
 |---|---:|---|---|
-| Tokenized-market spot volume (trailing 30d) | $4.08B | 2026-10-02T11:16:44.803Z | Fresh |
-| Tokenized-equity spot volume (trailing 30d) | $3.11B | 2026-10-02T11:16:44.803Z | Fresh |
+| Tokenized-market spot volume (trailing 30d) | $4.08B | 2026-10-02T17:57:39.622Z | Fresh |
+| Tokenized-equity spot volume (trailing 30d) | $3.11B | 2026-10-02T17:57:39.622Z | Fresh |
 | Daily active addresses (initiating signers/fee payers) | 2,985,043 | 2026-10-01 | Fresh |
 
 Tokens.xyz coverage: 382 of 441 indexed tokenized-market assets and 355 of 397 equities have accepted 30-day volume provenance. Excluded assets: 10 RWA.xyz-derived, 7 unrecognized provenance, and 42 without a 30-day value.
@@ -148,7 +148,7 @@ This is a current cross-sectional breakdown of the same provenance-filtered trai
 | Category | Indexed assets | Covered assets | Trailing 30d spot volume |
 |---|---:|---:|---:|
 | Equities | 397 | 355 | $3.11B |
-| ETFs | 24 | 18 | $818.03M |
+| ETFs | 24 | 18 | $818.06M |
 | Commodities | 5 | 5 | $155.28M |
 | Other RWA | 15 | 4 | $179.49K |
 
@@ -204,7 +204,7 @@ Status: **Fresh**. Published releases and prereleases are kept separate from upc
 
 ## Network Observability
 
-Official Solana Status: **All Systems Operational** (none). Observed 2026-10-02T16:47:24.971Z; provider page updated 2026-10-02T15:04:53.180Z.
+Official Solana Status: **All Systems Operational** (none). Observed 2026-10-02T17:57:39.622Z; provider page updated 2026-10-02T15:04:53.180Z.
 
 8 of 8 retained components report operational.
 
@@ -232,29 +232,29 @@ No active warning met its full threshold and freshness requirements.
 
 | Check | State | Current / reason |
 |---|---|---|
-| tps-change | normal | +0.46% |
-| slow-slot-time | normal | +1.08% |
+| tps-change | normal | +3.42% |
+| slow-slot-time | normal | +0.04% |
 | high-validator-delinquency | normal | 0.02% |
 | large-tvl-change | normal | -0.9% |
-| large-sol-price-move | normal | +2.17% |
+| large-sol-price-move | normal | +0.91% |
 
 ## Data Sources and Freshness
 
 | Source | State | Last success | Data through |
 |---|---|---|---|
-| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-10-02T16:47:24.971Z | 2026-10-02T16:47:24.971Z |
-| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-10-02T16:47:24.971Z | 2026-10-02T16:45:50.000Z |
-| [CoinGecko Keyless API](https://api.coingecko.com/api/v3/simple/price) | fresh | 2026-10-02T16:47:24.971Z | 2026-10-02T16:45:20.000Z |
-| [Coinbase Exchange SOL-USD](https://api.exchange.coinbase.com/products/SOL-USD/candles) | fresh | 2026-10-02T11:16:44.803Z | 2026-10-01 |
-| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-10-02T11:16:44.803Z | 2026-10-01 |
-| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-10-02T11:16:44.803Z | 2026-10-01 |
-| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-10-02T11:16:44.803Z | 2026-10-01 |
-| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-10-02T11:16:44.803Z | 2026-10-02T11:16:54.995Z |
-| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-10-02T11:16:44.803Z | 2026-10-01 |
-| [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-10-02T11:16:44.803Z | 2026-10-02T11:16:44.803Z |
-| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-10-02T11:16:44.803Z | 2026-09-30T19:17:00.000Z |
-| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-10-02T11:16:44.803Z | 2026-10-02T11:16:44.803Z |
-| [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-10-02T16:47:24.971Z | 2026-10-02T16:47:24.971Z |
-| [Agave Releases](https://api.github.com/repos/anza-xyz/agave/releases) | fresh | 2026-10-02T11:16:44.803Z | 2026-09-28T15:10:04.000Z |
+| [Solana JSON-RPC](https://api.mainnet-beta.solana.com) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-02T17:57:39.622Z |
+| [DefiLlama Coins API](https://coins.llama.fi/prices/current/coingecko:solana) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-02T17:53:40.000Z |
+| [CoinGecko Keyless API](https://api.coingecko.com/api/v3/simple/price) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-02T17:56:00.000Z |
+| [Coinbase Exchange SOL-USD](https://api.exchange.coinbase.com/products/SOL-USD/candles) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-01 |
+| [DefiLlama Chain TVL](https://api.llama.fi/v2/historicalChainTvl/Solana) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-01 |
+| [DefiLlama Stablecoins](https://stablecoins.llama.fi/stablecoincharts/Solana) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-01 |
+| [DefiLlama DEX Dimensions](https://api.llama.fi/overview/dexs/Solana?excludeTotalDataChart=false&excludeTotalDataChartBreakdown=true) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-01 |
+| [Solana Foundation Data](https://solana.com/api/databricks/data?days=120) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-02T17:53:00.684Z |
+| [Jito Daily MEV Rewards](https://kobe.mainnet.jito.network/api/v1/daily_mev_rewards) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-01 |
+| [Tokens.xyz Curated Markets](https://www.tokens.xyz/api/v1/assets/curated?groupBy=asset&limit=500&primaryVariantStrategy=liquidity) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-02T17:57:39.622Z |
+| [Solana News RSS](https://solana.com/news/rss.xml) | fresh | 2026-10-02T17:57:39.622Z | 2026-09-30T19:17:00.000Z |
+| [Solana Upgrades Hub](https://solana.com/upgrades) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-02T17:57:39.622Z |
+| [Solana Status](https://status.solana.com/api/v2/summary.json) | fresh | 2026-10-02T17:57:39.622Z | 2026-10-02T17:57:39.622Z |
+| [Agave Releases](https://api.github.com/repos/anza-xyz/agave/releases) | fresh | 2026-10-02T17:57:39.622Z | 2026-09-28T15:10:04.000Z |
 
 Detailed definitions, windows, aggregation rules, and limitations are documented in [`methodology.md`](./methodology.md).
