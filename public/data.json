@@ -1,35 +1,35 @@
 {
   "schemaVersion": "1.5.0",
   "methodologyVersion": "1.6.0",
-  "updatedAt": "2026-10-13T15:03:03.308Z",
+  "updatedAt": "2026-10-13T17:06:02.768Z",
   "updateStatus": "partial",
   "sources": {
     "solanaRpc": {
       "name": "Solana JSON-RPC",
       "url": "https://api.mainnet-beta.solana.com",
       "status": "fresh",
-      "lastAttemptAt": "2026-10-13T15:02:26.510Z",
-      "lastSuccessAt": "2026-10-13T15:02:26.510Z",
-      "nextDueAt": "2026-10-13T16:02:26.510Z",
-      "dataThrough": "2026-10-13T15:02:26.510Z"
+      "lastAttemptAt": "2026-10-13T17:05:16.572Z",
+      "lastSuccessAt": "2026-10-13T17:05:16.572Z",
+      "nextDueAt": "2026-10-13T18:05:16.572Z",
+      "dataThrough": "2026-10-13T17:05:16.572Z"
     },
     "defiLlamaCoins": {
       "name": "DefiLlama Coins API",
       "url": "https://coins.llama.fi/prices/current/coingecko:solana",
       "status": "fresh",
-      "lastAttemptAt": "2026-10-13T15:02:26.510Z",
-      "lastSuccessAt": "2026-10-13T15:02:26.510Z",
-      "nextDueAt": "2026-10-13T16:02:26.510Z",
-      "dataThrough": "2026-10-13T15:01:01.000Z"
+      "lastAttemptAt": "2026-10-13T17:05:16.572Z",
+      "lastSuccessAt": "2026-10-13T17:05:16.572Z",
+      "nextDueAt": "2026-10-13T18:05:16.572Z",
+      "dataThrough": "2026-10-13T17:01:58.000Z"
     },
     "coinGecko": {
       "name": "CoinGecko Keyless API",
       "url": "https://api.coingecko.com/api/v3/simple/price",
       "status": "fresh",
-      "lastAttemptAt": "2026-10-13T15:02:26.510Z",
-      "lastSuccessAt": "2026-10-13T15:02:26.510Z",
-      "nextDueAt": "2026-10-13T16:02:26.510Z",
-      "dataThrough": "2026-10-13T15:01:20.000Z"
+      "lastAttemptAt": "2026-10-13T17:05:16.572Z",
+      "lastSuccessAt": "2026-10-13T17:05:16.572Z",
+      "nextDueAt": "2026-10-13T18:05:16.572Z",
+      "dataThrough": "2026-10-13T17:05:12.000Z"
     },
     "coinbaseExchange": {
       "name": "Coinbase Exchange SOL-USD",
@@ -107,9 +107,9 @@
       "name": "Solana Upgrades Hub",
       "url": "https://solana.com/upgrades",
       "status": "stale",
-      "lastAttemptAt": "2026-10-13T15:02:26.510Z",
+      "lastAttemptAt": "2026-10-13T17:05:16.572Z",
       "lastSuccessAt": "2026-10-09T13:40:07.744Z",
-      "nextDueAt": "2026-10-13T16:02:26.510Z",
+      "nextDueAt": "2026-10-13T18:05:16.572Z",
       "dataThrough": "2026-10-09T13:40:07.744Z",
       "error": {
         "code": "LISTING_UPGRADE_ASSERTION_FAILED",
@@ -120,10 +120,10 @@
       "name": "Solana Status",
       "url": "https://status.solana.com/api/v2/summary.json",
       "status": "fresh",
-      "lastAttemptAt": "2026-10-13T15:02:26.510Z",
-      "lastSuccessAt": "2026-10-13T15:02:26.510Z",
-      "nextDueAt": "2026-10-13T16:02:26.510Z",
-      "dataThrough": "2026-10-13T15:02:26.510Z"
+      "lastAttemptAt": "2026-10-13T17:05:16.572Z",
+      "lastSuccessAt": "2026-10-13T17:05:16.572Z",
+      "nextDueAt": "2026-10-13T18:05:16.572Z",
+      "dataThrough": "2026-10-13T17:05:16.572Z"
     },
     "agaveReleases": {
       "name": "Agave Releases",
@@ -139,20 +139,20 @@
   "network": {
     "performance": {
       "status": "fresh",
-      "observedAt": "2026-10-13T15:02:26.510Z",
+      "observedAt": "2026-10-13T17:05:16.572Z",
       "sourceIds": [
         "solanaRpc"
       ],
       "sample": {
         "count": 5,
         "windowSeconds": 300,
-        "endingSlot": "456484147"
+        "endingSlot": "456517723"
       },
       "tps": {
-        "total": 5149.356666666667,
-        "nonVote": 2054.12
+        "total": 5536.233333333334,
+        "nonVote": 2507.08
       },
-      "slotTimeMs": 216.60649819494586,
+      "slotTimeMs": 221.56573116691285,
       "history": [
         {
           "observedAt": "2026-08-29T15:10:55.812Z",
@@ -4518,29 +4518,35 @@
           "totalTps": 5149.356666666667,
           "nonVoteTps": 2054.12,
           "slotTimeMs": 216.60649819494586
+        },
+        {
+          "observedAt": "2026-10-13T17:05:16.572Z",
+          "totalTps": 5536.233333333334,
+          "nonVoteTps": 2507.08,
+          "slotTimeMs": 221.56573116691285
         }
       ]
     },
     "chain": {
       "status": "fresh",
-      "observedAt": "2026-10-13T15:02:26.510Z",
+      "observedAt": "2026-10-13T17:05:16.572Z",
       "sourceIds": [
         "solanaRpc"
       ],
       "commitment": "finalized",
-      "slot": "456484227",
-      "blockHeight": "434520712",
+      "slot": "456517754",
+      "blockHeight": "434554190",
       "epoch": {
         "number": 1056,
-        "slotIndex": 292227,
+        "slotIndex": 325754,
         "slotsInEpoch": 432000,
-        "progressPct": 67.6451388888889
+        "progressPct": 75.40601851851851
       }
     }
   },
   "validators": {
     "status": "fresh",
-    "observedAt": "2026-10-13T15:02:26.510Z",
+    "observedAt": "2026-10-13T17:05:16.572Z",
     "sourceIds": [
       "solanaRpc"
     ],
@@ -17848,389 +17854,397 @@
         "totalStakeLamports": "438790522180036420",
         "delinquentStakeLamports": "53109167678587",
         "delinquentStakePct": 0.0121035357
+      },
+      {
+        "observedAt": "2026-10-13T17:05:16.572Z",
+        "activeCount": 671,
+        "delinquentCount": 7,
+        "totalStakeLamports": "438790522180036420",
+        "delinquentStakeLamports": "53109167678587",
+        "delinquentStakePct": 0.0121035357
       }
     ]
   },
   "economics": {
     "solPrice": {
       "status": "fresh",
-      "observedAt": "2026-10-13T15:01:01.000Z",
+      "observedAt": "2026-10-13T17:01:58.000Z",
       "sourceIds": [
         "defiLlamaCoins"
       ],
       "currency": "USD",
-      "currentUsd": 107.47056072935936,
-      "change24hPct": -1.1212188919629718,
+      "currentUsd": 107.36256020870205,
+      "change24hPct": -0.45388787155474786,
       "reference24h": {
-        "observedAt": "2026-10-12T15:01:08.000Z",
-        "priceUsd": 108.68920462514073,
-        "elapsedSeconds": 86393
+        "observedAt": "2026-10-12T17:01:51.000Z",
+        "priceUsd": 107.85208775423712,
+        "elapsedSeconds": 86407
       },
       "confidence": 0.99,
       "history": [
         {
-          "observedAt": "2026-07-15T15:01:02.000Z",
-          "priceUsd": 78.08067779510982
+          "observedAt": "2026-07-15T17:01:54.000Z",
+          "priceUsd": 77.57249052381746
         },
         {
-          "observedAt": "2026-07-16T15:00:57.000Z",
-          "priceUsd": 76.33596994590548
+          "observedAt": "2026-07-16T17:01:52.000Z",
+          "priceUsd": 76.22369133351823
         },
         {
-          "observedAt": "2026-07-17T15:01:01.000Z",
-          "priceUsd": 74.25961516780383
+          "observedAt": "2026-07-17T17:02:02.000Z",
+          "priceUsd": 74.93582419453922
         },
         {
-          "observedAt": "2026-07-18T15:00:54.000Z",
-          "priceUsd": 74.91115789089767
+          "observedAt": "2026-07-18T17:01:56.000Z",
+          "priceUsd": 75.12148722378252
         },
         {
-          "observedAt": "2026-07-19T15:00:47.000Z",
-          "priceUsd": 76.40348850228692
+          "observedAt": "2026-07-19T17:01:52.000Z",
+          "priceUsd": 75.84044686773285
         },
         {
-          "observedAt": "2026-07-20T15:01:01.000Z",
-          "priceUsd": 76.01157038115008
+          "observedAt": "2026-07-20T17:01:59.000Z",
+          "priceUsd": 77.60658828352258
         },
         {
-          "observedAt": "2026-07-21T15:00:50.000Z",
-          "priceUsd": 77.95489845856585
+          "observedAt": "2026-07-21T17:01:58.000Z",
+          "priceUsd": 78.1544719424309
         },
         {
-          "observedAt": "2026-07-22T15:01:11.000Z",
-          "priceUsd": 77.75227480396869
+          "observedAt": "2026-07-22T17:02:07.000Z",
+          "priceUsd": 78.51547667284655
         },
         {
-          "observedAt": "2026-07-23T15:01:05.000Z",
-          "priceUsd": 76.34972333727804
+          "observedAt": "2026-07-23T17:01:51.000Z",
+          "priceUsd": 75.97047379063541
         },
         {
-          "observedAt": "2026-07-24T15:01:00.000Z",
-          "priceUsd": 73.89102635719581
+          "observedAt": "2026-07-24T17:02:07.000Z",
+          "priceUsd": 73.82306229882002
         },
         {
-          "observedAt": "2026-07-25T15:01:07.000Z",
-          "priceUsd": 73.97145340395647
+          "observedAt": "2026-07-25T17:02:01.000Z",
+          "priceUsd": 74.25452170415953
         },
         {
-          "observedAt": "2026-07-26T15:00:53.000Z",
-          "priceUsd": 74.97142514889482
+          "observedAt": "2026-07-26T17:01:57.000Z",
+          "priceUsd": 75.47131116355382
         },
         {
-          "observedAt": "2026-07-27T15:00:55.000Z",
-          "priceUsd": 75.38328792888339
+          "observedAt": "2026-07-27T17:02:10.000Z",
+          "priceUsd": 75.83842560934967
         },
         {
-          "observedAt": "2026-07-28T15:00:55.000Z",
-          "priceUsd": 73.34188634926507
+          "observedAt": "2026-07-28T17:01:50.000Z",
+          "priceUsd": 74.37403250188923
         },
         {
-          "observedAt": "2026-07-29T15:01:01.000Z",
-          "priceUsd": 73.25750024589273
+          "observedAt": "2026-07-29T17:01:47.000Z",
+          "priceUsd": 73.16171643362719
         },
         {
-          "observedAt": "2026-07-30T15:00:52.000Z",
-          "priceUsd": 74.5512579886455
+          "observedAt": "2026-07-30T17:01:51.000Z",
+          "priceUsd": 74.50970460091337
         },
         {
-          "observedAt": "2026-07-31T15:00:57.000Z",
-          "priceUsd": 72.8808732593266
+          "observedAt": "2026-07-31T17:02:02.000Z",
+          "priceUsd": 73.2170910062626
         },
         {
-          "observedAt": "2026-08-01T15:00:55.000Z",
-          "priceUsd": 72.91724017392656
+          "observedAt": "2026-08-01T17:01:50.000Z",
+          "priceUsd": 72.6035700484688
         },
         {
-          "observedAt": "2026-08-02T15:01:05.000Z",
-          "priceUsd": 73.0262014965542
+          "observedAt": "2026-08-02T17:01:58.000Z",
+          "priceUsd": 73.0811899518496
         },
         {
-          "observedAt": "2026-08-03T15:00:56.000Z",
-          "priceUsd": 73.61981840779832
+          "observedAt": "2026-08-03T17:01:55.000Z",
+          "priceUsd": 73.2755160228413
         },
         {
-          "observedAt": "2026-08-04T15:01:06.000Z",
-          "priceUsd": 73.72852689792865
+          "observedAt": "2026-08-04T17:01:58.000Z",
+          "priceUsd": 73.63374896736768
         },
         {
-          "observedAt": "2026-08-05T15:00:40.000Z",
-          "priceUsd": 73.89936374507727
+          "observedAt": "2026-08-05T17:01:50.000Z",
+          "priceUsd": 74.25806738625492
         },
         {
-          "observedAt": "2026-08-06T15:00:40.000Z",
-          "priceUsd": 73.40415468106305
+          "observedAt": "2026-08-06T17:01:40.000Z",
+          "priceUsd": 73.44461646965398
         },
         {
-          "observedAt": "2026-08-07T15:00:40.000Z",
-          "priceUsd": 73.67563988467252
+          "observedAt": "2026-08-07T17:01:40.000Z",
+          "priceUsd": 73.47858436522223
         },
         {
-          "observedAt": "2026-08-08T15:00:40.000Z",
-          "priceUsd": 76.50208533814144
+          "observedAt": "2026-08-08T17:01:50.000Z",
+          "priceUsd": 76.2895288080554
         },
         {
-          "observedAt": "2026-08-09T15:00:40.000Z",
-          "priceUsd": 76.92822499983382
+          "observedAt": "2026-08-09T17:01:50.000Z",
+          "priceUsd": 77.23668253185262
         },
         {
-          "observedAt": "2026-08-10T15:00:50.000Z",
-          "priceUsd": 76.17582627758446
+          "observedAt": "2026-08-10T17:01:40.000Z",
+          "priceUsd": 75.62568295142619
         },
         {
-          "observedAt": "2026-08-11T15:01:10.000Z",
-          "priceUsd": 75.16781238545924
+          "observedAt": "2026-08-11T17:01:40.000Z",
+          "priceUsd": 74.91373785585056
         },
         {
-          "observedAt": "2026-08-12T15:00:50.000Z",
-          "priceUsd": 75.35899732327114
+          "observedAt": "2026-08-12T17:01:50.000Z",
+          "priceUsd": 75.6512745240779
         },
         {
-          "observedAt": "2026-08-13T15:00:40.000Z",
-          "priceUsd": 76.401467325635
+          "observedAt": "2026-08-13T17:01:40.000Z",
+          "priceUsd": 75.50729500957294
         },
         {
-          "observedAt": "2026-08-14T15:00:50.000Z",
-          "priceUsd": 75.201333491581
+          "observedAt": "2026-08-14T17:01:50.000Z",
+          "priceUsd": 75.4114276138657
         },
         {
-          "observedAt": "2026-08-15T15:00:40.000Z",
-          "priceUsd": 75.39269575830596
+          "observedAt": "2026-08-15T17:01:50.000Z",
+          "priceUsd": 75.43574648090693
         },
         {
-          "observedAt": "2026-08-16T15:00:50.000Z",
-          "priceUsd": 75.33459815084905
+          "observedAt": "2026-08-16T17:02:00.000Z",
+          "priceUsd": 75.49594209114777
         },
         {
-          "observedAt": "2026-08-17T15:01:00.000Z",
-          "priceUsd": 75.89746347974376
+          "observedAt": "2026-08-17T17:01:50.000Z",
+          "priceUsd": 75.91605721043238
         },
         {
-          "observedAt": "2026-08-18T15:00:50.000Z",
-          "priceUsd": 76.79345430171472
+          "observedAt": "2026-08-18T17:01:50.000Z",
+          "priceUsd": 76.93617924009861
         },
         {
-          "observedAt": "2026-08-19T15:00:40.000Z",
-          "priceUsd": 80.87606663667557
+          "observedAt": "2026-08-19T17:01:50.000Z",
+          "priceUsd": 81.51242635814415
         },
         {
-          "observedAt": "2026-08-20T15:00:50.000Z",
-          "priceUsd": 86.54032031835463
+          "observedAt": "2026-08-20T17:01:50.000Z",
+          "priceUsd": 87.69332017878732
         },
         {
-          "observedAt": "2026-08-21T15:00:50.000Z",
-          "priceUsd": 91.85953518424665
+          "observedAt": "2026-08-21T17:01:40.000Z",
+          "priceUsd": 91.52677802776957
         },
         {
-          "observedAt": "2026-08-22T15:00:50.000Z",
-          "priceUsd": 93.14621485664436
+          "observedAt": "2026-08-22T17:01:50.000Z",
+          "priceUsd": 94.3704725474738
         },
         {
-          "observedAt": "2026-08-23T15:00:50.000Z",
-          "priceUsd": 94.81552350125644
+          "observedAt": "2026-08-23T17:01:50.000Z",
+          "priceUsd": 95.31144563669139
         },
         {
-          "observedAt": "2026-08-24T15:00:50.000Z",
-          "priceUsd": 96.03757961153006
+          "observedAt": "2026-08-24T17:01:40.000Z",
+          "priceUsd": 95.63535527634562
         },
         {
-          "observedAt": "2026-08-25T15:00:40.000Z",
-          "priceUsd": 98.08218793783043
+          "observedAt": "2026-08-25T17:01:40.000Z",
+          "priceUsd": 98.17236982191179
         },
         {
-          "observedAt": "2026-08-26T15:00:50.000Z",
-          "priceUsd": 95.47414180676394
+          "observedAt": "2026-08-26T17:01:40.000Z",
+          "priceUsd": 96.021966889397
         },
         {
-          "observedAt": "2026-08-27T15:00:50.000Z",
-          "priceUsd": 107.05354071548611
+          "observedAt": "2026-08-27T17:01:50.000Z",
+          "priceUsd": 108.7604949721809
         },
         {
-          "observedAt": "2026-08-28T15:01:00.000Z",
-          "priceUsd": 106.35582386868315
+          "observedAt": "2026-08-28T17:01:40.000Z",
+          "priceUsd": 104.90709465861958
         },
         {
-          "observedAt": "2026-08-29T15:00:50.000Z",
-          "priceUsd": 105.43382435516813
+          "observedAt": "2026-08-29T17:01:50.000Z",
+          "priceUsd": 104.92126230416024
         },
         {
-          "observedAt": "2026-08-30T15:00:50.000Z",
-          "priceUsd": 106.68620992155643
+          "observedAt": "2026-08-30T17:01:50.000Z",
+          "priceUsd": 106.71316350247184
         },
         {
-          "observedAt": "2026-08-31T15:00:50.000Z",
-          "priceUsd": 103.52624251384334
+          "observedAt": "2026-08-31T17:01:50.000Z",
+          "priceUsd": 102.79782295325523
         },
         {
-          "observedAt": "2026-09-01T15:00:50.000Z",
-          "priceUsd": 101.82721222091564
+          "observedAt": "2026-09-01T17:01:50.000Z",
+          "priceUsd": 101.01815739485781
         },
         {
-          "observedAt": "2026-09-02T15:00:40.000Z",
-          "priceUsd": 98.75767112380728
+          "observedAt": "2026-09-02T17:01:40.000Z",
+          "priceUsd": 98.77834107459003
         },
         {
-          "observedAt": "2026-09-03T15:00:50.000Z",
-          "priceUsd": 105.03488964571469
+          "observedAt": "2026-09-03T17:01:40.000Z",
+          "priceUsd": 104.56167199833205
         },
         {
-          "observedAt": "2026-09-04T15:00:50.000Z",
-          "priceUsd": 100.74606902169869
+          "observedAt": "2026-09-04T17:01:40.000Z",
+          "priceUsd": 101.78559164288296
         },
         {
-          "observedAt": "2026-09-05T15:00:50.000Z",
-          "priceUsd": 102.86846230089637
+          "observedAt": "2026-09-05T17:01:50.000Z",
+          "priceUsd": 103.40391193895749
         },
         {
-          "observedAt": "2026-09-06T15:00:40.000Z",
-          "priceUsd": 105.59197299910637
+          "observedAt": "2026-09-06T17:01:40.000Z",
+          "priceUsd": 106.04501870001346
         },
         {
-          "observedAt": "2026-09-07T15:00:50.000Z",
-          "priceUsd": 104.62072153663007
+          "observedAt": "2026-09-07T17:01:50.000Z",
+          "priceUsd": 103.85936857822118
         },
         {
-          "observedAt": "2026-09-08T15:00:50.000Z",
-          "priceUsd": 103.32837260080396
+          "observedAt": "2026-09-08T17:01:40.000Z",
+          "priceUsd": 104.26940283249603
         },
         {
-          "observedAt": "2026-09-09T15:01:50.000Z",
-          "priceUsd": 103.3762589350071
+          "observedAt": "2026-09-09T17:01:40.000Z",
+          "priceUsd": 103.26020023254695
         },
         {
-          "observedAt": "2026-09-10T15:00:50.000Z",
-          "priceUsd": 100.05957129287034
+          "observedAt": "2026-09-10T17:01:40.000Z",
+          "priceUsd": 99.58438128246063
         },
         {
-          "observedAt": "2026-09-11T15:00:40.000Z",
-          "priceUsd": 103.24184691929828
+          "observedAt": "2026-09-11T17:02:20.000Z",
+          "priceUsd": 102.26998193093507
         },
         {
-          "observedAt": "2026-09-12T15:00:40.000Z",
-          "priceUsd": 101.98409131899751
+          "observedAt": "2026-09-12T17:01:30.000Z",
+          "priceUsd": 102.10075345543729
         },
         {
-          "observedAt": "2026-09-13T15:00:40.000Z",
-          "priceUsd": 100.51341834194773
+          "observedAt": "2026-09-13T17:01:30.000Z",
+          "priceUsd": 100.82526960604869
         },
         {
-          "observedAt": "2026-09-14T15:00:40.000Z",
-          "priceUsd": 101.54571447065521
+          "observedAt": "2026-09-14T17:01:40.000Z",
+          "priceUsd": 102.53021614548767
         },
         {
-          "observedAt": "2026-09-15T15:01:30.000Z",
-          "priceUsd": 98.58956011662191
+          "observedAt": "2026-09-15T17:01:40.000Z",
+          "priceUsd": 99.09619705613545
         },
         {
-          "observedAt": "2026-09-16T15:00:40.000Z",
-          "priceUsd": 96.97545095833209
+          "observedAt": "2026-09-16T17:01:40.000Z",
+          "priceUsd": 97.12242661550539
         },
         {
-          "observedAt": "2026-09-17T15:00:40.000Z",
-          "priceUsd": 100.97872452141648
+          "observedAt": "2026-09-17T17:02:20.000Z",
+          "priceUsd": 101.38025479242141
         },
         {
-          "observedAt": "2026-09-18T15:00:40.000Z",
-          "priceUsd": 110.76528980253667
+          "observedAt": "2026-09-18T17:01:30.000Z",
+          "priceUsd": 111.51763994471138
         },
         {
-          "observedAt": "2026-09-19T15:00:40.000Z",
-          "priceUsd": 111.76579770321081
+          "observedAt": "2026-09-19T17:01:40.000Z",
+          "priceUsd": 111.89576771235053
         },
         {
-          "observedAt": "2026-09-20T15:00:50.000Z",
-          "priceUsd": 108.14100539530992
+          "observedAt": "2026-09-20T17:01:40.000Z",
+          "priceUsd": 110.07823542760066
         },
         {
-          "observedAt": "2026-09-21T15:00:30.000Z",
-          "priceUsd": 118.17364787533239
+          "observedAt": "2026-09-21T17:01:40.000Z",
+          "priceUsd": 117.55752630534346
         },
         {
-          "observedAt": "2026-09-22T15:01:10.000Z",
-          "priceUsd": 116.84644839356022
+          "observedAt": "2026-09-22T17:01:30.000Z",
+          "priceUsd": 117.51892984634124
         },
         {
-          "observedAt": "2026-09-23T15:00:20.000Z",
-          "priceUsd": 115.04724648436778
+          "observedAt": "2026-09-23T17:01:50.000Z",
+          "priceUsd": 114.45961497157862
         },
         {
-          "observedAt": "2026-09-24T15:01:40.000Z",
-          "priceUsd": 114.73008681479082
+          "observedAt": "2026-09-24T17:01:40.000Z",
+          "priceUsd": 117.09207276615837
         },
         {
-          "observedAt": "2026-09-25T15:00:40.000Z",
-          "priceUsd": 120.21972558304051
+          "observedAt": "2026-09-25T17:01:30.000Z",
+          "priceUsd": 121.31209310510658
         },
         {
-          "observedAt": "2026-09-26T15:00:40.000Z",
-          "priceUsd": 120.92623815152248
+          "observedAt": "2026-09-26T17:01:40.000Z",
+          "priceUsd": 121.57799735781181
         },
         {
-          "observedAt": "2026-09-27T15:00:40.000Z",
-          "priceUsd": 121.65589448114363
+          "observedAt": "2026-09-27T17:01:40.000Z",
+          "priceUsd": 121.78523668418312
         },
         {
-          "observedAt": "2026-09-28T15:00:50.000Z",
-          "priceUsd": 118.0599154593175
+          "observedAt": "2026-09-28T17:01:30.000Z",
+          "priceUsd": 118.94981794041463
         },
         {
-          "observedAt": "2026-09-29T15:00:40.000Z",
-          "priceUsd": 120.02326490491349
+          "observedAt": "2026-09-29T17:01:40.000Z",
+          "priceUsd": 117.98645109933963
         },
         {
-          "observedAt": "2026-09-30T15:00:40.000Z",
-          "priceUsd": 118.87485293087536
+          "observedAt": "2026-09-30T17:02:10.000Z",
+          "priceUsd": 120.25362764665047
         },
         {
-          "observedAt": "2026-10-01T15:01:30.000Z",
-          "priceUsd": 117.28298857168681
+          "observedAt": "2026-10-01T17:02:30.000Z",
+          "priceUsd": 117.48507027713653
         },
         {
-          "observedAt": "2026-10-02T15:00:40.000Z",
-          "priceUsd": 120.6418672241188
+          "observedAt": "2026-10-02T17:01:40.000Z",
+          "priceUsd": 120.0639037107479
         },
         {
-          "observedAt": "2026-10-03T15:00:40.000Z",
-          "priceUsd": 119.6703843101002
+          "observedAt": "2026-10-03T17:01:40.000Z",
+          "priceUsd": 119.68333251554554
         },
         {
-          "observedAt": "2026-10-04T15:00:40.000Z",
-          "priceUsd": 121.84172561791229
+          "observedAt": "2026-10-04T17:01:50.000Z",
+          "priceUsd": 121.72435997114444
         },
         {
-          "observedAt": "2026-10-05T15:00:40.000Z",
-          "priceUsd": 119.45117938240728
+          "observedAt": "2026-10-05T17:01:40.000Z",
+          "priceUsd": 119.60706363830394
         },
         {
-          "observedAt": "2026-10-06T15:01:20.000Z",
-          "priceUsd": 121.74099138613992
+          "observedAt": "2026-10-06T17:01:30.000Z",
+          "priceUsd": 120.34533061639401
         },
         {
-          "observedAt": "2026-10-07T15:00:50.000Z",
-          "priceUsd": 115.76273301990624
+          "observedAt": "2026-10-07T17:01:50.000Z",
+          "priceUsd": 116.74643086416803
         },
         {
-          "observedAt": "2026-10-08T15:00:57.000Z",
-          "priceUsd": 112.51314928983956
+          "observedAt": "2026-10-08T17:01:56.000Z",
+          "priceUsd": 107.55931446394199
         },
         {
-          "observedAt": "2026-10-09T15:00:59.000Z",
-          "priceUsd": 110.06297146240232
+          "observedAt": "2026-10-09T17:01:54.000Z",
+          "priceUsd": 109.72673618409813
         },
         {
-          "observedAt": "2026-10-10T15:00:58.000Z",
-          "priceUsd": 110.42852551275425
+          "observedAt": "2026-10-10T17:01:47.000Z",
+          "priceUsd": 109.94770203286645
         },
         {
-          "observedAt": "2026-10-11T15:01:01.000Z",
-          "priceUsd": 109.65377753892422
+          "observedAt": "2026-10-11T17:02:01.000Z",
+          "priceUsd": 111.91186635215475
         },
         {
-          "observedAt": "2026-10-12T15:01:08.000Z",
-          "priceUsd": 108.68920462514073
+          "observedAt": "2026-10-12T17:01:51.000Z",
+          "priceUsd": 107.85208775423712
         },
         {
-          "observedAt": "2026-10-13T15:01:01.000Z",
-          "priceUsd": 107.47056072935936
+          "observedAt": "2026-10-13T17:01:58.000Z",
+          "priceUsd": 107.36256020870205
         }
       ]
     },
@@ -20192,7 +20206,7 @@
     },
     "medianTransactionFee": {
       "status": "fresh",
-      "observedAt": "2026-10-13T15:02:26.510Z",
+      "observedAt": "2026-10-13T17:05:16.572Z",
       "sourceIds": [
         "solanaRpc"
       ],
@@ -20200,11 +20214,11 @@
       "medianLamports": 5000,
       "sample": {
         "commitment": "finalized",
-        "startSlot": "456475228",
-        "endSlot": "456484228",
-        "producedSlotCount": 8989,
+        "startSlot": "456508755",
+        "endSlot": "456517755",
+        "producedSlotCount": 8993,
         "selectedBlockCount": 16,
-        "transactionCount": 20585,
+        "transactionCount": 19335,
         "approximateWindowSeconds": 3600
       },
       "history": [
@@ -24539,21 +24553,27 @@
           "medianLamports": 5000,
           "transactionCount": 20585,
           "selectedBlockCount": 16
+        },
+        {
+          "observedAt": "2026-10-13T17:05:16.572Z",
+          "medianLamports": 5000,
+          "transactionCount": 19335,
+          "selectedBlockCount": 16
         }
       ]
     },
     "coinGeckoPrice": {
       "status": "fresh",
-      "observedAt": "2026-10-13T15:01:20.000Z",
+      "observedAt": "2026-10-13T17:05:12.000Z",
       "sourceIds": [
         "coinGecko"
       ],
       "currency": "USD",
-      "currentUsd": 107.49,
-      "change24hPct": -1.1916314871057399,
+      "currentUsd": 107.2,
+      "change24hPct": -0.4525108855418043,
       "reference24h": {
-        "observedAt": "2026-10-12T15:01:20.000Z",
-        "priceUsd": 108.78633218801988,
+        "observedAt": "2026-10-12T17:05:12.000Z",
+        "priceUsd": 107.68729674009464,
         "elapsedSeconds": 86400
       },
       "history": [
@@ -24914,12 +24934,12 @@
           "priceUsd": 105.63645145567483
         },
         {
-          "observedAt": "2026-10-13T15:00:40.000Z",
-          "priceUsd": 107.60537378573332
+          "observedAt": "2026-10-13T17:03:20.000Z",
+          "priceUsd": 107.18635455328752
         },
         {
-          "observedAt": "2026-10-13T15:01:20.000Z",
-          "priceUsd": 107.49
+          "observedAt": "2026-10-13T17:05:12.000Z",
+          "priceUsd": 107.2
         }
       ]
     },
@@ -28016,7 +28036,7 @@
   "observability": {
     "solanaStatus": {
       "status": "fresh",
-      "observedAt": "2026-10-13T15:02:26.510Z",
+      "observedAt": "2026-10-13T17:05:16.572Z",
       "sourceIds": [
         "solanaStatus"
       ],
@@ -28024,7 +28044,7 @@
         "id": "rm9mn997x8jd",
         "name": "Solana",
         "url": "https://status.solana.com",
-        "updatedAt": "2026-10-13T13:55:16.603Z"
+        "updatedAt": "2026-10-13T16:49:51.427Z"
       },
       "condition": {
         "indicator": "none",
@@ -40254,10 +40274,10 @@
         "relativePct": 30,
         "absoluteTps": 500
       },
-      "observedAt": "2026-10-13T15:03:03.308Z",
-      "currentValue": 5149.356666666667,
-      "referenceValue": 5720.018333333333,
-      "changePct": -9.97657058791479
+      "observedAt": "2026-10-13T17:06:02.768Z",
+      "currentValue": 5536.233333333334,
+      "referenceValue": 5422.251666666667,
+      "changePct": 2.102109486495607
     },
     {
       "id": "slow-slot-time",
@@ -40270,10 +40290,10 @@
         "relativePct": 50,
         "absoluteMs": 75
       },
-      "observedAt": "2026-10-13T15:03:03.308Z",
-      "currentValue": 216.60649819494586,
-      "referenceValue": 220.18351589038173,
-      "changePct": -1.6245619845659531
+      "observedAt": "2026-10-13T17:06:02.768Z",
+      "currentValue": 221.56573116691285,
+      "referenceValue": 218.89824146688176,
+      "changePct": 1.218598049100672
     },
     {
       "id": "high-validator-delinquency",
@@ -40286,7 +40306,7 @@
         "percent": 5,
         "confirmations": 2
       },
-      "observedAt": "2026-10-13T15:02:26.510Z",
+      "observedAt": "2026-10-13T17:05:16.572Z",
       "currentValue": 0.0121035357
     },
     {
@@ -40316,10 +40336,10 @@
         "absolutePct": 10
       },
       "direction": "down",
-      "observedAt": "2026-10-13T15:01:01.000Z",
-      "currentValue": 107.47056072935936,
-      "referenceValue": 108.68920462514073,
-      "changePct": -1.1212188919629718
+      "observedAt": "2026-10-13T17:01:58.000Z",
+      "currentValue": 107.36256020870205,
+      "referenceValue": 107.85208775423712,
+      "changePct": -0.45388787155474786
     }
   ],
   "alerts": []
